@@ -24,7 +24,7 @@
       "colore": "#4caf82",
       "pagina": "brembilla.html",
       "sensori_arpa": { "PP": 14499, "T": 14500 },
-      "file_dati": ["brembilla_precip_v1.csv", "brembilla_temp.csv"]
+      "file_dati": ["brembilla_precip.csv", "brembilla_temp.csv";"brembilla_precip.xlsx"]
     },
     {
       "id": "piazzacava",
