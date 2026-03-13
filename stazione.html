@@ -1334,7 +1334,22 @@ async function loadGithubFiles() {
 async function init() {
   const msg=document.getElementById('loadMsg');
 
-  // Aggiorna titolo pagina e header con dati stazione
+  // 0. Carica index.json da GitHub per trovare la configurazione della stazione
+  msg.textContent='Carico configurazione stazione…';
+  try {
+    const r = await fetch(GITHUB_BASE + 'index.json');
+    if (r.ok) {
+      const data = await r.json();
+      const cfg = loadStationConfig(data.stazioni || []);
+      if (cfg) ST = cfg;
+    }
+  } catch(e) {}
+  // Se non trovato in index.json, prova da localStorage (stazioni custom)
+  if (ST.id === 'unknown') {
+    const cfg = loadStationConfig(null);
+    if (cfg) ST = cfg;
+  }
+
   if (ST.id === 'unknown') {
     msg.textContent = 'Stazione non trovata — torna alla mappa e riprova.';
     return;
