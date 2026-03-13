@@ -36,7 +36,7 @@
       "rete": "locale",
       "colore": "#ffb347",
       "pagina": "stazione.html?id=piazzacava",
-      "file_dati": ["piazzacava_suborario.csv"]
+      "file_dati": ["piazzacava.csv"]
     },
     {
       "id": "pracastello",
@@ -48,7 +48,7 @@
       "rete": "locale",
       "colore": "#f06292",
       "pagina": "stazione.html?id=pracastello",
-      "file_dati": ["pracastello_suborario.csv"]
+      "file_dati": ["pracastello.csv"]
     },
     {
       "id": "vettarola",
@@ -56,11 +56,11 @@
       "lat": 45.846072,
       "lon": 9.630264,
       "quota": 993,
-      "comune": "Zogno",
+      "comune": "San Pellegrino Terme",
       "rete": "locale",
       "colore": "#b39ddb",
       "pagina": "stazione.html?id=vettarola",
-      "file_dati": ["vettarola_suborario.csv"]
+      "file_dati": ["vettarola.csv"]
     }
   ]
 }
