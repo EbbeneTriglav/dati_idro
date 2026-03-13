@@ -10,8 +10,16 @@
       "rete": "ARPA",
       "colore": "#4fc3f7",
       "pagina": "cornalita.html",
-      "sensori_arpa": { "PP": 2278, "T": 2270, "UR": 2271, "VV": 11743 },
-      "file_dati": ["Cornalita_1950-2026.xlsx", "Cornalita_intensita.xlsx"]
+      "sensori_arpa": {
+        "PP": 2278,
+        "T": 2270,
+        "UR": 2271,
+        "VV": 11743
+      },
+      "file_dati": [
+        "Cornalita_1950-2026.xlsx",
+        "Cornalita_intensita.xlsx"
+      ]
     },
     {
       "id": "brembilla",
@@ -23,8 +31,14 @@
       "rete": "ARPA",
       "colore": "#4caf82",
       "pagina": "brembilla.html",
-      "sensori_arpa": { "PP": 14499, "T": 14500 },
-      "file_dati": ["brembilla_precip.csv", "brembilla_temp.csv"]
+      "sensori_arpa": {
+        "PP": 14499,
+        "T": 14500
+      },
+      "file_dati": [
+        "brembilla_precip.csv",
+        "brembilla_temp.csv"
+      ]
     },
     {
       "id": "piazzacava",
@@ -36,7 +50,9 @@
       "rete": "locale",
       "colore": "#ffb347",
       "pagina": "stazione.html?id=piazzacava",
-      "file_dati": ["piazzacava_suborario.csv"]
+      "file_dati": [
+        "piazzacava_suborario.csv"
+      ]
     },
     {
       "id": "pracastello",
@@ -48,7 +64,9 @@
       "rete": "locale",
       "colore": "#f06292",
       "pagina": "stazione.html?id=pracastello",
-      "file_dati": ["pracastello_suborario.csv"]
+      "file_dati": [
+        "pracastello_suborario.csv"
+      ]
     },
     {
       "id": "vettarola",
@@ -60,7 +78,9 @@
       "rete": "locale",
       "colore": "#b39ddb",
       "pagina": "stazione.html?id=vettarola",
-      "file_dati": ["vettarola_suborario.csv"]
+      "file_dati": [
+        "vettarola_suborario.csv"
+      ]
     }
   ]
 }
