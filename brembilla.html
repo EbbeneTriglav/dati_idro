@@ -544,7 +544,7 @@ function parseCSVText(text) {
     const c = lines[i].split(sep).map(x=>x.replace(/"/g,'').trim());
     const date = normalizeDate(iD>=0 ? c[iD] : c[0]);
     if (!date) continue;
-    if (iV>=0)  { const v=parseFloat(c[iV].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) precip[date]=(precip[date]||0)+v; }
+    if (iV>=0)  { const v=parseFloat(c[iV].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) precip[date]=Math.round(((precip[date]||0)+v)*10)/10; }
     if (iIn>=0) { const v=parseFloat(c[iIn].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) intensity[date]=v; }
     if (iTn>=0||iTx>=0||iTm>=0) {
       const tn=iTn>=0?parseFloat(c[iTn].replace(',','.')):null;
