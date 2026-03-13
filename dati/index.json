@@ -1,0 +1,66 @@
+{
+  "stazioni": [
+    {
+      "id": "cornalita",
+      "nome": "Cornalita – San Giovanni Bianco",
+      "lat": 45.8697,
+      "lon": 9.6391,
+      "quota": 622,
+      "comune": "San Giovanni Bianco",
+      "rete": "ARPA",
+      "colore": "#4fc3f7",
+      "pagina": "cornalita.html",
+      "sensori_arpa": { "PP": 2278, "T": 2270, "UR": 2271, "VV": 11743 },
+      "file_dati": ["Cornalita_1950-2026.xlsx", "Cornalita_intensita.xlsx"]
+    },
+    {
+      "id": "brembilla",
+      "nome": "Brembilla",
+      "lat": 45.8254,
+      "lon": 9.6117,
+      "quota": 468,
+      "comune": "Brembilla",
+      "rete": "ARPA",
+      "colore": "#4caf82",
+      "pagina": "brembilla.html",
+      "sensori_arpa": { "PP": 14499, "T": 14500 },
+      "file_dati": ["brembilla_precip_storico.xlsx"]
+    },
+    {
+      "id": "piazzacava",
+      "nome": "Piazzacava",
+      "lat": 45.84923,
+      "lon": 9.66032,
+      "quota": 506,
+      "comune": "San Pellegrino Terme",
+      "rete": "locale",
+      "colore": "#ffb347",
+      "pagina": "stazione.html?id=piazzacava",
+      "file_dati": ["piazzacava_suborario.csv"]
+    },
+    {
+      "id": "pracastello",
+      "nome": "Pracastello",
+      "lat": 45.8486,
+      "lon": 9.666,
+      "quota": 375,
+      "comune": "San Pellegrino Terme",
+      "rete": "locale",
+      "colore": "#f06292",
+      "pagina": "stazione.html?id=pracastello",
+      "file_dati": ["pracastello_suborario.csv"]
+    },
+    {
+      "id": "vettarola",
+      "nome": "Vettarola",
+      "lat": 45.846072,
+      "lon": 9.630264,
+      "quota": 993,
+      "comune": "Zogno",
+      "rete": "locale",
+      "colore": "#b39ddb",
+      "pagina": "stazione.html?id=vettarola",
+      "file_dati": ["vettarola_suborario.csv"]
+    }
+  ]
+}
