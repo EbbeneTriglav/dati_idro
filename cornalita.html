@@ -167,7 +167,7 @@ canvas.spark{height:36px;width:100%;}
 <header>
   <div>
     <h1>📡 Cornalita — San Giovanni Bianco</h1>
-    <div class="sub">IdStazione 119 · 45.7155°N 9.6567°E · 622 m s.l.m. · BG</div>
+    <div class="sub">IdStazione 119 · 45.8697°N 9.6391°E · 622 m s.l.m. · BG</div>
   </div>
   <div class="hdr-btns">
     <button class="btn btn-green" onclick="openDlModal()">⬇ Scarica dati</button>
@@ -323,6 +323,8 @@ canvas.spark{height:36px;width:100%;}
         <select id="evtThresh">
           <option value="10">≥ 10 mm</option><option value="20" selected>≥ 20 mm</option>
           <option value="30">≥ 30 mm</option><option value="50">≥ 50 mm</option>
+          <option value="100">≥ 100 mm</option><option value="200">≥ 200 mm</option>
+          <option value="300">≥ 300 mm</option>
         </select>
       </div>
       <div class="ch-wrap" style="height:280px"><canvas id="cEvt"></canvas></div>
@@ -393,14 +395,15 @@ canvas.spark{height:36px;width:100%;}
 const ST = {
   id:   'cornalita',
   name: 'Cornalita – San Giovanni Bianco',
-  // URL raw GitHub per CSV storici (modificare se cambiano i file)
-  // Caricare i file nella cartella dati/ del repo con questi nomi
   githubBase: 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/',
-  csvFiles: {
-    precip:    'cornalita_precip.csv',
-    intensity: 'cornalita_intensity.csv',
-    temp:      'cornalita_temp.csv',
-  },
+  // Lista di file da caricare. Puoi mettere quanti file vuoi — vengono tutti caricati
+  // e fusi automaticamente. Se un file non esiste viene saltato senza errori.
+  // Nomi file liberi, l'unica cosa che conta è il CONTENUTO (colonne riconosciute automaticamente).
+  csvFiles: [
+    'cornalita_precip_storico.csv',   // serie lunga dal 1950 (Data + Valore)
+    'cornalita_precip_intensita.csv', // serie 2002+ con intensità max oraria (Data + Valore + IntensitàMax)
+    'cornalita_temp.csv',             // temperatura (opzionale)
+  ],
   sensors: {
     PP:  { id: 2278,  label: 'Precipitazione', unit: 'mm',   color: '#4fc3f7' },
     T:   { id: 2270,  label: 'Temperatura',    unit: '°C',   color: '#ffb347' },
@@ -442,14 +445,40 @@ async function socrataFetch(sensorId, limit=50000) {
 }
 
 function socrataAggregatePrecip(rows) {
-  // righe Socrata → {date → mm}
-  const out = {};
+  // Aggrega righe sub-orarie/orarie Socrata in:
+  //   daily {date → mm_totali}
+  //   intensity {date → max_mm_in_1h}
+  // L'intensità massima oraria si ottiene raggruppando per ora e prendendo
+  // la somma dell'ora con più pioggia (mm/h) per ogni giorno.
+
+  // Prima passa: raggruppa per "YYYY-MM-DD HH" (ora)
+  const byHour = {};
   for (const row of rows) {
-    const d = (row.data||'').slice(0,10);
+    const ts = row.data || '';
+    if (!ts) continue;
+    const date = ts.slice(0,10);
+    const hour = ts.slice(0,13); // "YYYY-MM-DDTHH"
     const v = parseFloat(row.valore ?? 0);
-    if (d && !isNaN(v) && v >= 0) out[d] = (out[d]||0) + v;
+    if (!isNaN(v) && v >= 0) {
+      if (!byHour[hour]) byHour[hour] = { date, mm: 0 };
+      byHour[hour].mm += v;
+    }
   }
-  return out;
+
+  // Seconda passa: per ogni giorno → somma totale e max orario
+  const daily = {}, intensity = {};
+  for (const [hour, { date, mm }] of Object.entries(byHour)) {
+    daily[date] = (daily[date] || 0) + mm;
+    if (intensity[date] === undefined || mm > intensity[date]) {
+      intensity[date] = mm;
+    }
+  }
+
+  // Arrotonda a 1 decimale
+  for (const d of Object.keys(daily))    daily[d]     = Math.round(daily[d]*10)/10;
+  for (const d of Object.keys(intensity)) intensity[d] = Math.round(intensity[d]*10)/10;
+
+  return { daily, intensity };
 }
 
 function socrataAggregateTemp(rows) {
@@ -584,13 +613,18 @@ function buildPpYM() {
   }
   badYears = new Set();
   for (const [y, months] of Object.entries(raw)) {
+    const yr = Number(y);
+    // Non escludere mai l'anno corrente o l'anno scorso (dati parziali sono normali)
+    if (yr >= CY - 1) continue;
     const total = months.reduce((a,b)=>a+b,0);
-    if (total===0) { badYears.add(Number(y)); continue; }
-    const zeros = months.filter(v=>v===0).length;
-    if (zeros>=4) { badYears.add(Number(y)); continue; }
-    // 3 mesi consecutivi a zero
-    let consec=0;
-    for (const v of months) { if(v===0){consec++;if(consec>=3){badYears.add(Number(y));break;}}else consec=0; }
+    if (total===0) { badYears.add(yr); continue; }
+    // Escludi se >=4 mesi a zero E non sono tutti nei mesi estivi (lug-ago-set)
+    const nonSummerZeros = [0,1,2,3,4,9,10,11].filter(m=>months[m]===0).length;
+    if (nonSummerZeros>=4) { badYears.add(yr); continue; }
+    // 3+ mesi consecutivi a zero (escludi se sono solo estivi)
+    let consec=0, maxConsec=0;
+    for (const v of months) { if(v===0){consec++;maxConsec=Math.max(maxConsec,consec);}else consec=0; }
+    if (maxConsec>=4) { badYears.add(yr); }
   }
   ppYM={};
   for (const [y,months] of Object.entries(raw)) {
@@ -1088,21 +1122,40 @@ document.getElementById('fileIn').addEventListener('change', async e => {
 // ════════════════════════════════════════════
 // CARICA CSV DA GITHUB (se esiste)
 // ════════════════════════════════════════════
-async function tryLoadGithubCSV(filename, type) {
-  try {
-    const url=`${ST.githubBase}${filename}`;
-    const r=await fetch(url);
-    if (!r.ok) return false;
-    const text=await r.text();
-    const parsed=parseCSVText(text);
-    mergeData(parsed, 'csv');
-    const n=Object.keys(parsed[type]||{}).length;
-    if (n>0) {
-      document.getElementById('dotCsv').className='dot warn';
-      document.getElementById('lblCsv').textContent=`${n} righe da GitHub`;
+async function loadGithubFiles() {
+  // Carica tutti i file nella lista csvFiles, li parsifica e li fonde
+  let totalPrecip=0, totalInt=0, totalTemp=0;
+  for (const filename of (ST.csvFiles||[])) {
+    try {
+      const url = `${ST.githubBase}${filename}`;
+      const r = await fetch(url);
+      if (!r.ok) continue; // file non trovato — ok, skip silenzioso
+      const ext = filename.toLowerCase().split('.').pop();
+      let parsed;
+      if (ext==='csv'||ext==='txt') {
+        parsed = parseCSVText(await r.text());
+      } else {
+        // Excel: scarica come buffer
+        const buf = await r.arrayBuffer();
+        parsed = parseXLSXBuffer(new Uint8Array(buf));
+      }
+      mergeData(parsed, 'csv');
+      totalPrecip += Object.keys(parsed.precip||{}).length;
+      totalInt    += Object.keys(parsed.intensity||{}).length;
+      totalTemp   += Object.keys(parsed.temp||{}).length;
+      console.log(`✓ ${filename}: ${Object.keys(parsed.precip||{}).length} precip, ${Object.keys(parsed.intensity||{}).length} int, ${Object.keys(parsed.temp||{}).length} temp`);
+    } catch(e) {
+      console.warn(`Errore caricamento ${filename}:`, e);
     }
-    return n>0;
-  } catch(e) { return false; }
+  }
+  if (totalPrecip>0 || totalInt>0 || totalTemp>0) {
+    document.getElementById('dotCsv').className='dot warn';
+    const parts=[];
+    if (totalPrecip) parts.push(`${totalPrecip} gg precip`);
+    if (totalInt)    parts.push(`${totalInt} gg intensità`);
+    if (totalTemp)   parts.push(`${totalTemp} gg temp`);
+    document.getElementById('lblCsv').textContent=parts.join(' · ')+' da GitHub';
+  }
 }
 
 // ════════════════════════════════════════════
@@ -1113,21 +1166,19 @@ async function init() {
   try {
     // 1. Carica CSV storici da GitHub (se esistono)
     msg.textContent='Carico CSV storici da GitHub…';
-    await tryLoadGithubCSV(ST.csvFiles.precip, 'precip');
-    await tryLoadGithubCSV(ST.csvFiles.intensity, 'intensity');
-    await tryLoadGithubCSV(ST.csvFiles.temp, 'temp');
+    await loadGithubFiles();
 
     // 2. Carica dati live da Socrata
     msg.textContent='Carico precipitazioni API live…';
     try {
       const ppRows=await socrataFetch(ST.sensors.PP.id, 50000);
-      const ppMap=socrataAggregatePrecip(ppRows);
+      const { daily: ppMap, intensity: intMap } = socrataAggregatePrecip(ppRows);
       const dates=Object.keys(ppMap).sort();
       if (dates.length) {
         liveMin=dates[0]; liveMax=dates[dates.length-1];
-        mergeData({precip:ppMap},'live');
+        mergeData({precip:ppMap, intensity:intMap},'live');
         document.getElementById('dotApi').className='dot ok';
-        document.getElementById('lblApi').textContent=`${liveMin} → ${liveMax}`;
+        document.getElementById('lblApi').textContent=`${liveMin} → ${liveMax} (intensità calcolata)`;
       }
     } catch(e) { document.getElementById('lblApi').textContent='errore: '+e.message; }
 
