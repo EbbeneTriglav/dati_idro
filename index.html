@@ -97,9 +97,7 @@ header p{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex 
     <p>Hub stazioni · ARPA Lombardia + dati storici</p>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <a href="cornalita.html" class="st-btn">Cornalita →</a>
-    <a href="brembilla.html" class="st-btn" style="background:var(--green)">Brembilla →</a>
-    <button class="btn btn-outline" onclick="document.getElementById('addModal').classList.add('open')">+ Stazione</button>
+    <button class="btn btn-outline" onclick="document.getElementById('addModal').classList.add('open')">+ Stazione custom</button>
   </div>
 </header>
 
@@ -112,8 +110,9 @@ header p{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex 
 </div>
 
 <div class="stats-bar">
-  <div class="stat"><div class="stat-l">Stazioni</div><div class="stat-v" id="sbN">—</div></div>
-  <div class="stat"><div class="stat-l">Stazioni custom</div><div class="stat-v" id="sbC">—</div></div>
+  <div class="stat"><div class="stat-l">Stazioni totali</div><div class="stat-v" id="sbN">—</div></div>
+  <div class="stat"><div class="stat-l">Da index.json</div><div class="stat-v" id="sbJson" style="font-size:12px;padding-top:3px;color:var(--green)">—</div></div>
+  <div class="stat"><div class="stat-l">Custom locali</div><div class="stat-v" id="sbC">—</div></div>
 </div>
 
 <!-- Modal aggiungi stazione -->
@@ -142,126 +141,187 @@ header p{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex 
 <script>
 'use strict';
 
-// Stazioni built-in
-const BUILTIN = [
-  { id:'cornalita', name:'Cornalita – S. Giovanni Bianco', lat:45.8697, lon:9.6391, alt:622,
-    comune:'San Giovanni Bianco', page:'cornalita.html',
-    badges:['ARPA live','PP #2278','T #2270','UR #2271'], colors:['b','g','o','b'] },
-  { id:'brembilla', name:'Brembilla', lat:45.8254, lon:9.6117, alt:468,
-    comune:'Brembilla', page:'brembilla.html',
-    badges:['ARPA live','PP #14499','T #14500'], colors:['b','g','o'] },
-];
+const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+const INDEX_JSON  = GITHUB_BASE + 'index.json';
 
-const MARKER_COLORS = { cornalita:'#4fc3f7', brembilla:'#4caf82', custom:'#b39ddb' };
+// Colori rete
+const RETE_COLORS = { ARPA:'#4fc3f7', locale:'#ffb347', custom:'#b39ddb' };
 
-let map, customStations=[];
+let map;
+let stazioni = [];       // da index.json
+let customStazioni = []; // da localStorage (stazioni aggiunte manualmente)
 
+// ── localStorage custom ──────────────────────────────────────────────
 function loadCustom() {
-  try { customStations=JSON.parse(localStorage.getItem('customStations')||'[]'); } catch(e){customStations=[];}
+  try { customStazioni = JSON.parse(localStorage.getItem('customStazioni') || '[]'); }
+  catch(e) { customStazioni = []; }
 }
-function saveCustom() { localStorage.setItem('customStations', JSON.stringify(customStations)); }
+function saveCustom() {
+  localStorage.setItem('customStazioni', JSON.stringify(customStazioni));
+}
 
-function allStations() { return [...BUILTIN, ...customStations]; }
+// ── Carica index.json da GitHub ──────────────────────────────────────
+async function loadIndexJson() {
+  try {
+    const r = await fetch(INDEX_JSON);
+    if (!r.ok) return [];
+    const data = await r.json();
+    return data.stazioni || [];
+  } catch(e) {
+    console.warn('index.json non trovato o errore:', e.message);
+    return [];
+  }
+}
 
+// ── Tutti stazioni = JSON + custom localStorage ──────────────────────
+function allStazioni() { return [...stazioni, ...customStazioni]; }
+
+// ── Crea marker Leaflet ──────────────────────────────────────────────
 function makeMarker(st) {
-  const col = MARKER_COLORS[st.id] || MARKER_COLORS.custom;
+  const col = st.colore || RETE_COLORS[st.rete] || RETE_COLORS.custom;
   const icon = L.divIcon({
-    html:`<div style="width:14px;height:14px;border-radius:50%;background:${col};border:2.5px solid #fff;box-shadow:0 0 8px ${col}88;"></div>`,
-    iconSize:[14,14],iconAnchor:[7,7],className:''
+    html: `<div style="width:13px;height:13px;border-radius:50%;background:${col};
+             border:2.5px solid #fff;box-shadow:0 0 8px ${col}88;"></div>`,
+    iconSize:[13,13], iconAnchor:[6,6], className:''
   });
-  const url = st.page || `stazione.html?id=${encodeURIComponent(st.id)}`;
-  return L.marker([st.lat,st.lon],{icon}).bindPopup(
-    `<b>${st.name}</b><br>${st.alt??'?'} m s.l.m. · ${st.comune||''}<br>
+  const url = st.pagina || `stazione.html?id=${encodeURIComponent(st.id)}`;
+  const quota = st.quota ? `${st.quota} m s.l.m.` : '';
+  const rete  = st.rete  ? `<span style="color:${col};font-weight:700">${st.rete.toUpperCase()}</span>` : '';
+  return L.marker([st.lat, st.lon], {icon}).bindPopup(
+    `<b>${st.nome}</b><br>
+     ${quota}${st.comune ? ' · ' + st.comune : ''}<br>
+     ${rete}<br><br>
      <a href="${url}">Apri dashboard →</a>`
   );
 }
 
+// ── Sidebar ──────────────────────────────────────────────────────────
 function renderSidebar() {
   const list = document.getElementById('stList');
   list.innerHTML = '';
-  const sts = allStations();
-  document.getElementById('sbN').textContent = sts.length;
-  document.getElementById('sbC').textContent = customStations.length;
+  const all = allStazioni();
+  document.getElementById('sbN').textContent = all.length;
+  document.getElementById('sbC').textContent = customStazioni.length;
 
-  sts.forEach(st=>{
-    const card=document.createElement('div'); card.className='st-card';
-    const url=st.page||`stazione.html?id=${encodeURIComponent(st.id)}`;
-    const badgeHTML=(st.badges||[]).map((b,i)=>`<span class="badge badge-${(st.colors||[])[i]||'b'}">${b}</span>`).join('');
-    const isCustom=!BUILTIN.find(b=>b.id===st.id);
-    card.innerHTML=`
-      <div class="st-name">${st.name}</div>
-      <div class="st-meta">${(st.lat||0).toFixed(4)}°N · ${(st.lon||0).toFixed(4)}°E · ${st.alt??'?'} m</div>
-      <div class="st-badges">${badgeHTML}${isCustom?'<span class="badge badge-o">Custom</span>':''}</div>
-      <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
-        <a href="${url}" class="st-btn">Apri →</a>
-        ${isCustom?`<button onclick="removeStation('${st.id}',event)" style="padding:4px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:#ef5350;border:1.5px solid #ef5350;">Elimina</button>`:''}
-      </div>`;
-    card.addEventListener('click',e=>{
-      if(e.target.tagName==='A'||e.target.tagName==='BUTTON')return;
-      // Pan to marker
-      map.setView([st.lat,st.lon],13);
-    });
-    list.appendChild(card);
+  // Raggruppa per rete
+  const reti = {};
+  all.forEach(st => {
+    const r = st.rete || 'custom';
+    if (!reti[r]) reti[r] = [];
+    reti[r].push(st);
   });
+
+  for (const [rete, sts] of Object.entries(reti)) {
+    const grp = document.createElement('div');
+    grp.style.cssText = 'margin-bottom:10px;';
+    grp.innerHTML = `<div style="font-size:10px;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.08em;padding:4px 4px 6px;">${rete}</div>`;
+    list.appendChild(grp);
+
+    sts.forEach(st => {
+      const col = st.colore || RETE_COLORS[st.rete] || RETE_COLORS.custom;
+      const url = st.pagina || `stazione.html?id=${encodeURIComponent(st.id)}`;
+      const isCustom = customStazioni.find(c => c.id === st.id);
+      const card = document.createElement('div');
+      card.className = 'st-card';
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:9px;height:9px;border-radius:50%;background:${col};flex-shrink:0;"></div>
+          <div class="st-name">${st.nome}</div>
+        </div>
+        <div class="st-meta">${st.quota ? st.quota + ' m' : ''}${st.comune ? ' · ' + st.comune : ''}</div>
+        <div style="display:flex;gap:6px;margin-top:7px;align-items:center;">
+          <a href="${url}" class="st-btn">Apri →</a>
+          ${isCustom ? `<button onclick="removeCustom('${st.id}',event)"
+            style="padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;
+            cursor:pointer;background:transparent;color:#ef5350;border:1.5px solid #ef5350;">✕</button>` : ''}
+        </div>`;
+      card.addEventListener('click', e => {
+        if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+        map.setView([st.lat, st.lon], 14);
+      });
+      grp.appendChild(card);
+    });
+  }
 }
 
-function removeStation(id, e) {
+function removeCustom(id, e) {
   e.stopPropagation();
-  if (!confirm('Eliminare questa stazione?')) return;
-  customStations=customStations.filter(s=>s.id!==id);
-  saveCustom(); init();
-}
-
-function addStation() {
-  const err=document.getElementById('addErr');
-  err.style.display='none';
-  const name=document.getElementById('fName').value.trim();
-  const lat=parseFloat(document.getElementById('fLat').value);
-  const lon=parseFloat(document.getElementById('fLon').value);
-  if (!name||isNaN(lat)||isNaN(lon)) { err.textContent='Nome, latitudine e longitudine obbligatori.'; err.style.display='block'; return; }
-  const ppId=parseInt(document.getElementById('fPP').value)||null;
-  const tId=parseInt(document.getElementById('fT').value)||null;
-  const st={
-    id:'custom_'+Date.now(), name, lat, lon,
-    alt:parseInt(document.getElementById('fAlt').value)||null,
-    comune:document.getElementById('fComune').value.trim(),
-    page:null,
-    badges:[...(ppId?[`PP #${ppId}`]:[]),...(tId?[`T #${tId}`]:[])],
-    colors:['g','o'],
-    sensors:{...(ppId?{PP:{id:ppId}}:{}),...(tId?{T:{id:tId}}:{})},
-  };
-  customStations.push(st);
+  if (!confirm('Rimuovere questa stazione custom?')) return;
+  customStazioni = customStazioni.filter(s => s.id !== id);
   saveCustom();
-  document.getElementById('addModal').classList.remove('open');
-  ['fName','fComune','fLat','fLon','fAlt','fPP','fT'].forEach(id=>document.getElementById(id).value='');
-  init();
+  renderMap();
 }
 
-function init() {
-  loadCustom();
-  const sts=allStations();
-
-  // Init mappa solo la prima volta
+// ── Mappa ────────────────────────────────────────────────────────────
+function renderMap() {
+  const all = allStazioni();
   if (!map) {
-    map=L.map('map',{zoomControl:true}).setView([45.78,9.64],11);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-      attribution:'© OpenStreetMap © CARTO',maxZoom:19
+    map = L.map('map', {zoomControl:true}).setView([45.83, 9.64], 11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution:'© OpenStreetMap © CARTO', maxZoom:19
     }).addTo(map);
   } else {
-    map.eachLayer(l=>{ if(l instanceof L.Marker) map.removeLayer(l); });
+    map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
   }
-
-  // Aggiungi marker
-  sts.forEach(st=>{ if(st.lat&&st.lon) makeMarker(st).addTo(map); });
-
-  // Fit bounds
-  const coords=sts.filter(s=>s.lat&&s.lon).map(s=>[s.lat,s.lon]);
-  if (coords.length) map.fitBounds(coords,{padding:[40,40]});
-
+  all.filter(s => s.lat && s.lon).forEach(st => makeMarker(st).addTo(map));
+  const coords = all.filter(s => s.lat && s.lon).map(s => [s.lat, s.lon]);
+  if (coords.length) map.fitBounds(coords, {padding:[40,40]});
   renderSidebar();
 }
 
-document.getElementById('addModal').addEventListener('click',e=>{ if(e.target===e.currentTarget)e.currentTarget.classList.remove('open'); });
+// ── Aggiungi stazione custom ─────────────────────────────────────────
+function addStation() {
+  const err = document.getElementById('addErr');
+  err.style.display = 'none';
+  const name = document.getElementById('fName').value.trim();
+  const lat  = parseFloat(document.getElementById('fLat').value);
+  const lon  = parseFloat(document.getElementById('fLon').value);
+  if (!name || isNaN(lat) || isNaN(lon)) {
+    err.textContent = 'Nome, latitudine e longitudine sono obbligatori.';
+    err.style.display = 'block'; return;
+  }
+  const safeName = name.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  const ppId = parseInt(document.getElementById('fPP').value) || null;
+  const tId  = parseInt(document.getElementById('fT').value)  || null;
+  const st = {
+    id:      'custom_' + Date.now(),
+    nome:    name,
+    lat, lon,
+    quota:   parseInt(document.getElementById('fAlt').value) || null,
+    comune:  document.getElementById('fComune').value.trim(),
+    rete:    'custom',
+    colore:  '#b39ddb',
+    pagina:  null,
+    file_dati: [`${safeName}_suborario.csv`, `${safeName}_precip.xlsx`],
+    sensori_arpa: { ...(ppId ? {PP: ppId} : {}), ...(tId ? {T: tId} : {}) },
+  };
+  customStazioni.push(st);
+  saveCustom();
+  document.getElementById('addModal').classList.remove('open');
+  ['fName','fComune','fLat','fLon','fAlt','fPP','fT'].forEach(id => document.getElementById(id).value = '');
+  renderMap();
+}
+
+// ── Status index.json ─────────────────────────────────────────────────
+function showIndexStatus(n) {
+  const el = document.getElementById('sbJson');
+  if (el) el.textContent = n > 0 ? `${n} da index.json` : 'index.json non trovato';
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────
+async function init() {
+  loadCustom();
+  stazioni = await loadIndexJson();
+  showIndexStatus(stazioni.length);
+  renderMap();
+}
+
+document.getElementById('addModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+});
 
 init();
 </script>

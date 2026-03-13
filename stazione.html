@@ -394,41 +394,59 @@ canvas.spark{height:36px;width:100%;}
 // ════════════════════════════════════════════
 const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
 
-function loadStationConfig() {
+function loadStationConfig(jsonData) {
   const params = new URLSearchParams(window.location.search);
   const stId = params.get('id');
   if (!stId) return null;
+
   let stData = null;
-  try {
-    const custom = JSON.parse(localStorage.getItem('customStations') || '[]');
-    stData = custom.find(s => s.id === stId) || null;
-  } catch(e) {}
+  // 1. Cerca in index.json passato come argomento
+  if (jsonData && Array.isArray(jsonData)) {
+    stData = jsonData.find(s => s.id === stId) || null;
+  }
+  // 2. Cerca in localStorage (stazioni custom aggiunte da index.html)
+  if (!stData) {
+    try {
+      const custom = JSON.parse(
+        localStorage.getItem('customStazioni') ||
+        localStorage.getItem('customStations') || '[]'
+      );
+      stData = custom.find(s => s.id === stId) || null;
+    } catch(e) {}
+  }
   if (!stData) return null;
-  // Nome file sicuro: minuscolo, senza accenti, solo lettere/numeri/underscore
-  const safeName = stData.name
-    .toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g,'')
-    .replace(/[^a-z0-9]+/g,'_')
-    .replace(/^_|_$/g,'');
+
+  const nome = stData.nome || stData.name || stId;
+  const safeName = nome.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+
+  // file_dati da index.json ha precedenza, altrimenti nomi automatici
+  const csvFiles = (stData.file_dati && stData.file_dati.length)
+    ? stData.file_dati
+    : [
+        `${safeName}_suborario.csv`,
+        `${safeName}_precip.xlsx`,
+        `${safeName}_precip.csv`,
+        `${safeName}_intensita.xlsx`,
+        `${safeName}_intensita.csv`,
+        `${safeName}_temp.csv`,
+      ];
+
+  const rawSensors = stData.sensori_arpa || stData.sensors || {};
+
   return {
     id:         stId,
-    name:       stData.name || stId,
+    name:       nome,
     lat:        stData.lat,
     lon:        stData.lon,
-    alt:        stData.alt,
+    alt:        stData.quota || stData.alt,
     comune:     stData.comune || '',
     githubBase: GITHUB_BASE,
-    csvFiles: [
-      `${safeName}_precip.xlsx`,
-      `${safeName}_precip.csv`,
-      `${safeName}_intensita.xlsx`,
-      `${safeName}_intensita.csv`,
-      `${safeName}_temp.csv`,
-    ],
-    sensors: buildSensors(stData.sensors || {}),
+    csvFiles,
+    sensors:    buildSensors(rawSensors),
   };
 }
-
 function buildSensors(rawSensors) {
   const defaults = {
     PP: { label:'Precipitazione', unit:'mm',  color:'#4fc3f7' },
@@ -443,10 +461,8 @@ function buildSensors(rawSensors) {
   return out;
 }
 
-const ST = loadStationConfig() || {
-  id:'unknown', name:'Stazione non trovata', githubBase:GITHUB_BASE,
-  csvFiles:[], sensors:{}
-};
+// ST viene inizializzato in init() dopo aver caricato index.json
+let ST = { id:'unknown', name:'Stazione non trovata', githubBase:GITHUB_BASE, csvFiles:[], sensors:{} };
 const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
                  '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a','#80cbc4','#ffe082',
@@ -535,6 +551,103 @@ function socrataAggregateTemp(rows) {
     };
   }
   return out;
+}
+
+
+// ════════════════════════════════════════════
+// PARSER FORMATO SUB-ORARIO (es. portale bacino)
+// Intestazione: Time, TEMPERATURA ... (ZPxxx), PRECIPITAZIONI ... (ZPxxx), INTENSITA PIOGGIA ... (ZPxxx)
+// Step: 10 minuti — aggregazione a giornaliero
+// ════════════════════════════════════════════
+function parseSuborario(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return { precip:{}, intensity:{}, temp:{} };
+
+  const sep = ',';
+  const hdr = lines[0].split(sep).map(h => h.replace(/"/g,'').trim().toLowerCase());
+
+  // Individua colonne per parole chiave nei nomi lunghi
+  const iTime = hdr.findIndex(h => h === 'time' || h === 'data');
+  const iT    = hdr.findIndex(h => h.includes('temperatura'));
+  const iPP   = hdr.findIndex(h => h.includes('precipit'));
+  const iInt  = hdr.findIndex(h => h.includes('intensit'));
+
+  if (iTime < 0 || iPP < 0) return { precip:{}, intensity:{}, temp:{} };
+
+  // Aggrega per giorno
+  const ppByDay   = {};  // date → mm totali
+  const intByDay  = {};  // date → max mm/h registrato
+  const tByDay    = {};  // date → array °C
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(sep).map(c => c.replace(/"/g,'').trim());
+    const ts   = cols[iTime] || '';
+    const date = ts.slice(0,10);
+    if (!date || date.length < 10) continue;
+
+    // Precipitazione: somma mm/10min
+    if (iPP >= 0) {
+      const v = parseFloat(cols[iPP]);
+      if (!isNaN(v) && v >= 0) ppByDay[date] = (ppByDay[date] || 0) + v;
+    }
+
+    // Intensità: già in mm/h — prendi il massimo del giorno
+    if (iInt >= 0) {
+      const v = parseFloat(cols[iInt]);
+      if (!isNaN(v) && v > 0) {
+        if (intByDay[date] === undefined || v > intByDay[date]) intByDay[date] = v;
+      }
+    }
+
+    // Se non c'è colonna intensità, calcolala come max orario dai PP:
+    // raggruppa per ora, somma, poi moltiplica ×6 per avere mm/h
+    if (iInt < 0 && iPP >= 0) {
+      const v = parseFloat(cols[iPP]);
+      if (!isNaN(v) && v >= 0) {
+        const hour = ts.slice(0,13); // "YYYY-MM-DD HH"
+        if (!intByDay['_h_' + hour]) intByDay['_h_' + hour] = 0;
+        intByDay['_h_' + hour] += v;
+      }
+    }
+
+    // Temperatura: raccoglie tutti i valori del giorno
+    if (iT >= 0) {
+      const v = parseFloat(cols[iT]);
+      if (!isNaN(v)) {
+        if (!tByDay[date]) tByDay[date] = [];
+        tByDay[date].push(v);
+      }
+    }
+  }
+
+  // Se intensità calcolata dagli step orari: prendi il max orario per giorno
+  const intensity = {};
+  for (const [k, v] of Object.entries(intByDay)) {
+    if (k.startsWith('_h_')) {
+      // k = "_h_YYYY-MM-DD HH"
+      const date = k.slice(3, 13);
+      const mmh  = Math.round(v * 6 * 10) / 10; // mm/10min × 6 = mm/h
+      if (!intensity[date] || mmh > intensity[date]) intensity[date] = mmh;
+    } else {
+      intensity[k] = Math.round(v * 10) / 10;
+    }
+  }
+
+  // Temperatura: min/media/max per giorno
+  const temp = {};
+  for (const [d, vals] of Object.entries(tByDay)) {
+    temp[d] = {
+      tMin:  Math.round(Math.min(...vals) * 10) / 10,
+      tMax:  Math.round(Math.max(...vals) * 10) / 10,
+      tMean: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length * 10) / 10,
+    };
+  }
+
+  // Arrotonda precipitazioni
+  const precip = {};
+  for (const [d,v] of Object.entries(ppByDay)) precip[d] = Math.round(v*10)/10;
+
+  return { precip, intensity, temp };
 }
 
 // ════════════════════════════════════════════
@@ -1169,9 +1282,13 @@ async function loadGithubFiles() {
         // 404 = file non ancora caricato, silenzioso
         continue;
       }
-      const ext = filename.toLowerCase().split('.').pop();
+      const fname_lc = filename.toLowerCase();
+      const ext = fname_lc.split('.').pop();
       let parsed;
-      if (ext==='csv'||ext==='txt') {
+      if (fname_lc.includes('suborario') || fname_lc.includes('sub_orario')) {
+        // Formato sub-orario (10 min) — parser dedicato
+        parsed = parseSuborario(await r.text());
+      } else if (ext==='csv'||ext==='txt') {
         parsed = parseCSVText(await r.text());
       } else {
         const buf = await r.arrayBuffer();
