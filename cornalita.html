@@ -540,23 +540,37 @@ function parseCSVText(text) {
   const iTm = findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media']);
 
   const precip={}, intensity={}, temp={};
+  const tRaw={}; // accumula valori orari per calcolo min/max/mean
+  const NODATA = -999;
   for (let i=1; i<lines.length; i++) {
     const c = lines[i].split(sep).map(x=>x.replace(/"/g,'').trim());
     const date = normalizeDate(iD>=0 ? c[iD] : c[0]);
     if (!date) continue;
-    const NODATA = -999; // valore sentinella ARPA per dati mancanti
     if (iV>=0)  { const v=parseFloat(c[iV].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) precip[date]=(precip[date]||0)+v; }
     if (iIn>=0) { const v=parseFloat(c[iIn].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) intensity[date]=v; }
     if (iTn>=0||iTx>=0||iTm>=0) {
       const tn=iTn>=0?parseFloat(c[iTn].replace(',','.')):null;
       const tx=iTx>=0?parseFloat(c[iTx].replace(',','.')):null;
       const tm=iTm>=0?parseFloat(c[iTm].replace(',','.')):null;
-      // Filtra -999 (dato mancante ARPA)
       const vtn=tn===NODATA||isNaN(tn)?null:tn;
       const vtx=tx===NODATA||isNaN(tx)?null:tx;
       const vtm=tm===NODATA||isNaN(tm)?null:tm;
       if(vtn!==null||vtx!==null||vtm!==null) temp[date]={tMin:vtn, tMax:vtx, tMean:vtm};
     }
+    // Se ho solo colonna media (es. ARPA orario): accumulo valori per calcolare min/max
+    if (iTm>=0 && iTn<0 && iTx<0) {
+      const v=parseFloat(c[iTm].replace(',','.'));
+      if(!isNaN(v)&&v!==NODATA) {
+        if(!tRaw[date]) tRaw[date]=[];
+        tRaw[date].push(v);
+      }
+    }
+  }
+  // Calcola min/max dai valori orari accumulati
+  for (const [date, vals] of Object.entries(tRaw)) {
+    if (!vals.length) continue;
+    const mn=Math.min(...vals), mx=Math.max(...vals), me=vals.reduce((a,b)=>a+b,0)/vals.length;
+    temp[date]={ tMin:Math.round(mn*10)/10, tMax:Math.round(mx*10)/10, tMean:Math.round(me*10)/10 };
   }
   return {precip, intensity, temp};
 }
