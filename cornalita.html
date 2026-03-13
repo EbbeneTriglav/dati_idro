@@ -204,6 +204,7 @@ canvas.spark{height:36px;width:100%;}
       <input type="file" id="fileIn" multiple accept=".csv,.xlsx,.xls,.txt"/>
       <span id="uploadMsg"></span>
     </div>
+    <div id="githubLog" style="margin-top:7px;font-size:11px;font-family:'IBM Plex Mono',monospace;line-height:1.8;"></div>
     <div id="warnYears" class="warn-years" style="display:none"></div>
   </div>
 
@@ -400,9 +401,9 @@ const ST = {
   // e fusi automaticamente. Se un file non esiste viene saltato senza errori.
   // Nomi file liberi, l'unica cosa che conta è il CONTENUTO (colonne riconosciute automaticamente).
   csvFiles: [
-    'cornalita_precip_storico.csv',   // serie lunga dal 1950 (Data + Valore)
-    'cornalita_precip_intensita.csv', // serie 2002+ con intensità max oraria (Data + Valore + IntensitàMax)
-    'cornalita_temp.csv',             // temperatura (opzionale)
+    'Cornalita_1950-2026.xlsx',   // serie lunga dal 1950
+    'Cornalita_intensita.xlsx',   // serie con intensità max oraria
+    'cornalita_temp.csv',         // temperatura (opzionale, se disponibile)
   ],
   sensors: {
     PP:  { id: 2278,  label: 'Precipitazione', unit: 'mm',   color: '#4fc3f7' },
@@ -1123,38 +1124,56 @@ document.getElementById('fileIn').addEventListener('change', async e => {
 // CARICA CSV DA GITHUB (se esiste)
 // ════════════════════════════════════════════
 async function loadGithubFiles() {
-  // Carica tutti i file nella lista csvFiles, li parsifica e li fonde
   let totalPrecip=0, totalInt=0, totalTemp=0;
+  const results = []; // log visibile nell'UI
   for (const filename of (ST.csvFiles||[])) {
     try {
-      const url = `${ST.githubBase}${filename}`;
+      const url = `${ST.githubBase}${encodeURIComponent(filename)}`;
       const r = await fetch(url);
-      if (!r.ok) continue; // file non trovato — ok, skip silenzioso
+      if (!r.ok) {
+        if (r.status !== 404) results.push(`⚠ ${filename}: HTTP ${r.status}`);
+        // 404 = file non ancora caricato, silenzioso
+        continue;
+      }
       const ext = filename.toLowerCase().split('.').pop();
       let parsed;
       if (ext==='csv'||ext==='txt') {
         parsed = parseCSVText(await r.text());
       } else {
-        // Excel: scarica come buffer
         const buf = await r.arrayBuffer();
         parsed = parseXLSXBuffer(new Uint8Array(buf));
       }
       mergeData(parsed, 'csv');
-      totalPrecip += Object.keys(parsed.precip||{}).length;
-      totalInt    += Object.keys(parsed.intensity||{}).length;
-      totalTemp   += Object.keys(parsed.temp||{}).length;
-      console.log(`✓ ${filename}: ${Object.keys(parsed.precip||{}).length} precip, ${Object.keys(parsed.intensity||{}).length} int, ${Object.keys(parsed.temp||{}).length} temp`);
+      const np = Object.keys(parsed.precip||{}).length;
+      const ni = Object.keys(parsed.intensity||{}).length;
+      const nt = Object.keys(parsed.temp||{}).length;
+      totalPrecip += np; totalInt += ni; totalTemp += nt;
+      const parts=[];
+      if(np) parts.push(`${np} gg precip`);
+      if(ni) parts.push(`${ni} gg intensità`);
+      if(nt) parts.push(`${nt} gg temp`);
+      results.push(`✓ ${filename}: ${parts.join(', ')||'nessun dato riconosciuto ⚠'}`);
+      console.log(`✓ ${filename}:`, parsed);
     } catch(e) {
-      console.warn(`Errore caricamento ${filename}:`, e);
+      results.push(`✗ ${filename}: ${e.message}`);
+      console.warn(`Errore ${filename}:`, e);
     }
   }
+  // Mostra risultati nella status bar e nel box upload
+  const logEl = document.getElementById('githubLog');
+  if (logEl) logEl.innerHTML = results.map(r=>
+    `<div style="color:${r.startsWith('✓')?'var(--green)':r.startsWith('⚠')?'var(--orange)':'var(--red)'}">${r}</div>`
+  ).join('');
+
   if (totalPrecip>0 || totalInt>0 || totalTemp>0) {
-    document.getElementById('dotCsv').className='dot warn';
+    document.getElementById('dotCsv').className='dot ok';
     const parts=[];
     if (totalPrecip) parts.push(`${totalPrecip} gg precip`);
     if (totalInt)    parts.push(`${totalInt} gg intensità`);
     if (totalTemp)   parts.push(`${totalTemp} gg temp`);
     document.getElementById('lblCsv').textContent=parts.join(' · ')+' da GitHub';
+  } else if (results.length===0) {
+    document.getElementById('lblCsv').textContent='nessun file in dati/';
   }
 }
 
