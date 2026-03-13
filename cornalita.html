@@ -391,28 +391,57 @@ canvas.spark{height:36px;width:100%;}
 'use strict';
 
 // ════════════════════════════════════════════
-// CONFIGURAZIONE STAZIONE
+// CONFIGURAZIONE STAZIONE — caricata da index.json
+// Se index.json non disponibile, usa i valori di fallback qui sotto
 // ════════════════════════════════════════════
-const ST = {
-  id:   'cornalita',
-  name: 'Cornalita – San Giovanni Bianco',
-  githubBase: 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/',
-  // Lista di file da caricare. Puoi mettere quanti file vuoi — vengono tutti caricati
-  // e fusi automaticamente. Se un file non esiste viene saltato senza errori.
-  // Nomi file liberi, l'unica cosa che conta è il CONTENUTO (colonne riconosciute automaticamente).
-  csvFiles: [
-    'Cornalita_1950-2026.xlsx',   // serie lunga dal 1950
-    'Cornalita_intensita.xlsx',   // serie con intensità max oraria
-    'cornalita_temp.csv',         // temperatura (opzionale, se disponibile)
-  ],
-  sensors: {
-    PP:  { id: 2278,  label: 'Precipitazione', unit: 'mm',   color: '#4fc3f7' },
-    T:   { id: 2270,  label: 'Temperatura',    unit: '°C',   color: '#ffb347' },
-    UR:  { id: 2271,  label: 'Umidità',        unit: '%',    color: '#4caf82' },
-    VV:  { id: 11743, label: 'Vento',          unit: 'm/s',  color: '#b39ddb' },
-  }
+const STATION_ID  = 'cornalita';
+const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+
+// Fallback hardcoded (usato solo se index.json non raggiungibile)
+const ST_FALLBACK = {
+  id:         'cornalita',
+  name:       'Cornalita – San Giovanni Bianco',
+  lat:        45.8697,
+  lon:        9.6391,
+  alt:        622,
+  comune:     'San Giovanni Bianco',
+  githubBase: GITHUB_BASE,
+  csvFiles:   ['Cornalita_1950-2026.xlsx','Cornalita_intensita.xlsx','cornalita_temp.csv'],
+  sensors:    {
+    PP:  { id: 2278,  label: 'Precipitazione', unit: 'mm',  color: '#4fc3f7' },
+    T:   { id: 2270,  label: 'Temperatura',    unit: '°C',  color: '#ffb347' },
+    UR:  { id: 2271,  label: 'Umidità',        unit: '%',   color: '#4caf82' },
+    VV:  { id: 11743, label: 'Vento',          unit: 'm/s', color: '#b39ddb' },
+  },
 };
 
+// ST viene popolato in init() leggendo index.json
+let ST = ST_FALLBACK;
+
+async function loadSTFromIndex() {
+  try {
+    const r = await fetch(GITHUB_BASE + 'index.json');
+    if (!r.ok) return false;
+    const data = await r.json();
+    const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
+    if (!entry) return false;
+    ST = {
+      id:         entry.id,
+      name:       entry.nome || ST_FALLBACK.name,
+      lat:        entry.lat  || ST_FALLBACK.lat,
+      lon:        entry.lon  || ST_FALLBACK.lon,
+      alt:        entry.quota || ST_FALLBACK.alt,
+      comune:     entry.comune || ST_FALLBACK.comune,
+      githubBase: GITHUB_BASE,
+      csvFiles:   entry.file_dati && entry.file_dati.length ? entry.file_dati : ST_FALLBACK.csvFiles,
+      sensors:    ST_FALLBACK.sensors, // sensori ARPA restano fissi
+    };
+    return true;
+  } catch(e) {
+    console.warn('index.json non disponibile, uso configurazione locale:', e.message);
+    return false;
+  }
+}
 const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
                  '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a','#80cbc4','#ffe082',
@@ -1208,6 +1237,8 @@ async function loadGithubFiles() {
 // ════════════════════════════════════════════
 async function init() {
   const msg=document.getElementById('loadMsg');
+  msg.textContent='Carico configurazione…';
+  await loadSTFromIndex(); // aggiorna ST da index.json se disponibile
   try {
     // 1. Carica CSV storici da GitHub (se esistono)
     msg.textContent='Carico CSV storici da GitHub…';

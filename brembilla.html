@@ -391,26 +391,55 @@ canvas.spark{height:36px;width:100%;}
 'use strict';
 
 // ════════════════════════════════════════════
-// CONFIGURAZIONE STAZIONE
+// CONFIGURAZIONE STAZIONE — caricata da index.json
+// Se index.json non disponibile, usa i valori di fallback qui sotto
 // ════════════════════════════════════════════
-const ST = {
-  id:   'brembilla',
-  name: 'Brembilla',
-  githubBase: 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/',
-  // Lista di file da caricare. Puoi mettere quanti file vuoi — vengono tutti caricati
-  // e fusi automaticamente. Se un file non esiste viene saltato senza errori.
-  // Nomi file liberi, l'unica cosa che conta è il CONTENUTO (colonne riconosciute automaticamente).
-  csvFiles: [
-    'brembilla_precip_storico.xlsx',
-    'brembilla_precip_intensita.xlsx',
-    'brembilla_temp.csv',
-  ],
-  sensors: {
-    PP:  { id: 14499, label: 'Precipitazione', unit: 'mm',  color: '#4fc3f7' },
-    T:   { id: 14500, label: 'Temperatura',    unit: '°C',  color: '#ffb347' },
-  }
+const STATION_ID  = 'brembilla';
+const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+
+// Fallback hardcoded (usato solo se index.json non raggiungibile)
+const ST_FALLBACK = {
+  id:         'brembilla',
+  name:       'Brembilla',
+  lat:        45.8254,
+  lon:        9.6117,
+  alt:        468,
+  comune:     'Brembilla',
+  githubBase: GITHUB_BASE,
+  csvFiles:   ['brembilla_precip.csv','brembilla_temp.csv'],
+  sensors:    {
+    PP:  { id: 14499, label: 'Precipitazione', unit: 'mm', color: '#4fc3f7' },
+    T:   { id: 14500, label: 'Temperatura',    unit: '°C', color: '#ffb347' },
+  },
 };
 
+// ST viene popolato in init() leggendo index.json
+let ST = ST_FALLBACK;
+
+async function loadSTFromIndex() {
+  try {
+    const r = await fetch(GITHUB_BASE + 'index.json');
+    if (!r.ok) return false;
+    const data = await r.json();
+    const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
+    if (!entry) return false;
+    ST = {
+      id:         entry.id,
+      name:       entry.nome || ST_FALLBACK.name,
+      lat:        entry.lat  || ST_FALLBACK.lat,
+      lon:        entry.lon  || ST_FALLBACK.lon,
+      alt:        entry.quota || ST_FALLBACK.alt,
+      comune:     entry.comune || ST_FALLBACK.comune,
+      githubBase: GITHUB_BASE,
+      csvFiles:   entry.file_dati && entry.file_dati.length ? entry.file_dati : ST_FALLBACK.csvFiles,
+      sensors:    ST_FALLBACK.sensors, // sensori ARPA restano fissi
+    };
+    return true;
+  } catch(e) {
+    console.warn('index.json non disponibile, uso configurazione locale:', e.message);
+    return false;
+  }
+}
 const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
                  '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a','#80cbc4','#ffe082',
@@ -1206,6 +1235,8 @@ async function loadGithubFiles() {
 // ════════════════════════════════════════════
 async function init() {
   const msg=document.getElementById('loadMsg');
+  msg.textContent='Carico configurazione…';
+  await loadSTFromIndex(); // aggiorna ST da index.json se disponibile
   try {
     // 1. Carica CSV storici da GitHub (se esistono)
     msg.textContent='Carico CSV storici da GitHub…';
