@@ -507,14 +507,17 @@ function socrataAggregateTemp(rows) {
 // PARSER CSV / EXCEL
 // ════════════════════════════════════════════
 function normalizeDate(s) {
-  s = (s||'').trim().split(' ')[0];
+  s = (s||'').trim().split(' ')[0]; // prendi solo la parte data, ignora orario
+  // YYYY/MM/DD o YYYY-MM-DD
+  if (/^\d{4}[\/-]\d{2}[\/-]\d{2}$/.test(s)) return s.replace(/\//g,'-');
+  // DD/MM/YYYY
   if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
     const [d,m,y]=s.split('/'); return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
   }
+  // DD-MM-YYYY
   if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(s)) {
     const [d,m,y]=s.split('-'); return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
   }
-  if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(s)) return s.replace(/\//g,'-');
   return null;
 }
 
@@ -529,25 +532,30 @@ function parseCSVText(text) {
   const sep = lines[0].includes(';') ? ';' : ',';
   const hdr = lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
 
-  const iD  = findCol(hdr, ['data','date','giorno']);
-  const iV  = findCol(hdr, ['valore','value','mm','precipit','pioggia','rain','prec']);
+  const iD  = findCol(hdr, ['data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
-  const iTn = findCol(hdr, ['tmin','t_min','temp_min','min']);
-  const iTx = findCol(hdr, ['tmax','t_max','temp_max','max']);
-  const iTm = findCol(hdr, ['tmean','tmedia','t_mean','temp_med','media']);
+  const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
+  const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
+  const iTm = findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media']);
 
   const precip={}, intensity={}, temp={};
   for (let i=1; i<lines.length; i++) {
     const c = lines[i].split(sep).map(x=>x.replace(/"/g,'').trim());
     const date = normalizeDate(iD>=0 ? c[iD] : c[0]);
     if (!date) continue;
-    if (iV>=0)  { const v=parseFloat(c[iV].replace(',','.')); if(!isNaN(v)&&v>=0) precip[date]=(precip[date]||0)+v; }
-    if (iIn>=0) { const v=parseFloat(c[iIn].replace(',','.')); if(!isNaN(v)&&v>=0) intensity[date]=v; }
+    const NODATA = -999; // valore sentinella ARPA per dati mancanti
+    if (iV>=0)  { const v=parseFloat(c[iV].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) precip[date]=(precip[date]||0)+v; }
+    if (iIn>=0) { const v=parseFloat(c[iIn].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) intensity[date]=v; }
     if (iTn>=0||iTx>=0||iTm>=0) {
       const tn=iTn>=0?parseFloat(c[iTn].replace(',','.')):null;
       const tx=iTx>=0?parseFloat(c[iTx].replace(',','.')):null;
       const tm=iTm>=0?parseFloat(c[iTm].replace(',','.')):null;
-      temp[date]={tMin:isNaN(tn)?null:tn, tMax:isNaN(tx)?null:tx, tMean:isNaN(tm)?null:tm};
+      // Filtra -999 (dato mancante ARPA)
+      const vtn=tn===NODATA||isNaN(tn)?null:tn;
+      const vtx=tx===NODATA||isNaN(tx)?null:tx;
+      const vtm=tm===NODATA||isNaN(tm)?null:tm;
+      if(vtn!==null||vtx!==null||vtm!==null) temp[date]={tMin:vtn, tMax:vtx, tMean:vtm};
     }
   }
   return {precip, intensity, temp};
@@ -559,12 +567,12 @@ function parseXLSXBuffer(buf) {
   const rows = XLSX.utils.sheet_to_json(ws, {header:1});
   if (!rows.length) return {precip:{},intensity:{},temp:{}};
   const hdr = rows[0].map(h=>String(h||'').toLowerCase().trim());
-  const iD  = findCol(hdr, ['data','date','giorno']);
-  const iV  = findCol(hdr, ['valore','value','mm','precipit','pioggia','prec']);
+  const iD  = findCol(hdr, ['data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
-  const iTn = findCol(hdr, ['tmin','t_min','temp_min','min']);
-  const iTx = findCol(hdr, ['tmax','t_max','temp_max','max']);
-  const iTm = findCol(hdr, ['tmean','tmedia','t_mean','media']);
+  const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
+  const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
+  const iTm = findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media']);
 
   const precip={}, intensity={}, temp={};
   for (let i=1; i<rows.length; i++) {
@@ -577,13 +585,17 @@ function parseXLSXBuffer(buf) {
       date=`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
     } else { date=normalizeDate(String(rawD)); }
     if (!date) continue;
-    if (iV>=0)  { const v=parseFloat(String(row[iV]||0).replace(',','.')); if(!isNaN(v)&&v>=0) precip[date]=(precip[date]||0)+v; }
-    if (iIn>=0) { const v=parseFloat(String(row[iIn]||0).replace(',','.')); if(!isNaN(v)&&v>=0) intensity[date]=v; }
+    const NODATA2 = -999;
+    if (iV>=0)  { const v=parseFloat(String(row[iV]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) precip[date]=(precip[date]||0)+v; }
+    if (iIn>=0) { const v=parseFloat(String(row[iIn]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) intensity[date]=v; }
     if (iTn>=0||iTx>=0||iTm>=0) {
       const tn=iTn>=0?parseFloat(String(row[iTn]||'').replace(',','.'))  :null;
       const tx=iTx>=0?parseFloat(String(row[iTx]||'').replace(',','.'))  :null;
       const tm=iTm>=0?parseFloat(String(row[iTm]||'').replace(',','.'))  :null;
-      temp[date]={tMin:isNaN(tn)?null:tn, tMax:isNaN(tx)?null:tx, tMean:isNaN(tm)?null:tm};
+      const vtn=tn===NODATA2||isNaN(tn)?null:tn;
+      const vtx=tx===NODATA2||isNaN(tx)?null:tx;
+      const vtm=tm===NODATA2||isNaN(tm)?null:tm;
+      if(vtn!==null||vtx!==null||vtm!==null) temp[date]={tMin:vtn, tMax:vtx, tMean:vtm};
     }
   }
   return {precip, intensity, temp};
