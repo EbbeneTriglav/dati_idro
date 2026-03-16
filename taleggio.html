@@ -215,6 +215,15 @@ canvas.spark{height:36px;width:100%;}
       <span id="uploadMsg"></span>
     </div>
     <div id="githubLog" style="margin-top:7px;font-size:11px;font-family:'IBM Plex Mono',monospace;line-height:1.8;"></div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:700;color:var(--muted)">Anni esclusi (malfunzionamento):</span>
+      <input id="forceExcludeInput" type="text"
+        style="background:var(--card2);color:var(--text);border:1px solid var(--border);
+        padding:4px 8px;border-radius:5px;font-size:12px;width:160px;font-family:'IBM Plex Mono',monospace;"
+        placeholder="es. 2004,2005,2007"
+        oninput="applyForceExclude()"/>
+      <span style="font-size:11px;color:var(--muted)">separati da virgola</span>
+    </div>
     <div id="warnYears" class="warn-years" style="display:none"></div>
   </div>
 
@@ -447,10 +456,13 @@ const ST_FALLBACK = {
   alt:        763,
   comune:     'Taleggio',
   githubBase: GITHUB_BASE,
-  csvFiles:   ['taleggio.csv'],  // nome file caricato su GitHub
-  sensors:    {}, // popolato da autodiscovery o da index.json
-  dismessa:   true,  // stazione non più attiva — nessuna chiamata API live
+  csvFiles:   ['taleggio.csv'],
+  sensors:    {},
+  dismessa:   true,
   periodo:    '2004–2012',
+  // Anni da escludere dalle medie — strumento non funzionante
+  // Modificabile anche dall'interfaccia nel box upload
+  forceExclude: [2004, 2005, 2007],
 };
 
 
@@ -518,8 +530,9 @@ async function loadSTFromIndex() {
       githubBase: GITHUB_BASE,
       csvFiles:   entry.file_dati?.length ? entry.file_dati : ST_FALLBACK.csvFiles,
       sensors,
-      dismessa:   entry.dismessa || ST_FALLBACK.dismessa || false,
-      periodo:    entry.periodo  || ST_FALLBACK.periodo  || null,
+      dismessa:     entry.dismessa     || ST_FALLBACK.dismessa     || false,
+      periodo:      entry.periodo      || ST_FALLBACK.periodo      || null,
+      forceExclude: entry.forceExclude || ST_FALLBACK.forceExclude || [],
     };
     return true;
   } catch(e) {
@@ -795,16 +808,19 @@ function buildPpYM() {
     raw[y][m-1]+=mm;
   }
   badYears = new Set();
+
+  // Anni esclusi manualmente (strumento non funzionante)
+  const forced = new Set(ST.forceExclude || []);
+  forced.forEach(y => badYears.add(y));
+
   for (const [y, months] of Object.entries(raw)) {
     const yr = Number(y);
-    // Non escludere mai l'anno corrente o l'anno scorso (dati parziali sono normali)
-    if (yr >= CY - 1) continue;
+    if (forced.has(yr)) continue;          // già escluso manualmente
+    if (yr >= CY - 1) continue;            // anno corrente/scorso: dati parziali ok
     const total = months.reduce((a,b)=>a+b,0);
     if (total===0) { badYears.add(yr); continue; }
-    // Escludi se >=4 mesi a zero E non sono tutti nei mesi estivi (lug-ago-set)
     const nonSummerZeros = [0,1,2,3,4,9,10,11].filter(m=>months[m]===0).length;
     if (nonSummerZeros>=4) { badYears.add(yr); continue; }
-    // 3+ mesi consecutivi a zero (escludi se sono solo estivi)
     let consec=0, maxConsec=0;
     for (const v of months) { if(v===0){consec++;maxConsec=Math.max(maxConsec,consec);}else consec=0; }
     if (maxConsec>=4) { badYears.add(yr); }
@@ -1486,6 +1502,13 @@ function dlTableData() {
 // ════════════════════════════════════════════
 // FILE UPLOAD
 // ════════════════════════════════════════════
+function applyForceExclude() {
+  const raw = document.getElementById('forceExcludeInput').value;
+  const years = raw.split(/[,;\s]+/).map(Number).filter(y => y > 1900 && y < 2100);
+  ST.forceExclude = years;
+  renderAll();
+}
+
 document.getElementById('fileIn').addEventListener('change', async e => {
   const files=[...e.target.files]; if(!files.length)return;
   const msg=document.getElementById('uploadMsg');
@@ -1621,6 +1644,9 @@ async function init() {
     console.log('Avvio renderAll. ppByDate:', Object.keys(ppByDate).length, 'giorni');
     // Yielda al browser prima di renderizzare (evita freeze UI)
     await new Promise(r => setTimeout(r, 0));
+    // Precompila campo anni esclusi
+    const feInput = document.getElementById('forceExcludeInput');
+    if (feInput && ST.forceExclude?.length) feInput.value = ST.forceExclude.join(', ');
     try { renderAll(); } catch(re) { console.error('renderAll error:', re); }
     await new Promise(r => setTimeout(r, 0));
     try { renderSensorCards(); } catch(re) { console.error('renderSensorCards error:', re); }
