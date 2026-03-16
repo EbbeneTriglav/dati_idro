@@ -139,27 +139,6 @@
       "note": "Rete SIMN storica, alta Val Brembana"
     },
     {
-      "id": "brembilla_storica",
-      "nome": "Brembilla (storica SIMN)",
-      "lat": 45.8254,
-      "lon": 9.6117,
-      "quota": 468,
-      "comune": "Brembilla",
-      "rete": "SIMN",
-      "colore": "#a5d6a7",
-      "pagina": "stazione.html?id=brembilla_storica",
-      "dismessa": true,
-      "periodo": "1974–1991",
-      "sensori_arpa": {},
-      "file_dati": [
-        "brembilla_storica.csv"
-      ],
-      "forceExclude": [
-        1982
-      ],
-      "note": "Stessa posizione della stazione ARPA attuale — usare insieme a brembilla per serie lunga"
-    },
-    {
       "id": "zogno",
       "nome": "Zogno",
       "lat": 45.7935,
@@ -189,7 +168,7 @@
       "nome": "San Giovanni Bianco (storica)",
       "lat": 45.8684,
       "lon": 9.6558,
-      "quota": 330,
+      "quota": 410,
       "comune": "San Giovanni Bianco",
       "rete": "SIMN",
       "colore": "#ce93d8",
