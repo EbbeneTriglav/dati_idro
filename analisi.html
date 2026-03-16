@@ -236,12 +236,17 @@ function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
 // ── Stazioni disponibili per analisi
 const STAZIONI_META = [
-  { id:'cornalita', nome:'Cornalita',   quota:622,  colore:'#4fc3f7' },
-  { id:'brembilla', nome:'Brembilla',   quota:468,  colore:'#4caf82' },
-  { id:'taleggio',  nome:'Taleggio',    quota:763,  colore:'#81c784' },
-  { id:'piazzacava',nome:'Piazzacava',  quota:506,  colore:'#ffb347' },
-  { id:'pracastello',nome:'Pracastello',quota:375,  colore:'#f06292' },
-  { id:'vettarola', nome:'Vettarola',   quota:993,  colore:'#b39ddb' },
+  // Stazioni ARPA attive
+  { id:'cornalita',               nome:'Cornalita',              quota:622,  colore:'#4fc3f7' },
+  { id:'brembilla',               nome:'Brembilla',              quota:468,  colore:'#4caf82' },
+  { id:'taleggio',                nome:'Taleggio',               quota:763,  colore:'#81c784' },
+  { id:'piazzacava',              nome:'Piazzacava',             quota:506,  colore:'#ffb347' },
+  { id:'pracastello',             nome:'Pracastello',            quota:375,  colore:'#f06292' },
+  { id:'vettarola',               nome:'Vettarola',              quota:993,  colore:'#b39ddb' },
+  // Stazioni SIMN storiche
+  { id:'valtorta',                nome:'Valtorta',               quota:946,  colore:'#4dd0e1' },
+  { id:'sangiovannibianco_storico',nome:'S. Giovanni Bianco (st.)',quota:330, colore:'#ce93d8' },
+  { id:'zogno',                   nome:'Zogno',                  quota:334,  colore:'#ffcc02' },
 ];
 
 // Dati caricati per stazione: { id → { ppByDate, ppYM, intByDate } }
