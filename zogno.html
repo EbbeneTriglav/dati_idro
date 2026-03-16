@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8"/>
-<title id="pageTitle">Stazione Meteo</title>
+<title>Zogno</title>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -139,6 +139,14 @@ input[type=date]{background:var(--card2);color:var(--text);border:1px solid var(
 canvas.spark{height:36px;width:100%;}
 
 .note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;}
+.dec-btn{padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;
+  font-family:'IBM Plex Mono',monospace;}
+.dec-btn.on{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.hm-tot{width:56px;text-align:center;font-size:10px;color:var(--muted);font-weight:700;}
+.hm-totcell{width:56px;height:30px;border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.65);}
 
 /* Download modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:998;
@@ -155,16 +163,6 @@ canvas.spark{height:36px;width:100%;}
 .modal-btns{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;}
 .btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}
 .btn-primary:hover{background:#81d4fa;}
-
-.dec-btn{padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;
-  border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;
-  font-family:'IBM Plex Mono',monospace;}
-.hm-tot{width:56px;text-align:center;font-size:10px;color:var(--muted);font-weight:700;}
-.hm-totcell{width:56px;height:30px;border-radius:3px;display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.65);}
-
-/* Download modal */
 </style>
 </head>
 <body>
@@ -176,12 +174,15 @@ canvas.spark{height:36px;width:100%;}
 
 <header>
   <div>
-    <h1 id="hdrTitle">📡 Stazione Meteo</h1>
-    <div class="sub" id="hdrSub">caricamento…</div>
+    <h1>📡 Zogno</h1>
+    <div class="sub" id="hdrSub">45.7935°N 9.6697°E · 334 m s.l.m. · BG · <span style="color:var(--orange)">Stazione dismessa 1974–2002</span></div>
   </div>
   <div class="hdr-btns">
     <button class="btn btn-green" onclick="openDlModal()">⬇ Scarica dati</button>
     <a href="index.html" class="btn btn-outline">← Mappa</a>
+    <a href="cornalita.html" class="btn btn-outline">Cornalita →</a>
+    <a href="brembilla.html" class="btn btn-outline">Brembilla →</a>
+    <a href="analisi.html" class="btn btn-outline">🔬 Analisi</a>
   </div>
 </header>
 
@@ -203,10 +204,10 @@ canvas.spark{height:36px;width:100%;}
     <h3>📂 Carica dati storici (CSV / Excel)</h3>
     <p>
       Scarica i dati dal <a href="https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati/" target="_blank" style="color:var(--accent)">portale ARPA</a>
-      e caricali qui. Per caricarli in modo permanente, mettili su GitHub nella cartella <code style="color:var(--accent)">dati/</code>
-      con il nome <code style="color:var(--accent)" id="csvHint">…</code> —
-      così si caricano automaticamente ad ogni refresh.<br>
-      Accetta: <b>CSV precipitazioni</b> · <b>CSV intensità max oraria</b> · <b>Excel</b> (precip + intensità + temp min/media/max).
+      e caricali qui. Poi <b>carica lo stesso file su GitHub</b> nella cartella <code style="color:var(--accent)">dati/</code>
+      con il nome <code style="color:var(--accent)">cornalita_precip.csv</code> (o <code>cornalita_intensity.csv</code>) —
+      così si carica automaticamente al prossimo refresh.<br>
+      Accetta: <b>CSV precipitazioni</b> · <b>CSV intensità max oraria</b> · <b>Excel multi-colonna</b> (precip + intensità + temp min/media/max).
     </p>
     <div class="upload-row">
       <label for="fileIn" class="upload-btn">📁 Seleziona file</label>
@@ -214,6 +215,15 @@ canvas.spark{height:36px;width:100%;}
       <span id="uploadMsg"></span>
     </div>
     <div id="githubLog" style="margin-top:7px;font-size:11px;font-family:'IBM Plex Mono',monospace;line-height:1.8;"></div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:700;color:var(--muted)">Anni esclusi (malfunzionamento):</span>
+      <input id="forceExcludeInput" type="text"
+        style="background:var(--card2);color:var(--text);border:1px solid var(--border);
+        padding:4px 8px;border-radius:5px;font-size:12px;width:160px;font-family:'IBM Plex Mono',monospace;"
+        placeholder="es. 2004,2005,2007"
+        oninput="applyForceExclude()"/>
+      <span style="font-size:11px;color:var(--muted)">separati da virgola</span>
+    </div>
     <div id="warnYears" class="warn-years" style="display:none"></div>
   </div>
 
@@ -274,6 +284,7 @@ canvas.spark{height:36px;width:100%;}
         <label>Spessore:</label>
         <select id="cumuThick"><option value="1.5">Sottile</option><option value="2.5" selected>Normale</option><option value="4">Spesso</option></select>
       </div>
+      <!-- Selezione per decennio -->
       <div class="ctrls" style="flex-wrap:wrap;gap:6px;margin-bottom:6px;">
         <label>Decennio:</label>
         <div id="decadeBar" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
@@ -351,8 +362,28 @@ canvas.spark{height:36px;width:100%;}
       <div class="ch-wrap" style="height:280px"><canvas id="cEvt"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">🏆 Top 20 eventi precipitazione</div>
+      <div class="card-title">🏆 Top 20 eventi — 1 giorno</div>
       <div class="tbl-wrap" id="topPrecTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌊 Top 20 eventi — 2 giorni consecutivi</div>
+      <div class="tbl-wrap" id="top2dTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌊 Top 20 eventi — 3 giorni consecutivi</div>
+      <div class="tbl-wrap" id="top3dTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Massimi plurigiornalieri per anno</div>
+      <div class="ctrls">
+        <label>Finestra:</label>
+        <select id="multiDayWin">
+          <option value="1">1 giorno</option>
+          <option value="2" selected>2 giorni</option>
+          <option value="3">3 giorni</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMultiDay"></canvas></div>
     </div>
   </div>
 
@@ -411,82 +442,133 @@ canvas.spark{height:36px;width:100%;}
 'use strict';
 
 // ════════════════════════════════════════════
-// CONFIGURAZIONE STAZIONE — letta da URL + localStorage
+// CONFIGURAZIONE STAZIONE — Taleggio
+// I sensori vengono auto-rilevati dall'API se non già noti
 // ════════════════════════════════════════════
+const STATION_ID  = 'zogno';
 const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
 
-function loadStationConfig(jsonData) {
-  const params = new URLSearchParams(window.location.search);
-  const stId = params.get('id');
-  if (!stId) return null;
+const ST_FALLBACK = {
+  id:         'taleggio',
+  name:       'Zogno',
+  lat:        45.7935,
+  lon:        9.6697,
+  alt:        334,
+  comune:     'Zogno',
+  githubBase: GITHUB_BASE,
+  csvFiles:   ['zogno_precip.csv'],
+  sensors:    {},
+  dismessa:   true,
+  periodo:    '1974–2002',
+  // Anni da escludere dalle medie — strumento non funzionante
+  // Modificabile anche dall'interfaccia nel box upload
+  forceExclude: [1973,1980,1982,1995,2001],
+};
 
-  let stData = null;
-  // 1. Cerca in index.json passato come argomento
-  if (jsonData && Array.isArray(jsonData)) {
-    stData = jsonData.find(s => s.id === stId) || null;
+
+// Auto-discovery sensori da API Socrata se non presenti in index.json
+async function discoverSensors(stId) {
+  try {
+    const url = `https://www.dati.lombardia.it/resource/nf78-nj6b.json?$where=${encodeURIComponent("idstazione='" + stId + "'")}&$limit=50`;
+    const r = await fetch(url);
+    if (!r.ok) return {};
+    const rows = await r.json();
+    const SENSOR_TYPES = {
+      PP: ['Precipitazione','Precipit','Pioggia'],
+      T:  ['Temperatura'],
+      UR: ['Umidità','Umidita','Umidit'],
+      VV: ['Vento','Velocità vento'],
+      DV: ['Direzione vento'],
+      RG: ['Radiazione'],
+      NV: ['Neve','Altezza neve'],
+      H:  ['Idrometrico','Livello idrometrico'],
+    };
+    const found = {};
+    for (const row of rows) {
+      const tipo = (row.tiposensore || '').toLowerCase();
+      const sid  = row.idsensore;
+      if (!sid) continue;
+      for (const [key, kws] of Object.entries(SENSOR_TYPES)) {
+        if (!found[key] && kws.some(kw => tipo.includes(kw.toLowerCase()))) {
+          found[key] = { id: Number(sid), label: kws[0], unit: row.unitamisura||'', color: '#4fc3f7' };
+        }
+      }
+    }
+    console.log('Sensori scoperti per stazione', stId, ':', found);
+    return found;
+  } catch(e) {
+    console.warn('Auto-discovery sensori fallita:', e.message);
+    return {};
   }
-  // 2. Cerca in localStorage (stazioni custom aggiunte da index.html)
-  if (!stData) {
-    try {
-      const custom = JSON.parse(
-        localStorage.getItem('customStazioni') ||
-        localStorage.getItem('customStations') || '[]'
-      );
-      stData = custom.find(s => s.id === stId) || null;
-    } catch(e) {}
-  }
-  if (!stData) return null;
-
-  const nome = stData.nome || stData.name || stId;
-  const safeName = nome.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-
-  // file_dati da index.json ha precedenza, altrimenti nomi automatici
-  const csvFiles = (stData.file_dati && stData.file_dati.length)
-    ? stData.file_dati
-    : [
-        `${safeName}_suborario.csv`,
-        `${safeName}_precip.xlsx`,
-        `${safeName}_precip.csv`,
-        `${safeName}_intensita.xlsx`,
-        `${safeName}_intensita.csv`,
-        `${safeName}_temp.csv`,
-      ];
-
-  const rawSensors = stData.sensori_arpa || stData.sensors || {};
-
-  return {
-    id:         stId,
-    name:       nome,
-    lat:        stData.lat,
-    lon:        stData.lon,
-    alt:        stData.quota || stData.alt,
-    comune:     stData.comune || '',
-    githubBase: GITHUB_BASE,
-    csvFiles,
-    sensors:    buildSensors(rawSensors),
-    dismessa:     stData.dismessa     || false,
-    periodo:      stData.periodo      || null,
-    forceExclude: stData.forceExclude || [],
-  };
-}
-function buildSensors(rawSensors) {
-  const defaults = {
-    PP: { label:'Precipitazione', unit:'mm',  color:'#4fc3f7' },
-    T:  { label:'Temperatura',    unit:'°C',  color:'#ffb347' },
-    UR: { label:'Umidità',        unit:'%',   color:'#4caf82' },
-    VV: { label:'Vento',          unit:'m/s', color:'#b39ddb' },
-  };
-  const out = {};
-  for (const [k, v] of Object.entries(rawSensors)) {
-    if (v && v.id) out[k] = { id: v.id, ...(defaults[k] || { label:k, unit:'', color:'#b39ddb' }) };
-  }
-  return out;
 }
 
-// ST viene inizializzato in init() dopo aver caricato index.json
-let ST = { id:'unknown', name:'Stazione non trovata', githubBase:GITHUB_BASE, csvFiles:[], sensors:{} };
+async function loadSTFromIndex() {
+  try {
+    const r = await fetch(GITHUB_BASE + 'index.json');
+    if (!r.ok) return false;
+    const data = await r.json();
+    const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
+    if (!entry) return false;
+    console.log('Configurazione trovata in index.json:', entry);
+
+    // Ricostruisci sensors da sensori_arpa in index.json
+    const COLORS = { PP:'#4fc3f7', T:'#ffb347', UR:'#4caf82', VV:'#b39ddb', H:'#f06292' };
+    const LABELS = { PP:'Precipitazione', T:'Temperatura', UR:'Umidità', VV:'Vento', H:'Idrometrico' };
+    const UNITS  = { PP:'mm', T:'°C', UR:'%', VV:'m/s', H:'m' };
+    const sensors = {};
+    for (const [k,v] of Object.entries(entry.sensori_arpa || {})) {
+      if (v) sensors[k] = { id: Number(v), label: LABELS[k]||k, unit: UNITS[k]||'', color: COLORS[k]||'#4fc3f7' };
+    }
+
+    ST = {
+      id:         entry.id,
+      name:       entry.nome || ST_FALLBACK.name,
+      lat:        entry.lat  || ST_FALLBACK.lat,
+      lon:        entry.lon  || ST_FALLBACK.lon,
+      alt:        entry.quota || ST_FALLBACK.alt,
+      comune:     entry.comune || ST_FALLBACK.comune,
+      githubBase: GITHUB_BASE,
+      csvFiles:   entry.file_dati?.length ? entry.file_dati : ST_FALLBACK.csvFiles,
+      sensors,
+      dismessa:     entry.dismessa     || ST_FALLBACK.dismessa     || false,
+      periodo:      entry.periodo      || ST_FALLBACK.periodo      || null,
+      forceExclude: entry.forceExclude || ST_FALLBACK.forceExclude || [],
+    };
+    return true;
+  } catch(e) {
+    console.warn('index.json non disponibile:', e.message);
+    return false;
+  }
+}
+
+// ST viene popolato in init() leggendo index.json
+let ST = ST_FALLBACK;
+
+async function loadSTFromIndex() {
+  try {
+    const r = await fetch(GITHUB_BASE + 'index.json');
+    if (!r.ok) return false;
+    const data = await r.json();
+    const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
+    if (!entry) return false;
+    console.log('Configurazione trovata in index.json:', entry);
+    ST = {
+      id:         entry.id,
+      name:       entry.nome || ST_FALLBACK.name,
+      lat:        entry.lat  || ST_FALLBACK.lat,
+      lon:        entry.lon  || ST_FALLBACK.lon,
+      alt:        entry.quota || ST_FALLBACK.alt,
+      comune:     entry.comune || ST_FALLBACK.comune,
+      githubBase: GITHUB_BASE,
+      csvFiles:   entry.file_dati && entry.file_dati.length ? entry.file_dati : ST_FALLBACK.csvFiles,
+      sensors:    ST_FALLBACK.sensors, // sensori ARPA restano fissi
+    };
+    return true;
+  } catch(e) {
+    console.warn('index.json non disponibile, uso configurazione locale:', e.message);
+    return false;
+  }
+}
 const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
                  '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a','#80cbc4','#ffe082',
@@ -575,103 +657,6 @@ function socrataAggregateTemp(rows) {
     };
   }
   return out;
-}
-
-
-// ════════════════════════════════════════════
-// PARSER FORMATO SUB-ORARIO (es. portale bacino)
-// Intestazione: Time, TEMPERATURA ... (ZPxxx), PRECIPITAZIONI ... (ZPxxx), INTENSITA PIOGGIA ... (ZPxxx)
-// Step: 10 minuti — aggregazione a giornaliero
-// ════════════════════════════════════════════
-function parseSuborario(text) {
-  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) return { precip:{}, intensity:{}, temp:{} };
-
-  const sep = ',';
-  const hdr = lines[0].split(sep).map(h => h.replace(/"/g,'').trim().toLowerCase());
-
-  // Individua colonne per parole chiave nei nomi lunghi
-  const iTime = hdr.findIndex(h => h === 'time' || h === 'data');
-  const iT    = hdr.findIndex(h => h.includes('temperatura'));
-  const iPP   = hdr.findIndex(h => h.includes('precipit'));
-  const iInt  = hdr.findIndex(h => h.includes('intensit'));
-
-  if (iTime < 0 || iPP < 0) return { precip:{}, intensity:{}, temp:{} };
-
-  // Aggrega per giorno
-  const ppByDay   = {};  // date → mm totali
-  const intByDay  = {};  // date → max mm/h registrato
-  const tByDay    = {};  // date → array °C
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(sep).map(c => c.replace(/"/g,'').trim());
-    const ts   = cols[iTime] || '';
-    const date = ts.slice(0,10);
-    if (!date || date.length < 10) continue;
-
-    // Precipitazione: somma mm/10min
-    if (iPP >= 0) {
-      const v = parseFloat(cols[iPP]);
-      if (!isNaN(v) && v >= 0) ppByDay[date] = (ppByDay[date] || 0) + v;
-    }
-
-    // Intensità: già in mm/h — prendi il massimo del giorno
-    if (iInt >= 0) {
-      const v = parseFloat(cols[iInt]);
-      if (!isNaN(v) && v > 0) {
-        if (intByDay[date] === undefined || v > intByDay[date]) intByDay[date] = v;
-      }
-    }
-
-    // Se non c'è colonna intensità, calcolala come max orario dai PP:
-    // raggruppa per ora, somma, poi moltiplica ×6 per avere mm/h
-    if (iInt < 0 && iPP >= 0) {
-      const v = parseFloat(cols[iPP]);
-      if (!isNaN(v) && v >= 0) {
-        const hour = ts.slice(0,13); // "YYYY-MM-DD HH"
-        if (!intByDay['_h_' + hour]) intByDay['_h_' + hour] = 0;
-        intByDay['_h_' + hour] += v;
-      }
-    }
-
-    // Temperatura: raccoglie tutti i valori del giorno
-    if (iT >= 0) {
-      const v = parseFloat(cols[iT]);
-      if (!isNaN(v)) {
-        if (!tByDay[date]) tByDay[date] = [];
-        tByDay[date].push(v);
-      }
-    }
-  }
-
-  // Se intensità calcolata dagli step orari: prendi il max orario per giorno
-  const intensity = {};
-  for (const [k, v] of Object.entries(intByDay)) {
-    if (k.startsWith('_h_')) {
-      // k = "_h_YYYY-MM-DD HH"
-      const date = k.slice(3, 13);
-      const mmh  = Math.round(v * 6 * 10) / 10; // mm/10min × 6 = mm/h
-      if (!intensity[date] || mmh > intensity[date]) intensity[date] = mmh;
-    } else {
-      intensity[k] = Math.round(v * 10) / 10;
-    }
-  }
-
-  // Temperatura: min/media/max per giorno
-  const temp = {};
-  for (const [d, vals] of Object.entries(tByDay)) {
-    temp[d] = {
-      tMin:  Math.round(Math.min(...vals) * 10) / 10,
-      tMax:  Math.round(Math.max(...vals) * 10) / 10,
-      tMean: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length * 10) / 10,
-    };
-  }
-
-  // Arrotonda precipitazioni
-  const precip = {};
-  for (const [d,v] of Object.entries(ppByDay)) precip[d] = Math.round(v*10)/10;
-
-  return { precip, intensity, temp };
 }
 
 // ════════════════════════════════════════════
@@ -826,7 +811,6 @@ function mergeData(parsed, srcTag) {
 // FILTRA ANNI INVALIDI
 // ════════════════════════════════════════════
 function buildPpYM() {
-  const forced = new Set(ST.forceExclude || []);
   const raw = {};
   for (const [d,mm] of Object.entries(ppByDate)) {
     const [y,m]=d.split('-').map(Number);
@@ -834,17 +818,19 @@ function buildPpYM() {
     raw[y][m-1]+=mm;
   }
   badYears = new Set();
+
+  // Anni esclusi manualmente (strumento non funzionante)
+  const forced = new Set(ST.forceExclude || []);
+  forced.forEach(y => badYears.add(y));
+
   for (const [y, months] of Object.entries(raw)) {
     const yr = Number(y);
-    // Non escludere mai l'anno corrente o l'anno scorso (dati parziali sono normali)
-    if (forced.has(yr)) { badYears.add(yr); continue; }
-    if (yr >= CY - 1) continue;
+    if (forced.has(yr)) continue;          // già escluso manualmente
+    if (yr >= CY - 1) continue;            // anno corrente/scorso: dati parziali ok
     const total = months.reduce((a,b)=>a+b,0);
     if (total===0) { badYears.add(yr); continue; }
-    // Escludi se >=4 mesi a zero E non sono tutti nei mesi estivi (lug-ago-set)
     const nonSummerZeros = [0,1,2,3,4,9,10,11].filter(m=>months[m]===0).length;
     if (nonSummerZeros>=4) { badYears.add(yr); continue; }
-    // 3+ mesi consecutivi a zero (escludi se sono solo estivi)
     let consec=0, maxConsec=0;
     for (const v of months) { if(v===0){consec++;maxConsec=Math.max(maxConsec,consec);}else consec=0; }
     if (maxConsec>=4) { badYears.add(yr); }
@@ -875,7 +861,9 @@ function renderKPI() {
 
   const vYears = Object.keys(ppYM).map(Number);
   const annuals = vYears.map(y=>Object.entries(ppByDate).filter(([d])=>d.startsWith(y)).reduce((a,[,v])=>a+v,0));
-  document.getElementById('kMean').textContent = f(annuals.length?annuals.reduce((a,b)=>a+b)/annuals.length:0,0)+' mm';
+  // Escludi anno corrente dalle medie storiche
+  const histAnnuals = annuals.filter((_,i)=>vYears[i]<CY);
+  document.getElementById('kMean').textContent = f(histAnnuals.length?histAnnuals.reduce((a,b)=>a+b)/histAnnuals.length:0,0)+' mm';
 
   const [mxD,mxV] = sorted.sort(([,a],[,b])=>b-a)[0]||['—',0];
   document.getElementById('kMaxD').textContent  = f(mxV,1)+' mm';
@@ -887,7 +875,7 @@ function renderKPI() {
     document.getElementById('kMaxID').textContent = intSorted[0][0];
   }
 
-  const wetPY = vYears.map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(y)&&v>=0.1).length);
+  const wetPY = vYears.filter(y=>y<CY).map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(y)&&v>=0.1).length);
   document.getElementById('kWet').textContent = f(wetPY.length?wetPY.reduce((a,b)=>a+b)/wetPY.length:0,0);
 
   // status bar
@@ -970,19 +958,22 @@ function renderT30() {
 // ── Sensor cards
 async function renderSensorCards() {
   const grid=document.getElementById('sensorGrid'); grid.innerHTML='';
+  // Stazione dismessa: niente sensor cards live, mostra solo nota
   if (ST.dismessa) {
     grid.innerHTML=`<div style="grid-column:1/-1;padding:12px;color:var(--orange);
       font-size:13px;font-family:'IBM Plex Mono',monospace;">
-      ⚠ Stazione non più attiva${ST.periodo?' ('+ST.periodo+')':''} — dati live non disponibili.</div>`;
+      ⚠ Stazione non più attiva${ST.periodo?' ('+ST.periodo+')':''} —
+      dati live non disponibili. Le elaborazioni usano solo i dati storici caricati.</div>`;
     return;
   }
   for (const [k,s] of Object.entries(ST.sensors)) {
-    const c=document.createElement('div'); c.className='sc';
-    c.innerHTML=`<div class="sc-top"><div class="sc-name">${s.label}</div><div class="sc-unit">${s.unit}</div></div>
+    const card=document.createElement('div'); card.className='sc';
+    card.innerHTML=`
+      <div class="sc-top"><div class="sc-name">${s.label}</div><div class="sc-unit">${s.unit}</div></div>
       <div class="sc-val" id="sv${s.id}" style="color:${s.color}">…</div>
       <div class="sc-time" id="st${s.id}">caricamento…</div>
-      <canvas class="spark" id="sp${s.id}"></canvas>`;
-    grid.appendChild(c);
+      <div style="position:relative;height:52px;margin-top:6px"><canvas id="sp${s.id}"></canvas></div>`;
+    grid.appendChild(card);
     (async()=>{
       try {
         const rows=await socrataFetch(s.id,200);
@@ -991,12 +982,39 @@ async function renderSensorCards() {
         const v=parseFloat(rows[0].valore??0);
         document.getElementById('sv'+s.id).textContent=`${f(v,1)} ${s.unit}`;
         document.getElementById('st'+s.id).textContent=(rows[0].data||'').slice(0,16).replace('T',' ');
-        const spark=rows.slice(0,48).reverse();
-        new Chart(document.getElementById('sp'+s.id),{type:'line',
-          data:{labels:spark.map(_=>''),datasets:[{data:spark.map(r=>parseFloat(r.valore??0)),
-            borderColor:s.color,borderWidth:1.5,pointRadius:0,fill:false,tension:.3}]},
-          options:{animation:false,scales:{x:{display:false},y:{display:false}},
-                   plugins:{legend:{display:false},tooltip:{enabled:false}},responsive:false}
+        const spark=rows.slice(0,72).reverse();
+        const lbl=spark.map(r=>(r.data||'').slice(0,16).replace('T',' '));
+        const unit=s.unit;
+        new Chart(document.getElementById('sp'+s.id),{
+          type:'line',
+          data:{
+            labels:lbl,
+            datasets:[{
+              data:spark.map(r=>parseFloat(r.valore??0)),
+              borderColor:s.color,backgroundColor:s.color+'22',
+              borderWidth:1.5,pointRadius:0,pointHoverRadius:4,
+              pointHoverBackgroundColor:s.color,
+              fill:true,tension:.3
+            }]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            scales:{x:{display:false},y:{display:false,grace:'10%'}},
+            plugins:{
+              legend:{display:false},
+              tooltip:{
+                backgroundColor:'rgba(15,25,45,.92)',
+                titleColor:'#7a94b8',bodyColor:'#e3eaf8',
+                borderColor:'#1e3050',borderWidth:1,
+                padding:8,
+                callbacks:{
+                  title:i=>i[0]?.label||'',
+                  label:i=>`${f(i.raw,1)} ${unit}`
+                }
+              }
+            }
+          }
         });
       } catch(e) { const el=document.getElementById('sv'+s.id);if(el)el.textContent='n/d'; }
     })();
@@ -1004,26 +1022,6 @@ async function renderSensorCards() {
 }
 
 // ── Cumulate
-function applyCustomYears() {
-  const raw=document.getElementById('cumuYrsInput').value;
-  const wanted=raw.split(/[,;\s]+/).map(Number).filter(n=>n>1900&&n<2100);
-  if (!wanted.length) return;
-  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>{
-    b.classList.toggle('on', wanted.includes(Number(b.dataset.y)));
-  });
-  renderCumulate();
-}
-
-function selectAllYears() {
-  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.add('on'));
-  renderCumulate();
-}
-
-function clearAllYears() {
-  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.remove('on'));
-  renderCumulate();
-}
-
 function buildYrBar() {
   const bar=document.getElementById('yrBar'); bar.innerHTML='';
   const years=Object.keys(ppYM).map(Number).sort();
@@ -1068,6 +1066,25 @@ function selectDecade(dec, single=0) {
   renderCumulate();
 }
 
+function selectAllYears() {
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.add('on'));
+  renderCumulate();
+}
+
+function clearAllYears() {
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.remove('on'));
+  renderCumulate();
+}
+
+function applyCustomYears() {
+  const raw=document.getElementById('cumuYrsInput').value;
+  const wanted=raw.split(/[,;\s]+/).map(Number).filter(n=>n>1900&&n<2100);
+  if (!wanted.length) return;
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>{
+    b.classList.toggle('on', wanted.includes(Number(b.dataset.y)));
+  });
+  renderCumulate();
+}
 
 function renderCumulate() {
   const norm=document.getElementById('cumuNorm').value==='1';
@@ -1123,7 +1140,6 @@ function mmColor(v,mx) {
   }
   return '#c40000';
 }
-
 
 function renderHeatmap() {
   const scOpt=document.getElementById('hmScale').value;
@@ -1189,11 +1205,12 @@ function renderHeatmap() {
 
   document.getElementById('hmContainer').innerHTML=h;
 }
+
 // ── Mensile
 function renderMensile() {
   const years=Object.keys(ppYM).map(Number);
   const stats=MONTHS.map((_,m)=>{
-    const vs=years.map(y=>ppYM[y]?.[m]??null).filter(v=>v!==null);
+    const vs=years.filter(y=>y<CY).map(y=>ppYM[y]?.[m]??null).filter(v=>v!==null); // escludi anno corrente
     if (!vs.length) return{mean:0,min:0,max:0};
     const mean=vs.reduce((a,b)=>a+b)/vs.length;
     return{mean,min:Math.min(...vs),max:Math.max(...vs)};
@@ -1271,10 +1288,46 @@ function renderIntHist() {
   document.getElementById('topIntTbl').innerHTML=h+'</tbody></table>';
 }
 
+// ── Calcolo sliding window (cumulate N giorni consecutivi)
+function computeSliding(n) {
+  const sorted=Object.entries(ppByDate).sort(([a],[b])=>a.localeCompare(b));
+  if (sorted.length<n) return [];
+  const results=[];
+  for (let i=0;i<=sorted.length-n;i++) {
+    // Verifica che i giorni siano consecutivi
+    let consec=true, tot=0;
+    for (let j=0;j<n;j++) {
+      const [d,v]=sorted[i+j];
+      if (j>0) {
+        const prev=new Date(sorted[i+j-1][0]);
+        const cur=new Date(d);
+        if ((cur-prev)/86400000>1.5) { consec=false; break; }
+      }
+      tot+=v;
+    }
+    if (consec && tot>0) results.push({ date:sorted[i][0], end:sorted[i+n-1][0], tot:Math.round(tot*10)/10 });
+  }
+  return results.sort((a,b)=>b.tot-a.tot);
+}
+
+function makeTopTable(data, cols) {
+  const med=['🥇','🥈','🥉'];
+  let h=`<table class="dtbl"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  data.slice(0,20).forEach((row,i)=>{
+    const color=i===0?'var(--red)':i<3?'var(--orange)':'var(--text)';
+    h+=`<tr><td>${med[i]||i+1}</td>`;
+    h+=row.cells.map((v,ci)=>`<td style="${ci===row.highlight?`color:${color};font-weight:700`:''}">${v}</td>`).join('');
+    h+='</tr>';
+  });
+  return h+'</tbody></table>';
+}
+
 // ── Estremi
 function renderEventi() {
   const thresh=Number(document.getElementById('evtThresh').value);
   const years=Object.keys(ppYM).map(Number).sort();
+
+  // Grafico giorni sopra soglia
   dc('cEvt');
   charts['cEvt']=new Chart(document.getElementById('cEvt'),{
     type:'bar',data:{labels:years,
@@ -1285,11 +1338,51 @@ function renderEventi() {
       scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'N°',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
       plugins:{legend:{labels:{color:'#e3eaf8'}}}}
   });
-  const top20=Object.entries(ppByDate).sort(([,a],[,b])=>b-a).slice(0,20);
-  const med=['🥇','🥈','🥉'];
-  let h=`<table class="dtbl"><thead><tr><th>#</th><th>Data</th><th>mm</th></tr></thead><tbody>`;
-  top20.forEach(([d,v],i)=>h+=`<tr><td>${med[i]||i+1}</td><td>${d}</td><td style="color:${i===0?'var(--red)':i<3?'var(--orange)':'var(--text)'};font-weight:700">${f(v,1)}</td></tr>`);
-  document.getElementById('topPrecTbl').innerHTML=h+'</tbody></table>';
+
+  // Top 20 — 1 giorno
+  const top1=Object.entries(ppByDate).sort(([,a],[,b])=>b-a);
+  document.getElementById('topPrecTbl').innerHTML=makeTopTable(
+    top1.map(([d,v])=>({cells:[d,f(v,1)+' mm'],highlight:1})),
+    ['#','Data','mm']
+  );
+
+  // Top 20 — 2 giorni
+  const sl2=computeSliding(2);
+  document.getElementById('top2dTbl').innerHTML=makeTopTable(
+    sl2.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
+    ['#','Periodo','mm']
+  );
+
+  // Top 20 — 3 giorni
+  const sl3=computeSliding(3);
+  document.getElementById('top3dTbl').innerHTML=makeTopTable(
+    sl3.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
+    ['#','Periodo','mm']
+  );
+
+  // Grafico max plurigiornalieri per anno
+  renderMultiDay();
+}
+
+function renderMultiDay() {
+  const win=Number(document.getElementById('multiDayWin').value);
+  const years=Object.keys(ppYM).map(Number).sort();
+  const slAll=computeSliding(win);
+  const data=years.map(y=>{
+    const hits=slAll.filter(r=>r.date.startsWith(y));
+    return hits.length?hits[0].tot:null;
+  });
+  dc('cMultiDay');
+  charts['cMultiDay']=new Chart(document.getElementById('cMultiDay'),{
+    type:'bar',data:{labels:years,datasets:[{
+      label:`Max ${win} giorni consecutivi (mm)`,data,
+      backgroundColor:'rgba(240,98,146,.55)',borderColor:'#f06292',borderWidth:1.5,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}},
+               tooltip:{callbacks:{label:i=>i.raw!=null?`${f(i.raw,1)} mm`:'n.d.'}}}}
+  });
 }
 
 // ── Tabella
@@ -1352,7 +1445,7 @@ function execDl() {
   const to=document.getElementById('dlTo').value;
   const fmt=document.getElementById('dlFmt').value;
   const fd=([d])=>(!from||d>=from)&&(!to||d<=to);
-  
+  const sn=ST.name.replace(/\s+/g,'_');
 
   const ppRows=[['Data','mm','Fonte'],...Object.entries(ppByDate).filter(fd).sort(([a],[b])=>a.localeCompare(b)).map(([d,v])=>[d,v,liveMin&&d>=liveMin&&d<=liveMax?'live':'csv'])];
   const inRows=[['Data','Intensita_max_mmh'],...Object.entries(intByDate).filter(fd).sort(([a],[b])=>a.localeCompare(b)).map(([d,v])=>[d,v])];
@@ -1370,9 +1463,9 @@ function execDl() {
     const rows=dataMap[type]||ppRows;
     if (fmt==='csv') {
       const blob=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${ST.id}_${type}_${from}_${to}.csv`;a.click();
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${sn}_${type}_${from}_${to}.csv`;a.click();
     } else {
-      const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'Dati');XLSX.writeFile(wb,`${ST.id}_${type}_${from}_${to}.xlsx`);
+      const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'Dati');XLSX.writeFile(wb,`${sn}_${type}_${from}_${to}.xlsx`);
     }
   }
   closeDlModal();
@@ -1383,7 +1476,7 @@ function dlChartData(chartId, name) {
   const labels=ch.data.labels||[];
   const rows=[['Data','Valore'],...labels.map((l,i)=>[l,ch.data.datasets[0]?.data?.[i]??''])];
   const blob=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${ST.id}_${name}.csv`;a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`zogno_${name}.csv`;a.click();
 }
 
 function dlCumulate() {
@@ -1400,12 +1493,12 @@ function dlCumulate() {
     });
   });
   const data=[hdr,...Object.entries(byDoy).sort(([a],[b])=>Number(a)-Number(b)).map(([d,v])=>[d,...v])];
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Cumulate');XLSX.writeFile(wb,`${ST.id}_cumulate.xlsx`);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Cumulate');XLSX.writeFile(wb,'zogno_cumulate.xlsx');
 }
 
 function dlIntData() {
   const rows=[['Anno','Max_mmh'],...Object.keys(ppYM).map(Number).sort().map(y=>{const vs=Object.entries(intByDate).filter(([d])=>d.startsWith(y)).map(([,v])=>v);return[y,vs.length?Math.max(...vs).toFixed(1):''];})];
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'IntMax');XLSX.writeFile(wb,`${ST.id}_intensita.xlsx`);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'IntMax');XLSX.writeFile(wb,'zogno_intensita.xlsx');
 }
 
 function dlTableData() {
@@ -1413,12 +1506,19 @@ function dlTableData() {
   const rows=[['Data','mm','IntMax_mmh','T_min','T_media','T_max']];
   Object.entries(ppByDate).filter(([d])=>!yr||d.startsWith(yr)).sort(([a],[b])=>a.localeCompare(b))
     .forEach(([d,mm])=>rows.push([d,mm,intByDate[d]??'',tmpByDate[d]?.tMin??'',tmpByDate[d]?.tMean??'',tmpByDate[d]?.tMax??'']));
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Dati');XLSX.writeFile(wb,`${ST.id}_${yr||'tutti'}.xlsx`);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Dati');XLSX.writeFile(wb,`cornalita_${yr||'tutti'}.xlsx`);
 }
 
 // ════════════════════════════════════════════
 // FILE UPLOAD
 // ════════════════════════════════════════════
+function applyForceExclude() {
+  const raw = document.getElementById('forceExcludeInput').value;
+  const years = raw.split(/[,;\s]+/).map(Number).filter(y => y > 1900 && y < 2100);
+  ST.forceExclude = years;
+  renderAll();
+}
+
 document.getElementById('fileIn').addEventListener('change', async e => {
   const files=[...e.target.files]; if(!files.length)return;
   const msg=document.getElementById('uploadMsg');
@@ -1452,19 +1552,22 @@ async function loadGithubFiles() {
   for (const filename of (ST.csvFiles||[])) {
     try {
       const url = `${ST.githubBase}${encodeURIComponent(filename)}`;
-      const r = await fetch(url);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      let r;
+      try {
+        r = await fetch(url, { signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
+      }
       if (!r.ok) {
         if (r.status !== 404) results.push(`⚠ ${filename}: HTTP ${r.status}`);
         // 404 = file non ancora caricato, silenzioso
         continue;
       }
-      const fname_lc = filename.toLowerCase();
-      const ext = fname_lc.split('.').pop();
+      const ext = filename.toLowerCase().split('.').pop();
       let parsed;
-      if (fname_lc.includes('suborario') || fname_lc.includes('sub_orario')) {
-        // Formato sub-orario (10 min) — parser dedicato
-        parsed = parseSuborario(await r.text());
-      } else if (ext==='csv'||ext==='txt') {
+      if (ext==='csv'||ext==='txt') {
         parsed = parseCSVText(await r.text());
       } else {
         const buf = await r.arrayBuffer();
@@ -1509,79 +1612,62 @@ async function loadGithubFiles() {
 // ════════════════════════════════════════════
 async function init() {
   const msg=document.getElementById('loadMsg');
+  msg.textContent='Carico configurazione…';
+  await loadSTFromIndex();
 
-  // 0. Carica index.json da GitHub per trovare la configurazione della stazione
-  msg.textContent='Carico configurazione stazione…';
-  try {
-    const r = await fetch(GITHUB_BASE + 'index.json');
-    if (r.ok) {
-      const data = await r.json();
-      const cfg = loadStationConfig(data.stazioni || []);
-      if (cfg) ST = cfg;
-    }
-  } catch(e) {}
-  // Se non trovato in index.json, prova da localStorage (stazioni custom)
-  if (ST.id === 'unknown') {
-    const cfg = loadStationConfig(null);
-    if (cfg) ST = cfg;
-  }
-
-  if (ST.id === 'unknown') {
-    msg.textContent = 'Stazione non trovata — torna alla mappa e riprova.';
-    return;
-  }
-  document.title = ST.name + ' — Meteo';
-  document.getElementById('hdrTitle').textContent = '📡 ' + ST.name;
-  const subParts = [];
-  if (ST.lat && ST.lon) subParts.push(`${ST.lat.toFixed(4)}°N ${ST.lon.toFixed(4)}°E`);
-  if (ST.alt) subParts.push(`${ST.alt} m s.l.m.`);
-  if (ST.comune) subParts.push(ST.comune);
-  document.getElementById('hdrSub').textContent = subParts.join(' · ');
-  const hintEl = document.getElementById('csvHint');
-  if (hintEl) hintEl.textContent = ST.csvFiles[0] || '[nome]_precip.csv';
-
+  // Stazione dismessa — nessun autodiscovery necessario
   try {
     // 1. Carica CSV storici da GitHub (se esistono)
     msg.textContent='Carico CSV storici da GitHub…';
+    console.log('ST al momento del fetch:', JSON.stringify({id:ST.id, csvFiles:ST.csvFiles, dismessa:ST.dismessa}));
     await loadGithubFiles();
+    console.log('loadGithubFiles completato. ppByDate keys:', Object.keys(ppByDate).length);
 
     // 2. Dati live — solo se stazione attiva
     if (ST.dismessa) {
       document.getElementById('dotApi').className='dot warn';
       document.getElementById('lblApi').textContent=`Stazione dismessa${ST.periodo?' ('+ST.periodo+')':''}`;
     } else {
-    msg.textContent='Carico precipitazioni API live…';
-    try {
-      const ppRows=await socrataFetch(ST.sensors.PP?.id, 50000);
-      const { daily: ppMap, intensity: intMap } = socrataAggregatePrecip(ppRows);
-      const dates=Object.keys(ppMap).sort();
-      if (dates.length) {
-        liveMin=dates[0]; liveMax=dates[dates.length-1];
-        mergeData({precip:ppMap, intensity:intMap},'live');
-        document.getElementById('dotApi').className='dot ok';
-        document.getElementById('lblApi').textContent=`${liveMin} → ${liveMax} (intensità calcolata)`;
-      }
-    } catch(e) { document.getElementById('lblApi').textContent='errore: '+e.message; }
+      msg.textContent='Carico precipitazioni API live…';
+      try {
+        const ppRows=await socrataFetch(ST.sensors.PP?.id, 50000);
+        const { daily: ppMap, intensity: intMap } = socrataAggregatePrecip(ppRows);
+        const dates=Object.keys(ppMap).sort();
+        if (dates.length) {
+          liveMin=dates[0]; liveMax=dates[dates.length-1];
+          mergeData({precip:ppMap, intensity:intMap},'live');
+          document.getElementById('dotApi').className='dot ok';
+          document.getElementById('lblApi').textContent=`${liveMin} → ${liveMax} (intensità calcolata)`;
+        }
+      } catch(e) { document.getElementById('lblApi').textContent='errore: '+e.message; }
 
-    msg.textContent='Carico temperatura API…';
-    try {
-      const tRows=await socrataFetch(ST.sensors.T.id, 50000);
-      const tMap=socrataAggregateTemp(tRows);
-      mergeData({temp:tMap},'live');
-    } catch(e) {}
+      msg.textContent='Carico temperatura API…';
+      try {
+        const tRows=await socrataFetch(ST.sensors.T?.id, 50000);
+        const tMap=socrataAggregateTemp(tRows);
+        mergeData({temp:tMap},'live');
+      } catch(e) {}
+    }
 
-    // 3. Render
-    } // end !dismessa
+    // 3. Render — esegui sempre anche con dati vuoti
     msg.textContent='Render grafici…';
-    renderAll();
-    renderSensorCards();
+    console.log('Avvio renderAll. ppByDate:', Object.keys(ppByDate).length, 'giorni');
+    // Yielda al browser prima di renderizzare (evita freeze UI)
+    await new Promise(r => setTimeout(r, 0));
+    // Precompila campo anni esclusi
+    const feInput = document.getElementById('forceExcludeInput');
+    if (feInput) feInput.value = (ST.forceExclude||[]).join(', ');
+    try { renderAll(); } catch(re) { console.error('renderAll error:', re); }
+    await new Promise(r => setTimeout(r, 0));
+    try { renderSensorCards(); } catch(re) { console.error('renderSensorCards error:', re); }
 
   } catch(e) {
     msg.textContent='Errore: '+e.message;
     console.error(e);
-    return;
+  } finally {
+    // Nasconde sempre lo spinner, anche in caso di errore
+    document.getElementById('loading').style.display='none';
   }
-  document.getElementById('loading').style.display='none';
 }
 
 // Tab navigation
@@ -1600,6 +1686,7 @@ document.getElementById('cumuThick').addEventListener('change',renderCumulate);
 document.getElementById('hmScale').addEventListener('change',renderHeatmap);
 document.getElementById('hmVals').addEventListener('change',renderHeatmap);
 document.getElementById('evtThresh').addEventListener('change',renderEventi);
+document.getElementById('multiDayWin').addEventListener('change',renderMultiDay);
 document.getElementById('intView').addEventListener('change',renderIntHist);
 document.getElementById('tblYr').addEventListener('change',renderTable);
 document.getElementById('tblMo').addEventListener('change',renderTable);
