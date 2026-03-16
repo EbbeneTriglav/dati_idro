@@ -456,13 +456,13 @@ const ST_FALLBACK = {
   alt:        763,
   comune:     'Taleggio',
   githubBase: GITHUB_BASE,
-  csvFiles:   ['taleggio.csv'],
+  csvFiles:   ['taleggio_storica.xlsx', 'taleggio.csv'],
   sensors:    {},
   dismessa:   true,
   periodo:    '2004–2012',
   // Anni da escludere dalle medie — strumento non funzionante
   // Modificabile anche dall'interfaccia nel box upload
-  forceExclude: [2004, 2005, 2007],
+  forceExclude: [2007],  // 2004/2005 coperti dal file storico Vedeseta
 };
 
 
@@ -745,21 +745,24 @@ function parseCSVText(text) {
 }
 
 function parseXLSXBuffer(buf) {
-  const wb = XLSX.read(buf, {type:'array'});
+  const wb = XLSX.read(buf, {type:'array', cellDates:true});
   const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, dateNF:'yyyy-mm-dd'});
   if (!rows.length) return {precip:{},intensity:{},temp:{}};
   const hdr = rows[0].map(h=>String(h||'').toLowerCase().trim());
-  const iD  = findCol(hdr, ['data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
   const iTm = findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media']);
+  const iQC = findCol(hdr, ['qualitycontrollevelcode','qualitycontrol','quality','qclevel','qc']);
 
   const precip={}, intensity={}, temp={};
   for (let i=1; i<rows.length; i++) {
     const row = rows[i];
+    // Filtra QC code >= 150 (dati stimati o non validi)
+    if (iQC>=0) { const qc=parseInt(row[iQC]); if(!isNaN(qc)&&qc>=150) continue; }
     let rawD = iD>=0 ? row[iD] : row[0];
     if (!rawD) continue;
     let date;
@@ -769,7 +772,7 @@ function parseXLSXBuffer(buf) {
     } else { date=normalizeDate(String(rawD)); }
     if (!date) continue;
     const NODATA2 = -999;
-    if (iV>=0)  { const v=parseFloat(String(row[iV]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) precip[date]=(precip[date]||0)+v; }
+    if (iV>=0)  { const v=parseFloat(String(row[iV]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) precip[date]=Math.round(((precip[date]||0)+v)*10)/10; }
     if (iIn>=0) { const v=parseFloat(String(row[iIn]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) intensity[date]=v; }
     if (iTn>=0||iTx>=0||iTm>=0) {
       const tn=iTn>=0?parseFloat(String(row[iTn]||'').replace(',','.'))  :null;
@@ -1646,7 +1649,7 @@ async function init() {
     await new Promise(r => setTimeout(r, 0));
     // Precompila campo anni esclusi
     const feInput = document.getElementById('forceExcludeInput');
-    if (feInput && ST.forceExclude?.length) feInput.value = ST.forceExclude.join(', ');
+    if (feInput) feInput.value = (ST.forceExclude||[]).join(', ');
     try { renderAll(); } catch(re) { console.error('renderAll error:', re); }
     await new Promise(r => setTimeout(r, 0));
     try { renderSensorCards(); } catch(re) { console.error('renderSensorCards error:', re); }

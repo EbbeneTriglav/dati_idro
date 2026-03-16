@@ -264,13 +264,15 @@ function parseCSV(text) {
   if(!lines.length)return{ppByDate:{}};
   const sep=lines[0].includes(';')?';':',';
   const hdr=lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
-  const iD=findCol(hdr,['data-ora','data','date','time']);
-  const iV=findCol(hdr,['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iD=findCol(hdr,['localdatetime','data-ora','data','date','time']);
+  const iV=findCol(hdr,['precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
   const iIn=findCol(hdr,['intensit','maxint','int_max','imax']);
+  const iQC=findCol(hdr,['qualitycontrollevelcode','qualitycontrol','qclevel','qc']);
   const NODATA=-999;
   const ppByDate={}, intByDate={}, ppRaw={};
   for(let i=1;i<lines.length;i++){
     const c=lines[i].split(sep).map(x=>x.replace(/"/g,'').trim());
+    if(iQC>=0){const qc=parseInt(c[iQC]);if(!isNaN(qc)&&qc>=150)continue;}
     const date=normalizeDate(iD>=0?c[iD]:c[0]);
     if(!date)continue;
     if(iV>=0){const v=parseFloat(c[iV].replace(',','.'));if(!isNaN(v)&&v>=0&&v!==NODATA){ppByDate[date]=Math.round(((ppByDate[date]||0)+v)*10)/10;if(!ppRaw[date])ppRaw[date]=[];ppRaw[date].push(v);}}
@@ -303,13 +305,21 @@ function parseSuborario(text) {
   return{ppByDate,intByDate};
 }
 
-function buildPpYM(ppByDate) {
+function buildPpYM(ppByDate, forceExclude=[]) {
   const raw={};
   for(const[d,mm]of Object.entries(ppByDate)){const[y,m]=d.split('-').map(Number);if(!raw[y])raw[y]=new Array(12).fill(0);raw[y][m-1]+=mm;}
+  const forced=new Set(forceExclude);
   const ppYM={};
   for(const[y,months]of Object.entries(raw)){
-    const yr=Number(y);if(yr>=CY)continue;
+    const yr=Number(y);
+    if(yr>=CY) continue;
+    if(forced.has(yr)) continue;  // escludi anni con strumento non funzionante
     const total=months.reduce((a,b)=>a+b,0);if(total===0)continue;
+    // Filtro anni con troppi mesi a zero (dati mancanti)
+    const zeros=months.filter(v=>v===0).length;
+    let consec=0,maxC=0;
+    for(const v of months){if(v===0){consec++;maxC=Math.max(maxC,consec);}else consec=0;}
+    if(maxC>=4||zeros>=7) continue;
     ppYM[y]=months;
   }
   return ppYM;
@@ -336,9 +346,12 @@ async function loadStation(meta) {
       if(fname_lc.includes('suborario')) parsed=parseSuborario(await r.text());
       else if(fname_lc.match(/\.xlsx?$/)) {
         const buf=await r.arrayBuffer();
-        const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+        const wb=XLSX.read(new Uint8Array(buf),{type:'array',cellDates:true});
         const ws=wb.Sheets[wb.SheetNames[0]];
-        const csv=XLSX.utils.sheet_to_csv(ws);
+        // Usa sheet_to_json per preservare date e colonne QC
+        const xlrows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+        // Converti in CSV-like text per parseCSV
+        const csv=xlrows.map(r=>r.join(',')).join('\n');
         parsed=parseCSV(csv);
       } else parsed=parseCSV(await r.text());
 
@@ -354,7 +367,9 @@ async function loadStation(meta) {
         if(intByDate[d]===undefined||v>intByDate[d]) intByDate[d]=v;
       }
     }
-    const ppYM=buildPpYM(ppByDate);
+    // Leggi forceExclude da index.json se disponibile
+    const forceExclude = entry.forceExclude || [];
+    const ppYM=buildPpYM(ppByDate, forceExclude);
     return {ppByDate, intByDate, ppYM};
   } catch(e) {
     console.warn(`Errore caricamento ${meta.id}:`, e);
