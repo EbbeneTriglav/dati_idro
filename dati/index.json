@@ -189,7 +189,7 @@
       "nome": "San Giovanni Bianco (storica)",
       "lat": 45.8684,
       "lon": 9.6558,
-      "quota": 400,
+      "quota": 330,
       "comune": "San Giovanni Bianco",
       "rete": "SIMN",
       "colore": "#ce93d8",
@@ -218,7 +218,8 @@
       "colore": "#80deea",
       "pagina": "dossena.html",
       "sensori_arpa": {
-        "PP": 31060
+        "PP": 31060,
+        "T": 31061
       },
       "file_dati": [
         "Dossena_dati_orari.csv"
