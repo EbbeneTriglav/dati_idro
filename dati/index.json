@@ -96,10 +96,10 @@
         "PP": 9096
       },
       "file_dati": [
-        "taleggio.csv",
-        "taleggio_storica.xlsx"
+        "taleggio_storica.xlsx",
+        "taleggio.csv"
       ],
-      "note": "IdStazione ARPA: 1215 — sensori da verificare con scopri_stazioni.html",
+      "note": "IdStazione ARPA: 1215 (2004-2012). Storico Vedeseta 1951-2005.",
       "dismessa": true,
       "periodo": "2004–2012",
       "forceExclude": [
