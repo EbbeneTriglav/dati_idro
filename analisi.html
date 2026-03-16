@@ -335,14 +335,23 @@ async function loadStation(meta) {
       if(fname_lc.includes('suborario')) parsed=parseSuborario(await r.text());
       else if(fname_lc.match(/\.xlsx?$/)) {
         const buf=await r.arrayBuffer();
-        // Excel parsing semplificato: converti a CSV tramite XLSX
         const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
         const ws=wb.Sheets[wb.SheetNames[0]];
         const csv=XLSX.utils.sheet_to_csv(ws);
         parsed=parseCSV(csv);
       } else parsed=parseCSV(await r.text());
-      for(const[d,v]of Object.entries(parsed.ppByDate||{})) ppByDate[d]=(ppByDate[d]||0)+v;
-      for(const[d,v]of Object.entries(parsed.intByDate||{})) if(!intByDate[d]||v>intByDate[d]) intByDate[d]=v;
+
+      // MERGE CORRETTO: il primo file che ha un valore per una data "vince".
+      // I file successivi riempiono solo i gap (date non ancora presenti).
+      // Questo evita di sommare due volte le date coperte da entrambi i file
+      // (es. Cornalita: file storico 1950-2026 + file intensità 2002-2026).
+      for(const[d,v]of Object.entries(parsed.ppByDate||{})) {
+        if(ppByDate[d]===undefined) ppByDate[d]=v;  // solo gap-fill, non sommare
+      }
+      // Intensità: prendi il massimo tra i file (può venire da fonti diverse)
+      for(const[d,v]of Object.entries(parsed.intByDate||{})) {
+        if(intByDate[d]===undefined||v>intByDate[d]) intByDate[d]=v;
+      }
     }
     const ppYM=buildPpYM(ppByDate);
     return {ppByDate, intByDate, ppYM};

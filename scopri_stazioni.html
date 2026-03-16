@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Scopri Stazioni ARPA — Val Brembana</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
+:root{--bg:#0b1120;--card:#151f30;--card2:#1a2840;--border:#1e3050;
+  --accent:#4fc3f7;--green:#4caf82;--orange:#ffb347;--red:#ef5350;--text:#e3eaf8;--muted:#7a94b8;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;}
+header{background:linear-gradient(135deg,#0a1628,#0d2344);padding:12px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0;}
+header h1{font-size:1rem;font-weight:700;color:var(--accent);}
+.btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;
+  border:1.5px solid;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;text-decoration:none;display:inline-block;}
+.btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.btn-primary:hover{background:#81d4fa;}
+.btn-outline{background:transparent;color:var(--accent);border-color:var(--accent);}
+.btn-outline:hover{background:var(--accent);color:var(--bg);}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green);}
+.layout{display:flex;flex:1;overflow:hidden;}
+#map{flex:1;}
+.sidebar{width:420px;background:#111927;border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;}
+.sb-head{padding:12px 14px;border-bottom:1px solid var(--border);}
+.sb-head h2{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;}
+.ctrls{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+select,input[type=number]{background:var(--card2);color:var(--text);border:1px solid var(--border);
+  padding:4px 8px;border-radius:5px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;}
+.sb-body{flex:1;overflow-y:auto;padding:8px;}
+.st-card{background:var(--card);border:1px solid var(--border);border-radius:7px;
+  padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:border-color .18s;}
+.st-card:hover,.st-card.sel{border-color:var(--accent);}
+.st-name{font-size:13px;font-weight:700;color:var(--text);}
+.st-meta{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.st-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.badge{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.bp{background:rgba(79,195,247,.15);color:var(--accent);}
+.bt{background:rgba(255,179,71,.15);color:var(--orange);}
+.bn{background:rgba(179,157,219,.15);color:#b39ddb;}
+.bh{background:rgba(240,98,146,.15);color:#f06292);}
+.ba{background:rgba(76,175,130,.15);color:var(--green);}
+.st-btns{display:flex;gap:5px;margin-top:8px;}
+.status{font-size:11px;color:var(--muted);padding:6px 8px;font-family:'IBM Plex Mono',monospace;}
+.status.ok{color:var(--green);}
+.status.err{color:var(--red);}
+
+/* Popup Leaflet */
+.leaflet-popup-content-wrapper{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;}
+.leaflet-popup-tip{background:var(--card);}
+.leaflet-popup-content{font-family:'IBM Plex Sans',sans-serif;font-size:12px;margin:10px 14px;min-width:220px;}
+.leaflet-popup-content b{color:var(--accent);}
+.leaflet-container{background:#0d1a2e;}
+
+/* JSON output */
+.json-out{background:#0d1624;border:1px solid var(--border);border-radius:6px;
+  padding:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#a5d6a7;
+  margin-top:8px;max-height:200px;overflow-y:auto;white-space:pre-wrap;display:none;}
+
+.filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 14px;
+  border-bottom:1px solid var(--border);font-size:12px;}
+.filter-row label{color:var(--muted);font-weight:700;}
+.chip{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;}
+.chip.on{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🔍 Scopri stazioni ARPA — Val Brembana / Bacino Brembo</h1>
+    <div style="font-size:11px;color:var(--muted)">Interroga l'API Socrata in tempo reale · Trova ID sensori da aggiungere a index.json</div>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="loadStations()">🔄 Carica stazioni</button>
+    <button class="btn btn-outline" onclick="verifyAllYears()">📅 Verifica anni</button>
+    <button class="btn btn-outline" onclick="copyIndexJson()">📋 Copia JSON</button>
+    <a href="index.html" class="btn btn-outline">← Mappa</a>
+  </div>
+</header>
+
+<div class="layout">
+  <div id="map"></div>
+  <div class="sidebar">
+    <div class="sb-head">
+      <h2>Stazioni trovate: <span id="nFound">—</span></h2>
+      <div class="ctrls">
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Quota min</label>
+          <input type="number" id="qMin" value="300" style="width:70px"/>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Quota max</label>
+          <input type="number" id="qMax" value="2000" style="width:70px"/>
+        </div>
+        <select id="filtroTipo" onchange="renderList()">
+          <option value="">Tutti i sensori</option>
+          <option value="Precipitazione">Solo Precipitazione</option>
+          <option value="Temperatura">Solo Temperatura</option>
+          <option value="Idrometrico">Solo Idrometrico</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <label>Bacino:</label>
+      <button class="chip on" data-b="brembo" onclick="toggleBacino(this)">Brembo</button>
+      <button class="chip on" data-b="brembilla" onclick="toggleBacino(this)">T. Brembilla</button>
+      <button class="chip on" data-b="serina" onclick="toggleBacino(this)">T. Serina</button>
+      <button class="chip" data-b="other" onclick="toggleBacino(this)">Altro</button>
+    </div>
+
+    <div id="statusBar" class="status">Premi "Carica stazioni" per interrogare l'API ARPA</div>
+    <div class="sb-body" id="stList"></div>
+
+    <div style="padding:10px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Stazioni selezionate per index.json:</div>
+      <div id="selectedList" style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--green);min-height:20px"></div>
+      <div id="jsonOutput" class="json-out"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const SOCRATA = 'https://www.dati.lombardia.it/resource/nf78-nj6b.json';
+// Bounding box Val Brembana + buffer
+const BBOX = { latMin:45.65, latMax:46.10, lonMin:9.45, lonMax:9.90 };
+
+// Bacini approssimativi per comune/zona
+const BACINO_MAP = {
+  'Carona':'brembo','Foppolo':'brembo','Branzi':'brembo','Valleve':'brembo',
+  'Mezzoldo':'brembo','Olmo al Brembo':'brembo','Piazza Brembana':'brembo',
+  'Lenna':'brembo','Camerata Cornello':'brembo','Moio de\' Calvi':'brembo',
+  'San Giovanni Bianco':'brembo','Averara':'brembo','Cusio':'brembo',
+  'Brembilla':'brembilla','Gerosa':'brembilla','Monte Marenzo':'brembilla',
+  'Serina':'serina','Oltre il Colle':'serina','Gorno':'serina','Oneta':'serina',
+  'Poscante':'serina',
+};
+
+let allStations = [];
+let selectedIds = new Set();
+let map, markers = {};
+const activeBacini = new Set(['brembo','brembilla','serina']);
+
+// ── Init mappa
+map = L.map('map').setView([45.85, 9.65], 11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'© OpenStreetMap © CARTO', maxZoom:19
+}).addTo(map);
+
+// Poligono area di interesse
+L.rectangle([[BBOX.latMin,BBOX.lonMin],[BBOX.latMax,BBOX.lonMax]],{
+  color:'#4fc3f7',weight:1,fillOpacity:0.03,dashArray:'6,4'
+}).addTo(map);
+
+// ── Carica stazioni da API Socrata
+// Cerca anni disponibili per un sensore nel dataset dati
+async function fetchYearsForSensor(sensorId) {
+  try {
+    // Prendi prima e ultima misura disponibile
+    const urlFirst = `https://www.dati.lombardia.it/resource/647i-nhxk.json?idsensore=${sensorId}&$limit=1&$order=data+ASC&$select=data`;
+    const urlLast  = `https://www.dati.lombardia.it/resource/647i-nhxk.json?idsensore=${sensorId}&$limit=1&$order=data+DESC&$select=data`;
+    const [rFirst, rLast] = await Promise.all([fetch(urlFirst), fetch(urlLast)]);
+    if (!rFirst.ok || !rLast.ok) return null;
+    const [dFirst, dLast] = await Promise.all([rFirst.json(), rLast.json()]);
+    if (!dFirst.length || !dLast.length) return null;
+    const yFirst = dFirst[0].data.slice(0,4);
+    const yLast  = dLast[0].data.slice(0,4);
+    return { from: yFirst, to: yLast, years: Number(yLast)-Number(yFirst)+1 };
+  } catch(e) { return null; }
+}
+
+async function loadStations() {
+  const sb = document.getElementById('statusBar');
+  sb.className='status'; sb.textContent='⏳ Interrogo API ARPA Lombardia…';
+
+  const qMin = Number(document.getElementById('qMin').value)||0;
+  const qMax = Number(document.getElementById('qMax').value)||9999;
+
+  const where = `lat between ${BBOX.latMin} and ${BBOX.latMax} AND lng between ${BBOX.lonMin} and ${BBOX.lonMax}`;
+  const url = `${SOCRATA}?$limit=2000&$where=${encodeURIComponent(where)}&$order=quota DESC`;
+
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+
+    // Raggruppa per stazione
+    const stMap = {};
+    for (const row of data) {
+      const sid = row.idstazione || row.IdStazione;
+      if (!sid) continue;
+      if (!stMap[sid]) {
+        const q = Number(row.quota||0);
+        stMap[sid] = {
+          id:     sid,
+          nome:   row.nomestazione || row.NomeStazione || `Stazione ${sid}`,
+          comune: row.comune || '',
+          quota:  q,
+          lat:    parseFloat(row.lat||0),
+          lon:    parseFloat(row.lng||row.lon||0),
+          sensori: [],
+          bacino: BACINO_MAP[row.comune||''] || 'other',
+        };
+      }
+      stMap[sid].sensori.push({
+        tipo: row.tiposensore || row.TipoSensore || '?',
+        id:   row.idsensore   || row.IdSensore   || '?',
+        um:   row.unitamisura || '',
+      });
+    }
+
+    allStations = Object.values(stMap)
+      .filter(s => s.quota >= qMin && s.quota <= qMax && s.lat && s.lon)
+      .sort((a,b) => b.quota - a.quota);
+
+    document.getElementById('nFound').textContent = allStations.length;
+    sb.className='status ok'; sb.textContent=`✓ ${allStations.length} stazioni trovate nell'area`;
+    renderList();
+    renderMarkers();
+  } catch(e) {
+    sb.className='status err'; sb.textContent=`✗ Errore: ${e.message}`;
+    console.error(e);
+  }
+}
+
+// ── Render lista
+function renderList() {
+  const list = document.getElementById('stList');
+  const filtroTipo = document.getElementById('filtroTipo').value;
+  list.innerHTML = '';
+
+  const filtered = allStations.filter(s => {
+    if (!activeBacini.has(s.bacino) && !activeBacini.has('other') && s.bacino==='other') return false;
+    if (!activeBacini.has(s.bacino)) return false;
+    if (filtroTipo && !s.sensori.some(x => x.tipo.includes(filtroTipo))) return false;
+    return true;
+  });
+
+  filtered.forEach(s => {
+    const hasPP = s.sensori.find(x => x.tipo.toLowerCase().includes('precip'));
+    const hasT  = s.sensori.find(x => x.tipo.toLowerCase().includes('temp'));
+    const hasH  = s.sensori.find(x => x.tipo.toLowerCase().includes('idromet'));
+    const hasNV = s.sensori.find(x => x.tipo.toLowerCase().includes('neve'));
+    const hasUR = s.sensori.find(x => x.tipo.toLowerCase().includes('umid'));
+    const hasVV = s.sensori.find(x => x.tipo.toLowerCase().includes('vento'));
+
+    const card = document.createElement('div');
+    card.className = 'st-card' + (selectedIds.has(s.id)?' sel':'');
+    card.id = `card_${s.id}`;
+
+    let badges = '';
+    if (hasPP) badges += `<span class="badge bp">PP #${hasPP.id}</span>`;
+    if (hasT)  badges += `<span class="badge bt">T #${hasT.id}</span>`;
+    if (hasH)  badges += `<span class="badge" style="background:rgba(240,98,146,.15);color:#f06292">H #${hasH.id}</span>`;
+    if (hasNV) badges += `<span class="badge bn">NV #${hasNV.id}</span>`;
+    if (hasUR) badges += `<span class="badge ba">UR #${hasUR.id}</span>`;
+    if (hasVV) badges += `<span class="badge" style="background:rgba(255,255,118,.15);color:#fff176">VV #${hasVV.id}</span>`;
+
+    const bacinoColors = {brembo:'#4fc3f7',brembilla:'#ffb347',serina:'#4caf82',other:'#b39ddb'};
+    const bc = bacinoColors[s.bacino]||'#7a94b8';
+
+    const yrsInfo = s.yearsInfo;
+    const yrsHtml = yrsInfo
+      ? `<span style="color:var(--green);font-weight:700">${yrsInfo.from}–${yrsInfo.to}</span> <span style="color:var(--muted)">(${yrsInfo.years} anni)</span>`
+      : `<span style="color:var(--muted)">anni non verificati</span>`;
+
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="st-name">${s.nome}</div>
+        <span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${bc}22;color:${bc};font-weight:700">${s.bacino}</span>
+      </div>
+      <div class="st-meta">${s.quota}m · ${s.comune} · ${s.lat.toFixed(4)}N ${s.lon.toFixed(4)}E · ID ${s.id}</div>
+      <div class="st-badges">${badges}</div>
+      <div style="font-size:11px;margin-top:5px;font-family:'IBM Plex Mono',monospace">
+        📅 ${yrsHtml}
+        ${!yrsInfo && hasPP ? `<button onclick="verifyYears('${s.id}',${hasPP.id},event)"
+          style="margin-left:8px;background:transparent;color:var(--muted);border:1px solid var(--border);
+          padding:1px 7px;border-radius:4px;font-size:10px;cursor:pointer;font-family:'IBM Plex Mono',monospace">
+          Verifica →</button>` : ''}
+      </div>
+      <div class="st-btns">
+        <button class="btn btn-outline" style="font-size:10px;padding:3px 9px"
+          onclick="panTo(${s.lat},${s.lon},event)">📍 Zoom</button>
+        <button class="btn ${selectedIds.has(s.id)?'btn-primary':'btn-green'}" style="font-size:10px;padding:3px 9px"
+          onclick="toggleSelect('${s.id}',event)">
+          ${selectedIds.has(s.id)?'✓ Selezionata':'+ Aggiungi'}
+        </button>
+      </div>`;
+
+    card.addEventListener('click', e => {
+      if (e.target.tagName==='BUTTON') return;
+      panTo(s.lat, s.lon, e);
+    });
+    list.appendChild(card);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML='<div style="padding:16px;color:var(--muted);font-size:12px">Nessuna stazione con i filtri correnti.</div>';
+  }
+}
+
+// ── Markers sulla mappa
+function renderMarkers() {
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+  const bacinoColors = {brembo:'#4fc3f7',brembilla:'#ffb347',serina:'#4caf82',other:'#b39ddb'};
+
+  allStations.forEach(s => {
+    const col = bacinoColors[s.bacino]||'#7a94b8';
+    const hasPP = s.sensori.find(x=>x.tipo.toLowerCase().includes('precip'));
+    const hasT  = s.sensori.find(x=>x.tipo.toLowerCase().includes('temp'));
+    const hasH  = s.sensori.find(x=>x.tipo.toLowerCase().includes('idromet'));
+
+    const icon = L.divIcon({
+      html:`<div style="width:12px;height:12px;border-radius:50%;background:${col};border:2px solid #fff;box-shadow:0 0 6px ${col}88"></div>`,
+      iconSize:[12,12],iconAnchor:[6,6],className:''
+    });
+
+    let sensoriHtml='';
+    if(hasPP) sensoriHtml+=`<br>PP #${hasPP.id}`;
+    if(hasT)  sensoriHtml+=`  T #${hasT.id}`;
+    if(hasH)  sensoriHtml+=`  H #${hasH.id}`;
+
+    const m = L.marker([s.lat,s.lon],{icon})
+      .bindPopup(`<b>${s.nome}</b><br>${s.quota}m — ${s.comune}<br>
+        ID Stazione: <b>${s.id}</b>${sensoriHtml}<br><br>
+        <button onclick="toggleSelect('${s.id}',event)" 
+          style="background:var(--accent);color:var(--bg);border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px">
+          + Aggiungi a index.json
+        </button>`);
+    m.addTo(map);
+    markers[s.id] = m;
+  });
+}
+
+function panTo(lat,lon,e) {
+  if(e) e.stopPropagation();
+  map.setView([lat,lon],14);
+  if(markers[allStations.find(s=>s.lat===lat&&s.lon===lon)?.id]) {
+    markers[allStations.find(s=>s.lat===lat&&s.lon===lon)?.id].openPopup();
+  }
+}
+
+// Verifica anni per una singola stazione
+async function verifyYears(stId, sensorId, e) {
+  if(e) e.stopPropagation();
+  const btn = e.target;
+  btn.textContent = '⏳'; btn.disabled = true;
+  const s = allStations.find(x=>x.id===stId);
+  if(!s) return;
+  const info = await fetchYearsForSensor(sensorId);
+  s.yearsInfo = info;
+  renderList();
+}
+
+// Verifica anni per tutte le stazioni visibili (PP sensore)
+async function verifyAllYears() {
+  const sb = document.getElementById('statusBar');
+  sb.className='status'; sb.textContent='⏳ Verifico anni disponibili…';
+  let done = 0;
+  const toVerify = allStations.filter(s=>!s.yearsInfo);
+  for(const s of toVerify) {
+    const hasPP = s.sensori.find(x=>x.tipo.toLowerCase().includes('precip'));
+    if(hasPP) {
+      s.yearsInfo = await fetchYearsForSensor(hasPP.id);
+      done++;
+      sb.textContent = `⏳ Verifico anni… ${done}/${toVerify.length}`;
+      renderList();
+      await new Promise(r=>setTimeout(r,200)); // rate limit
+    }
+  }
+  sb.className='status ok'; sb.textContent=`✓ Anni verificati per ${done} stazioni`;
+}
+
+function toggleBacino(btn) {
+  const b = btn.dataset.b;
+  if(activeBacini.has(b)){activeBacini.delete(b);btn.classList.remove('on');}
+  else{activeBacini.add(b);btn.classList.add('on');}
+  renderList();
+}
+
+// ── Selezione per index.json
+function toggleSelect(stId, e) {
+  if(e) e.stopPropagation();
+  const s = allStations.find(x=>x.id===stId);
+  if(!s) return;
+  if(selectedIds.has(stId)){selectedIds.delete(stId);}
+  else{selectedIds.add(stId);}
+  renderList();
+  updateSelectedPanel();
+}
+
+function updateSelectedPanel() {
+  const sel = allStations.filter(s=>selectedIds.has(s.id));
+  document.getElementById('selectedList').textContent =
+    sel.length ? sel.map(s=>s.nome).join(', ') : '(nessuna)';
+}
+
+function copyIndexJson() {
+  const sel = allStations.filter(s=>selectedIds.has(s.id));
+  if(!sel.length){alert('Seleziona almeno una stazione dalla lista');return;}
+
+  const entries = sel.map(s=>{
+    const hasPP = s.sensori.find(x=>x.tipo.toLowerCase().includes('precip'));
+    const hasT  = s.sensori.find(x=>x.tipo.toLowerCase().includes('temp'));
+    const hasH  = s.sensori.find(x=>x.tipo.toLowerCase().includes('idromet'));
+    const sensori = {};
+    if(hasPP) sensori.PP = Number(hasPP.id);
+    if(hasT)  sensori.T  = Number(hasT.id);
+    if(hasH)  sensori.H  = Number(hasH.id);
+
+    const safeName = s.nome.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+
+    return {
+      id:           safeName,
+      nome:         s.nome,
+      lat:          s.lat,
+      lon:          s.lon,
+      quota:        s.quota,
+      comune:       s.comune,
+      rete:         'ARPA',
+      colore:       '#4fc3f7',
+      pagina:       `stazione.html?id=${safeName}`,
+      sensori_arpa: sensori,
+      file_dati:    [`${safeName}_precip.csv`],
+      note:         `IdStazione ARPA: ${s.id}${s.yearsInfo?" · "+s.yearsInfo.from+"-"+s.yearsInfo.to+" ("+s.yearsInfo.years+" anni)":""}`
+    };
+  });
+
+  const jsonStr = JSON.stringify(entries, null, 2);
+  const out = document.getElementById('jsonOutput');
+  out.style.display='block';
+  out.textContent = jsonStr;
+
+  navigator.clipboard.writeText(jsonStr).then(()=>{
+    out.style.color='#4caf82';
+    setTimeout(()=>out.style.color='#a5d6a7',1500);
+  });
+
+  // Mostra istruzioni
+  alert(`✓ JSON copiato negli appunti!\n\nAggiungi le ${entries.length} voci all'array "stazioni" in dati/index.json`);
+}
+
+document.getElementById('filtroTipo').addEventListener('change', renderList);
+</script>
+</body>
+</html>
