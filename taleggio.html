@@ -498,6 +498,7 @@ async function loadSTFromIndex() {
     const data = await r.json();
     const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
     if (!entry) return false;
+    console.log('Configurazione trovata in index.json:', entry);
 
     // Ricostruisci sensors da sensori_arpa in index.json
     const COLORS = { PP:'#4fc3f7', T:'#ffb347', UR:'#4caf82', VV:'#b39ddb', H:'#f06292' };
@@ -538,6 +539,7 @@ async function loadSTFromIndex() {
     const data = await r.json();
     const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
     if (!entry) return false;
+    console.log('Configurazione trovata in index.json:', entry);
     ST = {
       id:         entry.id,
       name:       entry.nome || ST_FALLBACK.name,
@@ -1518,7 +1520,14 @@ async function loadGithubFiles() {
   for (const filename of (ST.csvFiles||[])) {
     try {
       const url = `${ST.githubBase}${encodeURIComponent(filename)}`;
-      const r = await fetch(url);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      let r;
+      try {
+        r = await fetch(url, { signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
+      }
       if (!r.ok) {
         if (r.status !== 404) results.push(`⚠ ${filename}: HTTP ${r.status}`);
         // 404 = file non ancora caricato, silenzioso
@@ -1578,7 +1587,9 @@ async function init() {
   try {
     // 1. Carica CSV storici da GitHub (se esistono)
     msg.textContent='Carico CSV storici da GitHub…';
+    console.log('ST al momento del fetch:', JSON.stringify({id:ST.id, csvFiles:ST.csvFiles, dismessa:ST.dismessa}));
     await loadGithubFiles();
+    console.log('loadGithubFiles completato. ppByDate keys:', Object.keys(ppByDate).length);
 
     // 2. Dati live — solo se stazione attiva
     if (ST.dismessa) {
@@ -1606,17 +1617,22 @@ async function init() {
       } catch(e) {}
     }
 
-    // 3. Render
+    // 3. Render — esegui sempre anche con dati vuoti
     msg.textContent='Render grafici…';
-    renderAll();
-    renderSensorCards();
+    console.log('Avvio renderAll. ppByDate:', Object.keys(ppByDate).length, 'giorni');
+    // Yielda al browser prima di renderizzare (evita freeze UI)
+    await new Promise(r => setTimeout(r, 0));
+    try { renderAll(); } catch(re) { console.error('renderAll error:', re); }
+    await new Promise(r => setTimeout(r, 0));
+    try { renderSensorCards(); } catch(re) { console.error('renderSensorCards error:', re); }
 
   } catch(e) {
     msg.textContent='Errore: '+e.message;
     console.error(e);
-    return;
+  } finally {
+    // Nasconde sempre lo spinner, anche in caso di errore
+    document.getElementById('loading').style.display='none';
   }
-  document.getElementById('loading').style.display='none';
 }
 
 // Tab navigation
