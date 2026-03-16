@@ -406,11 +406,12 @@ const ST_FALLBACK = {
   alt:        468,
   comune:     'Brembilla',
   githubBase: GITHUB_BASE,
-  csvFiles:   ['brembilla_precip.csv','brembilla_temp.csv'],
+  csvFiles:   ['brembilla_storica.csv','brembilla_precip.csv','brembilla_temp.csv'],
   sensors:    {
     PP:  { id: 14499, label: 'Precipitazione', unit: 'mm', color: '#4fc3f7' },
     T:   { id: 14500, label: 'Temperatura',    unit: '°C', color: '#ffb347' },
   },
+  forceExclude: [1982],
 };
 
 // ST viene popolato in init() leggendo index.json
@@ -559,8 +560,8 @@ function parseCSVText(text) {
   const sep = lines[0].includes(';') ? ';' : ',';
   const hdr = lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
 
-  const iD  = findCol(hdr, ['data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
+  const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
@@ -621,8 +622,8 @@ function parseXLSXBuffer(buf) {
   const rows = XLSX.utils.sheet_to_json(ws, {header:1});
   if (!rows.length) return {precip:{},intensity:{},temp:{}};
   const hdr = rows[0].map(h=>String(h||'').toLowerCase().trim());
-  const iD  = findCol(hdr, ['data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
@@ -679,9 +680,12 @@ function buildPpYM() {
     raw[y][m-1]+=mm;
   }
   badYears = new Set();
+  const forced = new Set(ST.forceExclude || []);
+  forced.forEach(y => badYears.add(y));
   for (const [y, months] of Object.entries(raw)) {
     const yr = Number(y);
     // Non escludere mai l'anno corrente o l'anno scorso (dati parziali sono normali)
+    if (forced.has(yr)) continue;
     if (yr >= CY - 1) continue;
     const total = months.reduce((a,b)=>a+b,0);
     if (total===0) { badYears.add(yr); continue; }

@@ -270,7 +270,7 @@ function parseCSV(text) {
   const sep=lines[0].includes(';')?';':',';
   const hdr=lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
   const iD=findCol(hdr,['localdatetime','data-ora','data','date','time']);
-  const iV=findCol(hdr,['precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iV=findCol(hdr,['datavalue','precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
   const iIn=findCol(hdr,['intensit','maxint','int_max','imax']);
   const iQC=findCol(hdr,['qualitycontrollevelcode','qualitycontrol','qclevel','qc']);
   const NODATA=-999;

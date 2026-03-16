@@ -602,8 +602,8 @@ function parseCSVText(text) {
   const sep = lines[0].includes(';') ? ';' : ',';
   const hdr = lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
 
-  const iD  = findCol(hdr, ['data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
+  const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
@@ -664,8 +664,8 @@ function parseXLSXBuffer(buf) {
   const rows = XLSX.utils.sheet_to_json(ws, {header:1});
   if (!rows.length) return {precip:{},intensity:{},temp:{}};
   const hdr = rows[0].map(h=>String(h||'').toLowerCase().trim());
-  const iD  = findCol(hdr, ['data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
