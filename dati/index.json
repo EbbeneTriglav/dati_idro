@@ -81,6 +81,25 @@
       "file_dati": [
         "vettarola_suborario.csv"
       ]
+    },
+    {
+      "id": "taleggio",
+      "nome": "Taleggio",
+      "lat": 45.89290225,
+      "lon": 9.56663314,
+      "quota": 763,
+      "comune": "Taleggio",
+      "rete": "ARPA",
+      "colore": "#81c784",
+      "pagina": "taleggio.html",
+      "sensori_arpa": {},
+      "file_dati": [
+        "taleggio_precip.csv",
+        "taleggio_temp.csv"
+      ],
+      "note": "IdStazione ARPA: 1215 — sensori da verificare con scopri_stazioni.html",
+      "dismessa": true,
+      "periodo": "2004–2012"
     }
   ]
 }
