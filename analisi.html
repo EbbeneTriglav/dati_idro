@@ -282,6 +282,49 @@ function parseCSV(text) {
   return{ppByDate,intByDate};
 }
 
+function parseXLSXRows(rows) {
+  if(!rows.length) return {ppByDate:{},intByDate:{}};
+  const hdr=rows[0].map(h=>String(h||'').toLowerCase().trim());
+  const iD  =findCol(hdr,['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  =findCol(hdr,['precipitazione cumulata giornaliera','precipitazione giornaliera',
+                           'valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iIn =findCol(hdr,['intensit','maxint','int_max','imax']);
+  const iQC =findCol(hdr,['qualitycontrollevelcode','qualitycontrol','qclevel','qc']);
+  const NODATA=-999;
+  const ppByDate={},intByDate={},ppRaw={};
+  for(let i=1;i<rows.length;i++){
+    const row=rows[i];
+    // Filtra QC code >= 150 (dati stimati o non validi)
+    if(iQC>=0){const qc=parseInt(row[iQC]);if(!isNaN(qc)&&qc>=150)continue;}
+    let rawD=iD>=0?row[iD]:row[0];
+    if(!rawD&&rawD!==0)continue;
+    let date;
+    if(typeof rawD==='number'){
+      const d=XLSX.SSF.parse_date_code(rawD);
+      if(!d||!d.y)continue;
+      date=`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+    } else {
+      date=normalizeDate(String(rawD));
+    }
+    if(!date)continue;
+    if(iV>=0){
+      const v=parseFloat(String(row[iV]||0).replace(',','.'));
+      if(!isNaN(v)&&v>=0&&v!==NODATA){
+        ppByDate[date]=Math.round(((ppByDate[date]||0)+v)*10)/10;
+        if(!ppRaw[date])ppRaw[date]=[];
+        ppRaw[date].push(v);
+      }
+    }
+    if(iIn>=0){const v=parseFloat(String(row[iIn]||0).replace(',','.'));if(!isNaN(v)&&v>=0&&v!==NODATA)intByDate[date]=v;}
+  }
+  // Intensità automatica dal max orario se non esplicita
+  for(const[date,vals]of Object.entries(ppRaw)){
+    if(intByDate[date]===undefined&&vals.length>1)
+      intByDate[date]=Math.round(Math.max(...vals)*10)/10;
+  }
+  return{ppByDate,intByDate};
+}
+
 function parseSuborario(text) {
   const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
   if(lines.length<2)return{ppByDate:{},intByDate:{}};
@@ -346,13 +389,14 @@ async function loadStation(meta) {
       if(fname_lc.includes('suborario')) parsed=parseSuborario(await r.text());
       else if(fname_lc.match(/\.xlsx?$/)) {
         const buf=await r.arrayBuffer();
-        const wb=XLSX.read(new Uint8Array(buf),{type:'array',cellDates:true});
+        // raw:true = date come serial number, numeri come numeri — più affidabile
+        const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
         const ws=wb.Sheets[wb.SheetNames[0]];
-        // Usa sheet_to_json per preservare date e colonne QC
-        const xlrows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
-        // Converti in CSV-like text per parseCSV
-        const csv=xlrows.map(r=>r.join(',')).join('\n');
-        parsed=parseCSV(csv);
+        const xlrows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
+        if(xlrows.length) {
+          // Parsa direttamente senza passare per CSV
+          parsed=parseXLSXRows(xlrows);
+        } else parsed={ppByDate:{},intByDate:{}};
       } else parsed=parseCSV(await r.text());
 
       // MERGE CORRETTO: il primo file che ha un valore per una data "vince".
