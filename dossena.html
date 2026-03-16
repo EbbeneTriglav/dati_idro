@@ -175,7 +175,7 @@ canvas.spark{height:36px;width:100%;}
 <header>
   <div>
     <h1>📡 Dossena ST1</h1>
-    <div class="sub" id="hdrSub">IdStazione 1572 · 45.8784°N 9.7017°E · 1000 m s.l.m. · Dossena · Val Serina</div>
+    <div class="sub">IdStazione 1572 · 45.8784°N 9.7017°E · 1000 m s.l.m. · Dossena · Val Serina</div>
   </div>
   <div class="hdr-btns">
     <button class="btn btn-green" onclick="openDlModal()">⬇ Scarica dati</button>
@@ -205,7 +205,7 @@ canvas.spark{height:36px;width:100%;}
     <p>
       Scarica i dati dal <a href="https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati/" target="_blank" style="color:var(--accent)">portale ARPA</a>
       e caricali qui. Poi <b>carica lo stesso file su GitHub</b> nella cartella <code style="color:var(--accent)">dati/</code>
-      con il nome <code style="color:var(--accent)">cornalita_precip.csv</code> (o <code>cornalita_intensity.csv</code>) —
+      con il nome <code style="color:var(--accent)">Dossena_dati_orari.csv</code> —
       così si carica automaticamente al prossimo refresh.<br>
       Accetta: <b>CSV precipitazioni</b> · <b>CSV intensità max oraria</b> · <b>Excel multi-colonna</b> (precip + intensità + temp min/media/max).
     </p>
@@ -433,69 +433,28 @@ canvas.spark{height:36px;width:100%;}
 'use strict';
 
 // ════════════════════════════════════════════
-// CONFIGURAZIONE STAZIONE — Dossena
-// Sensori cercati automaticamente dall'API ARPA al primo caricamento
+// CONFIGURAZIONE STAZIONE — Dossena ST1
 // ════════════════════════════════════════════
 const STATION_ID  = 'dossena_st1';
 const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
 
-// Colori e label per tipo sensore
-const SENSOR_DEFAULTS = {
-  PP: {label:'Precipitazione', unit:'mm',  color:'#4fc3f7'},
-  T:  {label:'Temperatura',    unit:'°C',  color:'#ffb347'},
-  UR: {label:'Umidità',        unit:'%',   color:'#4caf82'},
-  VV: {label:'Vento',          unit:'m/s', color:'#b39ddb'},
-  DV: {label:'Dir. vento',     unit:'°',   color:'#fff176'},
-  RG: {label:'Radiazione',     unit:'W/m²',color:'#f06292'},
-};
-
 const ST_FALLBACK = {
-  id:         'dossena_st1',
-  name:       'Dossena ST1',
-  lat:        45.878392,
-  lon:        9.701726,
-  alt:        1000,
-  comune:     'Dossena',
-  githubBase: GITHUB_BASE,
-  csvFiles:   ['Dossena_dati_orari.csv'],  // file dati orari 2018-oggi
-  sensors:    {
-    PP: {id:31060, label:'Precipitazione', unit:'mm', color:'#4fc3f7'},
-  },  // IdSensore PP 31060 (IdStazione 1572)
-  dismessa:   false,
+  id:           'dossena_st1',
+  name:         'Dossena ST1',
+  lat:          45.878392,
+  lon:          9.701726,
+  alt:          1000,
+  comune:       'Dossena',
+  githubBase:   GITHUB_BASE,
+  csvFiles:     ['Dossena_dati_orari.csv'],
   forceExclude: [],
+  sensors: {
+    PP: {id:31060, label:'Precipitazione', unit:'mm', color:'#4fc3f7'},
+    // T: se presente aggiungere qui es: T: {id:XXXXX, label:'Temperatura', unit:'°C', color:'#ffb347'},
+  },
 };
 
 let ST = ST_FALLBACK;
-
-// Autodiscovery sensori dall'anagrafica ARPA
-async function discoverSensors(stationId) {
-  try {
-    const url = `https://www.dati.lombardia.it/resource/nf78-nj6b.json?$where=${encodeURIComponent("idstazione='"+stationId+"'")}&$limit=50`;
-    const r = await fetch(url);
-    if(!r.ok) return {};
-    const rows = await r.json();
-    const found = {};
-    const typeMap = [
-      ['PP', ['precipit','pioggia']],
-      ['T',  ['temperatura']],
-      ['UR', ['umid']],
-      ['VV', ['velocit','vento']],
-      ['DV', ['direzione']],
-      ['RG', ['radiaz']],
-    ];
-    for(const row of rows) {
-      const tipo = (row.tiposensore||'').toLowerCase();
-      const sid  = row.idsensore;
-      if(!sid) continue;
-      for(const [key, kws] of typeMap) {
-        if(!found[key] && kws.some(kw=>tipo.includes(kw))) {
-          found[key] = { id:Number(sid), ...SENSOR_DEFAULTS[key] };
-        }
-      }
-    }
-    return found;
-  } catch(e) { return {}; }
-}
 
 async function loadSTFromIndex() {
   try {
@@ -505,26 +464,28 @@ async function loadSTFromIndex() {
     const entry = (data.stazioni||[]).find(s=>s.id===STATION_ID);
     if(!entry) return false;
 
-    const COLORS={PP:'#4fc3f7',T:'#ffb347',UR:'#4caf82',VV:'#b39ddb',H:'#f06292'};
-    const LABELS={PP:'Precipitazione',T:'Temperatura',UR:'Umidità',VV:'Vento',H:'Idrometrico'};
-    const UNITS ={PP:'mm',T:'°C',UR:'%',VV:'m/s',H:'m'};
+    // Ricostruisci sensors da sensori_arpa in index.json
+    const COLORS={PP:'#4fc3f7',T:'#ffb347',UR:'#4caf82',VV:'#b39ddb'};
+    const LABELS={PP:'Precipitazione',T:'Temperatura',UR:'Umidità',VV:'Vento'};
+    const UNITS ={PP:'mm',T:'°C',UR:'%',VV:'m/s'};
     const sensors={};
     for(const[k,v]of Object.entries(entry.sensori_arpa||{})){
       if(v) sensors[k]={id:Number(v), label:LABELS[k]||k, unit:UNITS[k]||'', color:COLORS[k]||'#4fc3f7'};
     }
+    // Se index.json non ha sensori, usa il fallback
+    const finalSensors = Object.keys(sensors).length ? sensors : ST_FALLBACK.sensors;
 
     ST = {
       id:           entry.id,
-      name:         entry.nome         || ST_FALLBACK.name,
-      lat:          entry.lat          || ST_FALLBACK.lat,
-      lon:          entry.lon          || ST_FALLBACK.lon,
-      alt:          entry.quota        || ST_FALLBACK.alt,
-      comune:       entry.comune       || ST_FALLBACK.comune,
+      name:         entry.nome           || ST_FALLBACK.name,
+      lat:          entry.lat            || ST_FALLBACK.lat,
+      lon:          entry.lon            || ST_FALLBACK.lon,
+      alt:          entry.quota          || ST_FALLBACK.alt,
+      comune:       entry.comune         || ST_FALLBACK.comune,
       githubBase:   GITHUB_BASE,
       csvFiles:     entry.file_dati?.length ? entry.file_dati : ST_FALLBACK.csvFiles,
-      sensors,
-      dismessa:     entry.dismessa     || false,
-      forceExclude: entry.forceExclude || [],
+      forceExclude: entry.forceExclude   || [],
+      sensors:      finalSensors,
     };
     return true;
   } catch(e) {
@@ -533,30 +494,8 @@ async function loadSTFromIndex() {
   }
 }
 
-async function loadSTFromIndex() {
-  try {
-    const r = await fetch(GITHUB_BASE + 'index.json');
-    if (!r.ok) return false;
-    const data = await r.json();
-    const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
-    if (!entry) return false;
-    ST = {
-      id:         entry.id,
-      name:       entry.nome || ST_FALLBACK.name,
-      lat:        entry.lat  || ST_FALLBACK.lat,
-      lon:        entry.lon  || ST_FALLBACK.lon,
-      alt:        entry.quota || ST_FALLBACK.alt,
-      comune:     entry.comune || ST_FALLBACK.comune,
-      githubBase: GITHUB_BASE,
-      csvFiles:   entry.file_dati && entry.file_dati.length ? entry.file_dati : ST_FALLBACK.csvFiles,
-      sensors:    ST_FALLBACK.sensors, // sensori ARPA restano fissi
-    };
-    return true;
-  } catch(e) {
-    console.warn('index.json non disponibile, uso configurazione locale:', e.message);
-    return false;
-  }
-}
+
+
 const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
                  '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a','#80cbc4','#ffe082',
@@ -1430,9 +1369,9 @@ function execDl() {
     const rows=dataMap[type]||ppRows;
     if (fmt==='csv') {
       const blob=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${sn}_${type}_${from}_${to}.csv`;a.click();
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`dossena_st1_${type}_${from}_${to}.csv`;a.click();
     } else {
-      const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'Dati');XLSX.writeFile(wb,`${sn}_${type}_${from}_${to}.xlsx`);
+      const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'Dati');XLSX.writeFile(wb,`dossena_st1_${type}_${from}_${to}.xlsx`);
     }
   }
   closeDlModal();
@@ -1473,7 +1412,7 @@ function dlTableData() {
   const rows=[['Data','mm','IntMax_mmh','T_min','T_media','T_max']];
   Object.entries(ppByDate).filter(([d])=>!yr||d.startsWith(yr)).sort(([a],[b])=>a.localeCompare(b))
     .forEach(([d,mm])=>rows.push([d,mm,intByDate[d]??'',tmpByDate[d]?.tMin??'',tmpByDate[d]?.tMean??'',tmpByDate[d]?.tMax??'']));
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Dati');XLSX.writeFile(wb,`cornalita_${yr||'tutti'}.xlsx`);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Dati');XLSX.writeFile(wb,`dossena_st1_${yr||'tutti'}.xlsx`);
 }
 
 // ════════════════════════════════════════════
@@ -1566,34 +1505,7 @@ async function loadGithubFiles() {
 async function init() {
   const msg=document.getElementById('loadMsg');
   msg.textContent='Carico configurazione…';
-  const foundInIndex = await loadSTFromIndex();
-
-  // Se i sensori sono vuoti (non ancora in index.json), autodiscovery dall'API
-  if(Object.keys(ST.sensors).length === 0) {
-    msg.textContent='Ricerca sensori ARPA per Dossena…';
-    // Cerca la stazione Dossena nell'area geografica
-    try {
-      const searchUrl = `https://www.dati.lombardia.it/resource/nf78-nj6b.json?$where=${encodeURIComponent("comune='Dossena' OR nomestazione like '%DOSSENA%'")}&$limit=20`;
-      const searchR = await fetch(searchUrl);
-      if(searchR.ok) {
-        const searchData = await searchR.json();
-        if(searchData.length) {
-          const stId = searchData[0].idstazione;
-          // Aggiorna coordinate se trovate
-          if(searchData[0].lat) { ST.lat=parseFloat(searchData[0].lat); ST.lon=parseFloat(searchData[0].lng||searchData[0].lon); }
-          if(searchData[0].quota) ST.alt=parseInt(searchData[0].quota);
-          document.getElementById('hdrSub').textContent =
-            `IdStazione ${stId} · ${ST.lat.toFixed(4)}°N ${ST.lon.toFixed(4)}°E · ${ST.alt} m s.l.m. · Dossena`;
-          ST.sensors = await discoverSensors(stId);
-          const sNote=Object.entries(ST.sensors).map(([k,v])=>`${k}:#${v.id}`).join(' · ');
-          if(sNote) {
-            document.getElementById('dotApi').textContent='';
-            document.getElementById('lblApi').textContent=`Sensori trovati: ${sNote}`;
-          }
-        }
-      }
-    } catch(e) { console.warn('Autodiscovery fallita:', e); }
-  }
+  await loadSTFromIndex();
   try {
     // 1. Carica CSV storici da GitHub (se esistono)
     msg.textContent='Carico CSV storici da GitHub…';
@@ -1613,12 +1525,15 @@ async function init() {
       }
     } catch(e) { document.getElementById('lblApi').textContent='errore: '+e.message; }
 
-    msg.textContent='Carico temperatura API…';
-    try {
-      const tRows=await socrataFetch(ST.sensors.T.id, 50000);
-      const tMap=socrataAggregateTemp(tRows);
-      mergeData({temp:tMap},'live');
-    } catch(e) {}
+    // Temperatura API — solo se sensore T configurato
+    if(ST.sensors.T?.id) {
+      msg.textContent='Carico temperatura API…';
+      try {
+        const tRows=await socrataFetch(ST.sensors.T.id, 50000);
+        const tMap=socrataAggregateTemp(tRows);
+        mergeData({temp:tMap},'live');
+      } catch(e) {}
+    }
 
     // 3. Render
     msg.textContent='Render grafici…';
