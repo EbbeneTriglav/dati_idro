@@ -1069,18 +1069,20 @@ function renderEventiSpaziali() {
   // Indice copertura spaziale
   const nSt = avail.length;
   const coverData = events.map((ev,idx) => {
-    let covered=0;
+    let covered=0, withDataCount=0;
     avail.forEach(meta=>{
-      const d=stData[meta.id]; let sum=0;
+      const d=stData[meta.id]; let sum=0; let hasData=false;
       const start=new Date(ev.date);
       for(let j=0;j<win;j++){
         const dd=new Date(start); dd.setDate(dd.getDate()+j);
         const key=dd.toISOString().slice(0,10);
-        if(d.ppByDate[key]) sum+=d.ppByDate[key];
+        if(d.ppByDate[key]!==undefined){sum+=d.ppByDate[key];hasData=true;}
       }
-      if(sum>5) covered++;
+      if(hasData) { withDataCount++; if(sum>5) covered++; }
     });
-    return {ev, idx, covered, pct:Math.round(covered/nSt*100)};
+    // Copertura: % di stazioni CON DATI che registrano >5mm
+    const pct = withDataCount>0 ? Math.round(covered/withDataCount*100) : 0;
+    return {ev, idx, covered, total:withDataCount, pct};
   });
 
   dc('cEvtCover');
@@ -1102,7 +1104,7 @@ function renderEventiSpaziali() {
                  ticks:{callback:v=>v+'%'}},
               x:{grid:{color:'#1e3050'},ticks:{font:{size:9}}}},
       plugins:{legend:{labels:{color:'#e3eaf8'}},
-               tooltip:{callbacks:{label:i=>`${i.raw}% (${coverData[i.dataIndex].covered}/${nSt} stazioni)`}}}}
+               tooltip:{callbacks:{label:i=>`${i.raw}% (${coverData[i.dataIndex].covered}/${coverData[i.dataIndex].total} stazioni con dati)`}}}}
   });
 
   // Top 20 per copertura
@@ -1113,7 +1115,7 @@ function renderEventiSpaziali() {
     const col=d.pct>=80?'var(--red)':d.pct>=50?'var(--orange)':'var(--accent)';
     h+=`<tr><td>${medals[i]||i+1}</td><td>${d.ev.date}</td>
         <td style="font-weight:700">${d.ev.tot}mm</td>
-        <td style="color:${col};font-weight:700">${d.pct}% (${d.covered}/${nSt})</td></tr>`;
+        <td style="color:${col};font-weight:700">${d.pct}% (${d.covered}/${d.total})</td></tr>`;
   });
   document.getElementById('tblEvtCover').innerHTML=h+'</tbody></table>';
 }
@@ -1247,20 +1249,35 @@ function renderSincronia() {
 // ════════════════════════════════════════════
 function classifyEvent(vals, avail) {
   // vals: {stationId → mm} per un evento
-  // Restituisce 'frontale'|'orografico'|'convettivo'
-  const present=avail.filter(m=>vals[m.id]>5);
-  const coverage=present.length/avail.length;
-  
-  // Gradiente altimetrico normalizzato
-  if(present.length>=2) {
-    const pts=present.map(m=>({q:m.quota,v:vals[m.id]})).sort((a,b)=>a.q-b.q);
-    const dv=pts[pts.length-1].v-pts[0].v;
-    const dq=pts[pts.length-1].q-pts[0].q||1;
-    const grad=dv/dq*100; // mm per 100m
-    
-    if(coverage>=0.7) return 'frontale';
-    if(grad>40 && coverage>=0.4) return 'orografico';
+  // IMPORTANTE: consideriamo solo le stazioni che hanno DATI per quella data
+  // (vals[id] !== undefined, non solo > 5mm) per evitare di penalizzare
+  // stazioni storiche dismesse che non coprono il periodo dell'evento.
+
+  // Stazioni con dato disponibile per questa data
+  const withData  = avail.filter(m => vals[m.id] !== undefined && vals[m.id] !== null);
+  if(withData.length === 0) return 'convettivo';
+
+  // Stazioni con pioggia significativa (>5mm) tra quelle con dato
+  const present   = withData.filter(m => vals[m.id] > 5);
+
+  // Copertura: quante stazioni con dato hanno registrato >5mm
+  const coverage  = present.length / withData.length;
+
+  // Gradiente altimetrico: solo se almeno 2 stazioni con pioggia e range quota > 100m
+  let grad = 0;
+  if(present.length >= 2) {
+    const pts = present.map(m=>({q:m.quota, v:vals[m.id]})).sort((a,b)=>a.q-b.q);
+    const dq  = pts[pts.length-1].q - pts[0].q;
+    const dv  = pts[pts.length-1].v - pts[0].v;
+    if(dq > 100) grad = dv / dq * 100; // mm per 100m, solo se range quota significativo
   }
+
+  // Classificazione:
+  // Frontale   — copertura alta (≥65%), pioggia diffusa su tutto il bacino
+  // Orografico — gradiente altimetrico marcato (>30mm/100m), copertura media (≥35%)
+  // Convettivo — tutto il resto: localizzato, o stazioni poche con dati coincidenti
+  if(coverage >= 0.65) return 'frontale';
+  if(grad > 30 && coverage >= 0.35 && present.length >= 2) return 'orografico';
   return 'convettivo';
 }
 
@@ -1280,7 +1297,8 @@ function renderTipologia() {
     const vals={};
     avail.forEach(m=>{
       const v=stData[m.id].ppByDate[date];
-      vals[m.id]=v!==undefined?v:0;
+      // undefined = stazione non ha dato per questa data (diverso da 0mm!)
+      vals[m.id] = v !== undefined ? v : undefined;
     });
     const tipo=classifyEvent(vals,avail);
     const y=Number(date.slice(0,4)), mo=Number(date.slice(5,7));
