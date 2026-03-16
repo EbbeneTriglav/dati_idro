@@ -447,7 +447,7 @@ const ST_FALLBACK = {
   alt:        763,
   comune:     'Taleggio',
   githubBase: GITHUB_BASE,
-  csvFiles:   ['taleggio_precip.csv', 'taleggio_temp.csv'],
+  csvFiles:   ['taleggio.csv'],  // nome file caricato su GitHub
   sensors:    {}, // popolato da autodiscovery o da index.json
   dismessa:   true,  // stazione non più attiva — nessuna chiamata API live
   periodo:    '2004–2012',
@@ -931,6 +931,14 @@ function renderT30() {
 // ── Sensor cards
 async function renderSensorCards() {
   const grid=document.getElementById('sensorGrid'); grid.innerHTML='';
+  // Stazione dismessa: niente sensor cards live, mostra solo nota
+  if (ST.dismessa) {
+    grid.innerHTML=`<div style="grid-column:1/-1;padding:12px;color:var(--orange);
+      font-size:13px;font-family:'IBM Plex Mono',monospace;">
+      ⚠ Stazione non più attiva${ST.periodo?' ('+ST.periodo+')':''} —
+      dati live non disponibili. Le elaborazioni usano solo i dati storici caricati.</div>`;
+    return;
+  }
   for (const [k,s] of Object.entries(ST.sensors)) {
     const card=document.createElement('div'); card.className='sc';
     card.innerHTML=`
