@@ -1502,6 +1502,46 @@ async function loadGithubFiles() {
 // ════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════
+// ── Scopri tutti i sensori di IdStazione 1572
+async function scopriSensori() {
+  const btn = document.getElementById('btnScopri');
+  if(btn) { btn.textContent='⏳ Ricerca…'; btn.disabled=true; }
+  try {
+    const url = `https://www.dati.lombardia.it/resource/nf78-nj6b.json?$where=${encodeURIComponent("idstazione='1572'")}&$limit=50`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const rows = await r.json();
+    if(!rows.length) { alert('Nessun sensore trovato per IdStazione 1572'); return; }
+
+    let msg = `IdStazione 1572 — ${rows[0].nomestazione||'?'} (${rows[0].quota||'?'}m)\n\nSensori trovati:\n`;
+    const COLORS={PP:'#4fc3f7',T:'#ffb347',UR:'#4caf82',VV:'#b39ddb'};
+    const LABELS={PP:'Precipitazione',T:'Temperatura',UR:'Umidità',VV:'Vento'};
+    const UNITS={PP:'mm',T:'°C',UR:'%',VV:'m/s'};
+    const found={};
+    for(const row of rows) {
+      const tipo=(row.tiposensore||'').toLowerCase();
+      const sid=row.idsensore;
+      msg += `  #${sid} — ${row.tiposensore}\n`;
+      const typeMap=[['PP',['precipit']],['T',['temperatura']],['UR',['umid']],['VV',['velocit','vento']]];
+      for(const[k,kws] of typeMap) {
+        if(!found[k] && kws.some(kw=>tipo.includes(kw)))
+          found[k]={id:Number(sid),label:LABELS[k]||k,unit:UNITS[k]||'',color:COLORS[k]||'#7a94b8'};
+      }
+    }
+    msg += `\nSensori riconosciuti: ${Object.entries(found).map(([k,v])=>k+':#'+v.id).join(', ')}`;
+    msg += `\n\nVuoi aggiornare la configurazione con questi sensori?`;
+    if(confirm(msg)) {
+      ST.sensors = {...ST_FALLBACK.sensors, ...found};
+      alert('Sensori aggiornati! Ricarica la pagina per applicarli.\nAggiungi i numeri a index.json per renderli permanenti.');
+    }
+  } catch(e) {
+    alert('Errore: '+e.message);
+  } finally {
+    if(btn) { btn.textContent='🔍 Scopri sensori'; btn.disabled=false; }
+  }
+}
+
+
 async function init() {
   const msg=document.getElementById('loadMsg');
   msg.textContent='Carico configurazione…';
