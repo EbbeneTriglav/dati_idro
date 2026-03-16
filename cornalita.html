@@ -139,6 +139,14 @@ input[type=date]{background:var(--card2);color:var(--text);border:1px solid var(
 canvas.spark{height:36px;width:100%;}
 
 .note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;}
+.dec-btn{padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;
+  font-family:'IBM Plex Mono',monospace;}
+.dec-btn.on{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.hm-tot{width:56px;text-align:center;font-size:10px;color:var(--muted);font-weight:700;}
+.hm-totcell{width:56px;height:30px;border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.65);}
 
 /* Download modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:998;
@@ -173,6 +181,7 @@ canvas.spark{height:36px;width:100%;}
     <button class="btn btn-green" onclick="openDlModal()">⬇ Scarica dati</button>
     <a href="index.html" class="btn btn-outline">← Mappa</a>
     <a href="brembilla.html" class="btn btn-outline">Brembilla →</a>
+    <a href="analisi.html" class="btn btn-outline">🔬 Analisi</a>
   </div>
 </header>
 
@@ -265,6 +274,18 @@ canvas.spark{height:36px;width:100%;}
         <label>Spessore:</label>
         <select id="cumuThick"><option value="1.5">Sottile</option><option value="2.5" selected>Normale</option><option value="4">Spesso</option></select>
       </div>
+      <!-- Selezione per decennio -->
+      <div class="ctrls" style="flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+        <label>Decennio:</label>
+        <div id="decadeBar" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <label style="margin-left:8px">Anni custom:</label>
+        <input id="cumuYrsInput" type="text" placeholder="es. 1976,2000,2024"
+          style="background:var(--card2);color:var(--text);border:1px solid var(--border);
+          padding:4px 8px;border-radius:5px;font-size:12px;width:180px;"
+          oninput="applyCustomYears()"/>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" onclick="selectAllYears()">Tutti</button>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" onclick="clearAllYears()">Nessuno</button>
+      </div>
       <div class="yr-bar" id="yrBar"></div>
       <div class="ch-wrap" style="height:420px"><canvas id="cCumu"></canvas></div>
       <div class="note" id="invalidNote"></div>
@@ -276,7 +297,7 @@ canvas.spark{height:36px;width:100%;}
     <div class="card">
       <div class="card-title">🟦 Heatmap precipitazione mensile (mm)</div>
       <div class="ctrls">
-        <label>Scala:</label>
+        <label>Scala mensile:</label>
         <select id="hmScale"><option value="auto">Auto</option><option value="150">150mm</option><option value="250">250mm</option><option value="400">400mm</option></select>
         <label>Valori:</label>
         <select id="hmVals"><option value="1">Mostra</option><option value="0">Nascondi</option></select>
@@ -331,8 +352,28 @@ canvas.spark{height:36px;width:100%;}
       <div class="ch-wrap" style="height:280px"><canvas id="cEvt"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">🏆 Top 20 eventi precipitazione</div>
+      <div class="card-title">🏆 Top 20 eventi — 1 giorno</div>
       <div class="tbl-wrap" id="topPrecTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌊 Top 20 eventi — 2 giorni consecutivi</div>
+      <div class="tbl-wrap" id="top2dTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌊 Top 20 eventi — 3 giorni consecutivi</div>
+      <div class="tbl-wrap" id="top3dTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Massimi plurigiornalieri per anno</div>
+      <div class="ctrls">
+        <label>Finestra:</label>
+        <select id="multiDayWin">
+          <option value="1">1 giorno</option>
+          <option value="2" selected>2 giorni</option>
+          <option value="3">3 giorni</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMultiDay"></canvas></div>
     </div>
   </div>
 
@@ -721,7 +762,9 @@ function renderKPI() {
 
   const vYears = Object.keys(ppYM).map(Number);
   const annuals = vYears.map(y=>Object.entries(ppByDate).filter(([d])=>d.startsWith(y)).reduce((a,[,v])=>a+v,0));
-  document.getElementById('kMean').textContent = f(annuals.length?annuals.reduce((a,b)=>a+b)/annuals.length:0,0)+' mm';
+  // Escludi anno corrente dalle medie storiche
+  const histAnnuals = annuals.filter((_,i)=>vYears[i]<CY);
+  document.getElementById('kMean').textContent = f(histAnnuals.length?histAnnuals.reduce((a,b)=>a+b)/histAnnuals.length:0,0)+' mm';
 
   const [mxD,mxV] = sorted.sort(([,a],[,b])=>b-a)[0]||['—',0];
   document.getElementById('kMaxD').textContent  = f(mxV,1)+' mm';
@@ -733,7 +776,7 @@ function renderKPI() {
     document.getElementById('kMaxID').textContent = intSorted[0][0];
   }
 
-  const wetPY = vYears.map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(y)&&v>=0.1).length);
+  const wetPY = vYears.filter(y=>y<CY).map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(y)&&v>=0.1).length);
   document.getElementById('kWet').textContent = f(wetPY.length?wetPY.reduce((a,b)=>a+b)/wetPY.length:0,0);
 
   // status bar
@@ -817,12 +860,13 @@ function renderT30() {
 async function renderSensorCards() {
   const grid=document.getElementById('sensorGrid'); grid.innerHTML='';
   for (const [k,s] of Object.entries(ST.sensors)) {
-    const c=document.createElement('div'); c.className='sc';
-    c.innerHTML=`<div class="sc-top"><div class="sc-name">${s.label}</div><div class="sc-unit">${s.unit}</div></div>
+    const card=document.createElement('div'); card.className='sc';
+    card.innerHTML=`
+      <div class="sc-top"><div class="sc-name">${s.label}</div><div class="sc-unit">${s.unit}</div></div>
       <div class="sc-val" id="sv${s.id}" style="color:${s.color}">…</div>
       <div class="sc-time" id="st${s.id}">caricamento…</div>
-      <canvas class="spark" id="sp${s.id}"></canvas>`;
-    grid.appendChild(c);
+      <div style="position:relative;height:52px;margin-top:6px"><canvas id="sp${s.id}"></canvas></div>`;
+    grid.appendChild(card);
     (async()=>{
       try {
         const rows=await socrataFetch(s.id,200);
@@ -831,12 +875,39 @@ async function renderSensorCards() {
         const v=parseFloat(rows[0].valore??0);
         document.getElementById('sv'+s.id).textContent=`${f(v,1)} ${s.unit}`;
         document.getElementById('st'+s.id).textContent=(rows[0].data||'').slice(0,16).replace('T',' ');
-        const spark=rows.slice(0,48).reverse();
-        new Chart(document.getElementById('sp'+s.id),{type:'line',
-          data:{labels:spark.map(_=>''),datasets:[{data:spark.map(r=>parseFloat(r.valore??0)),
-            borderColor:s.color,borderWidth:1.5,pointRadius:0,fill:false,tension:.3}]},
-          options:{animation:false,scales:{x:{display:false},y:{display:false}},
-                   plugins:{legend:{display:false},tooltip:{enabled:false}},responsive:false}
+        const spark=rows.slice(0,72).reverse();
+        const lbl=spark.map(r=>(r.data||'').slice(0,16).replace('T',' '));
+        const unit=s.unit;
+        new Chart(document.getElementById('sp'+s.id),{
+          type:'line',
+          data:{
+            labels:lbl,
+            datasets:[{
+              data:spark.map(r=>parseFloat(r.valore??0)),
+              borderColor:s.color,backgroundColor:s.color+'22',
+              borderWidth:1.5,pointRadius:0,pointHoverRadius:4,
+              pointHoverBackgroundColor:s.color,
+              fill:true,tension:.3
+            }]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            scales:{x:{display:false},y:{display:false,grace:'10%'}},
+            plugins:{
+              legend:{display:false},
+              tooltip:{
+                backgroundColor:'rgba(15,25,45,.92)',
+                titleColor:'#7a94b8',bodyColor:'#e3eaf8',
+                borderColor:'#1e3050',borderWidth:1,
+                padding:8,
+                callbacks:{
+                  title:i=>i[0]?.label||'',
+                  label:i=>`${f(i.raw,1)} ${unit}`
+                }
+              }
+            }
+          }
         });
       } catch(e) { const el=document.getElementById('sv'+s.id);if(el)el.textContent='n/d'; }
     })();
@@ -855,6 +926,57 @@ function buildYrBar() {
     b.addEventListener('click',()=>{b.classList.toggle('on');renderCumulate();});
     bar.appendChild(b);
   });
+  buildDecadeBar();
+}
+
+function buildDecadeBar() {
+  const bar=document.getElementById('decadeBar'); bar.innerHTML='';
+  const years=Object.keys(ppYM).map(Number).sort();
+  if (!years.length) return;
+  const firstDec=Math.floor(years[0]/10)*10;
+  const lastDec =Math.floor(years[years.length-1]/10)*10;
+  for (let d=firstDec; d<=lastDec; d+=10) {
+    const btn=document.createElement('button');
+    btn.className='dec-btn'; btn.textContent=`${d}s`;
+    btn.addEventListener('click',()=>{ selectDecade(d); });
+    bar.appendChild(btn);
+  }
+  // Bottone anno corrente
+  const bCY=document.createElement('button');
+  bCY.className='dec-btn'; bCY.textContent=`${CY}`;
+  bCY.style.borderColor='var(--accent)'; bCY.style.color='var(--accent)';
+  bCY.addEventListener('click',()=>selectDecade(CY,1));
+  bar.appendChild(bCY);
+}
+
+function selectDecade(dec, single=0) {
+  // Deseleziona tutto, seleziona solo il decennio scelto
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>{
+    const y=Number(b.dataset.y);
+    const inDec=single ? y===dec : y>=dec && y<dec+10;
+    b.classList.toggle('on', inDec);
+  });
+  renderCumulate();
+}
+
+function selectAllYears() {
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.add('on'));
+  renderCumulate();
+}
+
+function clearAllYears() {
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.remove('on'));
+  renderCumulate();
+}
+
+function applyCustomYears() {
+  const raw=document.getElementById('cumuYrsInput').value;
+  const wanted=raw.split(/[,;\s]+/).map(Number).filter(n=>n>1900&&n<2100);
+  if (!wanted.length) return;
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>{
+    b.classList.toggle('on', wanted.includes(Number(b.dataset.y)));
+  });
+  renderCumulate();
 }
 
 function renderCumulate() {
@@ -917,20 +1039,63 @@ function renderHeatmap() {
   const show=document.getElementById('hmVals').value==='1';
   const years=Object.keys(ppYM).map(Number).sort();
   if (!years.length) return;
+
+  // Scala colore mensile
   let mx=scOpt==='auto'?0:Number(scOpt);
   if (scOpt==='auto') years.forEach(y=>mx=Math.max(mx,...(ppYM[y]||[])));
 
+  // Totali annuali (escludi anno corrente per la scala colore dei totali)
+  const annuals=years.map(y=>(ppYM[y]||[]).reduce((a,b)=>a+b,0));
+  const annualsHist=annuals.filter((_,i)=>years[i]<CY);
+  const mxAnn=annualsHist.length?Math.max(...annualsHist):Math.max(...annuals);
+  const mnAnn=annualsHist.length?Math.min(...annualsHist.filter(v=>v>0)):0;
+
+  // Colore per totale annuale — scala separata rispetto ai mensili
+  const annColor=(v)=>{
+    if (!v) return 'var(--card2)';
+    const t=Math.max(0,Math.min(1,(v-mnAnn)/(mxAnn-mnAnn||1)));
+    return mmColor(t*mx,mx); // riusa scala ma su range annuale normalizzato
+  };
+
+  // Media annua storica (escludi anno corrente)
+  const meanAnn=annualsHist.length?Math.round(annualsHist.reduce((a,b)=>a+b)/annualsHist.length):0;
+
   let h=`<div class="hm-row"><div class="hm-ylbl"></div>`;
   MONTHS.forEach(m=>h+=`<div class="hm-mlbl">${m}</div>`);
-  h+='</div>';
-  years.forEach(y=>{
+  h+=`<div class="hm-tot" style="color:var(--accent)">Totale</div></div>`;
+
+  years.forEach((y,yi)=>{
+    const tot=annuals[yi];
+    const isCY=y===CY;
     h+=`<div class="hm-row"><div class="hm-ylbl">${y}</div>`;
     for(let m=0;m<12;m++){
       const v=ppYM[y]?.[m]??0;
-      h+=`<div class="hm-cell" style="background:${mmColor(v,mx)}" title="${y} ${MONTHS[m]}: ${f(v,1)} mm">${show?Math.round(v):''}</div>`;
+      h+=`<div class="hm-cell" style="background:${mmColor(v,mx)}"
+        title="${y} ${MONTHS[m]}: ${f(v,1)} mm">${show?Math.round(v):''}</div>`;
     }
+    // Colonna totale annuale
+    const pct=meanAnn>0?Math.round((tot-meanAnn)/meanAnn*100):0;
+    const pctStr=!isCY&&meanAnn>0?(pct>=0?`+${pct}%`:`${pct}%`):'';
+    h+=`<div class="hm-totcell" style="background:${isCY?'var(--card2)':annColor(tot)}"
+      title="${y}: ${f(tot,0)} mm${pctStr?' ('+pctStr+' vs media)':''} ${isCY?'(anno in corso)':''}">
+      ${Math.round(tot)}${pctStr?'<br><span style=\'font-size:9px;opacity:.8\'>'+pctStr+'</span>':''}
+    </div>`;
     h+='</div>';
   });
+
+  // Riga media storica
+  h+=`<div class="hm-row" style="opacity:.6;border-top:1px solid var(--border);margin-top:3px">
+    <div class="hm-ylbl" style="font-size:10px">media</div>`;
+  for(let m=0;m<12;m++){
+    const vs=years.filter(y=>y<CY).map(y=>ppYM[y]?.[m]??0);
+    const mv=vs.length?vs.reduce((a,b)=>a+b)/vs.length:0;
+    h+=`<div class="hm-cell" style="background:${mmColor(mv,mx)};opacity:.85"
+      title="Media ${MONTHS[m]}: ${f(mv,1)} mm">${show?Math.round(mv):''}</div>`;
+  }
+  h+=`<div class="hm-totcell" style="background:${annColor(meanAnn)}"
+    title="Media annua storica: ${meanAnn} mm">${meanAnn}</div>`;
+  h+='</div>';
+
   document.getElementById('hmContainer').innerHTML=h;
 }
 
@@ -938,7 +1103,7 @@ function renderHeatmap() {
 function renderMensile() {
   const years=Object.keys(ppYM).map(Number);
   const stats=MONTHS.map((_,m)=>{
-    const vs=years.map(y=>ppYM[y]?.[m]??null).filter(v=>v!==null);
+    const vs=years.filter(y=>y<CY).map(y=>ppYM[y]?.[m]??null).filter(v=>v!==null); // escludi anno corrente
     if (!vs.length) return{mean:0,min:0,max:0};
     const mean=vs.reduce((a,b)=>a+b)/vs.length;
     return{mean,min:Math.min(...vs),max:Math.max(...vs)};
@@ -1016,10 +1181,46 @@ function renderIntHist() {
   document.getElementById('topIntTbl').innerHTML=h+'</tbody></table>';
 }
 
+// ── Calcolo sliding window (cumulate N giorni consecutivi)
+function computeSliding(n) {
+  const sorted=Object.entries(ppByDate).sort(([a],[b])=>a.localeCompare(b));
+  if (sorted.length<n) return [];
+  const results=[];
+  for (let i=0;i<=sorted.length-n;i++) {
+    // Verifica che i giorni siano consecutivi
+    let consec=true, tot=0;
+    for (let j=0;j<n;j++) {
+      const [d,v]=sorted[i+j];
+      if (j>0) {
+        const prev=new Date(sorted[i+j-1][0]);
+        const cur=new Date(d);
+        if ((cur-prev)/86400000>1.5) { consec=false; break; }
+      }
+      tot+=v;
+    }
+    if (consec && tot>0) results.push({ date:sorted[i][0], end:sorted[i+n-1][0], tot:Math.round(tot*10)/10 });
+  }
+  return results.sort((a,b)=>b.tot-a.tot);
+}
+
+function makeTopTable(data, cols) {
+  const med=['🥇','🥈','🥉'];
+  let h=`<table class="dtbl"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  data.slice(0,20).forEach((row,i)=>{
+    const color=i===0?'var(--red)':i<3?'var(--orange)':'var(--text)';
+    h+=`<tr><td>${med[i]||i+1}</td>`;
+    h+=row.cells.map((v,ci)=>`<td style="${ci===row.highlight?`color:${color};font-weight:700`:''}">${v}</td>`).join('');
+    h+='</tr>';
+  });
+  return h+'</tbody></table>';
+}
+
 // ── Estremi
 function renderEventi() {
   const thresh=Number(document.getElementById('evtThresh').value);
   const years=Object.keys(ppYM).map(Number).sort();
+
+  // Grafico giorni sopra soglia
   dc('cEvt');
   charts['cEvt']=new Chart(document.getElementById('cEvt'),{
     type:'bar',data:{labels:years,
@@ -1030,11 +1231,51 @@ function renderEventi() {
       scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'N°',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
       plugins:{legend:{labels:{color:'#e3eaf8'}}}}
   });
-  const top20=Object.entries(ppByDate).sort(([,a],[,b])=>b-a).slice(0,20);
-  const med=['🥇','🥈','🥉'];
-  let h=`<table class="dtbl"><thead><tr><th>#</th><th>Data</th><th>mm</th></tr></thead><tbody>`;
-  top20.forEach(([d,v],i)=>h+=`<tr><td>${med[i]||i+1}</td><td>${d}</td><td style="color:${i===0?'var(--red)':i<3?'var(--orange)':'var(--text)'};font-weight:700">${f(v,1)}</td></tr>`);
-  document.getElementById('topPrecTbl').innerHTML=h+'</tbody></table>';
+
+  // Top 20 — 1 giorno
+  const top1=Object.entries(ppByDate).sort(([,a],[,b])=>b-a);
+  document.getElementById('topPrecTbl').innerHTML=makeTopTable(
+    top1.map(([d,v])=>({cells:[d,f(v,1)+' mm'],highlight:1})),
+    ['#','Data','mm']
+  );
+
+  // Top 20 — 2 giorni
+  const sl2=computeSliding(2);
+  document.getElementById('top2dTbl').innerHTML=makeTopTable(
+    sl2.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
+    ['#','Periodo','mm']
+  );
+
+  // Top 20 — 3 giorni
+  const sl3=computeSliding(3);
+  document.getElementById('top3dTbl').innerHTML=makeTopTable(
+    sl3.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
+    ['#','Periodo','mm']
+  );
+
+  // Grafico max plurigiornalieri per anno
+  renderMultiDay();
+}
+
+function renderMultiDay() {
+  const win=Number(document.getElementById('multiDayWin').value);
+  const years=Object.keys(ppYM).map(Number).sort();
+  const slAll=computeSliding(win);
+  const data=years.map(y=>{
+    const hits=slAll.filter(r=>r.date.startsWith(y));
+    return hits.length?hits[0].tot:null;
+  });
+  dc('cMultiDay');
+  charts['cMultiDay']=new Chart(document.getElementById('cMultiDay'),{
+    type:'bar',data:{labels:years,datasets:[{
+      label:`Max ${win} giorni consecutivi (mm)`,data,
+      backgroundColor:'rgba(240,98,146,.55)',borderColor:'#f06292',borderWidth:1.5,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}},
+               tooltip:{callbacks:{label:i=>i.raw!=null?`${f(i.raw,1)} mm`:'n.d.'}}}}
+  });
 }
 
 // ── Tabella
@@ -1307,6 +1548,7 @@ document.getElementById('cumuThick').addEventListener('change',renderCumulate);
 document.getElementById('hmScale').addEventListener('change',renderHeatmap);
 document.getElementById('hmVals').addEventListener('change',renderHeatmap);
 document.getElementById('evtThresh').addEventListener('change',renderEventi);
+document.getElementById('multiDayWin').addEventListener('change',renderMultiDay);
 document.getElementById('intView').addEventListener('change',renderIntHist);
 document.getElementById('tblYr').addEventListener('change',renderTable);
 document.getElementById('tblMo').addEventListener('change',renderTable);
