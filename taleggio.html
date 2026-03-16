@@ -462,7 +462,7 @@ const ST_FALLBACK = {
   periodo:    '2004–2012',
   // Anni da escludere dalle medie — strumento non funzionante
   // Modificabile anche dall'interfaccia nel box upload
-  forceExclude: [2007],  // 2004/2005 coperti dal file storico Vedeseta
+  forceExclude: [2004, 2005, 2007],  // anni con malfunzionamento strumento
 };
 
 
@@ -745,13 +745,15 @@ function parseCSVText(text) {
 }
 
 function parseXLSXBuffer(buf) {
-  const wb = XLSX.read(buf, {type:'array', cellDates:true});
+  // raw:true preserva date come serial number Excel e numeri come numeri
+  // cellDates:false per gestire le date manualmente in modo affidabile
+  const wb = XLSX.read(buf, {type:'array'});
   const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, dateNF:'yyyy-mm-dd'});
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true});
   if (!rows.length) return {precip:{},intensity:{},temp:{}};
   const hdr = rows[0].map(h=>String(h||'').toLowerCase().trim());
   const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iV  = findCol(hdr, ['precipitazione cumulata giornaliera','precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
@@ -764,12 +766,17 @@ function parseXLSXBuffer(buf) {
     // Filtra QC code >= 150 (dati stimati o non validi)
     if (iQC>=0) { const qc=parseInt(row[iQC]); if(!isNaN(qc)&&qc>=150) continue; }
     let rawD = iD>=0 ? row[iD] : row[0];
-    if (!rawD) continue;
+    if (!rawD && rawD !== 0) continue;
     let date;
     if (typeof rawD === 'number') {
-      const d=XLSX.SSF.parse_date_code(rawD);
-      date=`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
-    } else { date=normalizeDate(String(rawD)); }
+      // Serial number Excel → data
+      const d = XLSX.SSF.parse_date_code(rawD);
+      if (!d || !d.y) continue;
+      date = `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+    } else {
+      // Stringa: normalizeDate prende solo la parte data (split ' ')[0])
+      date = normalizeDate(String(rawD));
+    }
     if (!date) continue;
     const NODATA2 = -999;
     if (iV>=0)  { const v=parseFloat(String(row[iV]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) precip[date]=Math.round(((precip[date]||0)+v)*10)/10; }
