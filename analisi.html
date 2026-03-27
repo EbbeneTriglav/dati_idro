@@ -15,521 +15,2171 @@
   --text:#e3eaf8;--muted:#7a94b8;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;overflow-x:hidden;}
-
-/* --- LOADING SCREEN --- */
-#loading{position:fixed;inset:0;background:rgba(11,17,32,.98);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-.spinner{width:42px;height:42px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+#loading{position:fixed;inset:0;background:rgba(11,17,32,.96);z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.spinner{width:42px;height:42px;border:4px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loadMsg{color:var(--muted);font-size:13px;font-family:'IBM Plex Mono',monospace;}
-
-/* --- HEADER --- */
-header{background:linear-gradient(135deg,#0a1628,#0d2344 50%,#1a3a5c);padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+header{background:linear-gradient(135deg,#0a1628,#0d2344 50%,#1a3a5c);
+  padding:14px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 header h1{font-size:1.1rem;font-weight:700;color:var(--accent);}
 header p{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
-
-.btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;text-decoration:none;display:inline-block;}
+.btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;
+  border:1.5px solid;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;text-decoration:none;display:inline-block;}
 .btn-outline{background:transparent;color:var(--accent);border-color:var(--accent);}
 .btn-outline:hover{background:var(--accent);color:var(--bg);}
-
-/* --- MAIN LAYOUT --- */
 .main{max-width:1400px;margin:0 auto;padding:16px 16px 80px;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;}
-.card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:12px;}
 .card-sub{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.7;}
-.ch-wrap{position:relative;width:100%;}
-
-/* --- TABS --- */
-.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:16px;flex-wrap:wrap;overflow-x:auto;scrollbar-width:none;}
-.tabs::-webkit-scrollbar{display:none;}
-.tab{padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;border-radius:6px 6px 0 0;color:var(--muted);background:transparent;border:none;transition:all .18s;white-space:nowrap;}
+.card-sub b{color:var(--text);}
+.card-sub em{color:var(--orange);font-style:normal;}
+.card-sub .nota{display:block;margin-top:8px;padding:8px 12px;background:var(--card2);
+  border-left:3px solid var(--accent);border-radius:4px;font-size:11px;line-height:1.6;}
+.ch-wrap{position:relative;}.ch-wrap canvas{width:100%!important;}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:16px;flex-wrap:wrap;}
+.tab{padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;border-radius:6px 6px 0 0;
+  color:var(--muted);background:transparent;border:none;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;}
 .tab:hover{color:var(--text);background:var(--card);}
 .tab.on{color:var(--accent);background:var(--card);border-bottom:2px solid var(--accent);}
-
 .panel{display:none;}.panel.on{display:block;}
-
-/* --- STATS & TABLES --- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}}
 .stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
-.stat-box{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px;}
-.stat-box .l{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
-.stat-box .v{font-size:1.3rem;font-weight:700;color:var(--accent);font-family:'IBM Plex Mono';margin:3px 0;}
-
-select{background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:4px;font-size:12px;outline:none;cursor:pointer;}
-select:focus{border-color:var(--accent);}
-
-/* --- AGGIUNGO IL RESTO DEL CODICE LOGICO --- */
+.stat-box{background:var(--card2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;flex:1;min-width:120px;}
+.stat-box .l{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.stat-box .v{font-size:1.3rem;font-weight:700;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin:3px 0;}
+.stat-box .s{font-size:10px;color:var(--muted);}
+.tbl-wrap{overflow:auto;max-height:350px;}
+table.dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.dtbl th{background:var(--card2);color:var(--accent);font-weight:700;padding:6px 8px;
+  text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;}
+.dtbl td{padding:5px 8px;border-bottom:1px solid var(--border);}
+.dtbl tr:hover td{background:var(--card2);}
+.warn{background:rgba(255,179,71,.1);border:1px solid var(--orange);border-radius:6px;
+  padding:8px 12px;font-size:12px;color:var(--orange);margin-bottom:12px;}
+.insight{background:rgba(79,195,247,.07);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;padding:10px 14px;margin:10px 0;font-size:12px;
+  line-height:1.7;color:var(--text);}
+.insight strong{color:var(--accent);}
 </style>
 </head>
 <body>
 
 <div id="loading">
   <div class="spinner"></div>
-  <div id="loadMsg">Inizializzazione database stazioni...</div>
+  <div id="loadMsg">Carico dati stazioni…</div>
 </div>
 
 <header>
   <div>
-    <h1 id="h-title">🔬 Analisi Spaziale e Climatica Avanzata — Val Brembana</h1>
-    <p>Regressioni, SPI, GEV e Trend di lungo periodo</p>
+    <h1 id="h-title">🔬 Analisi Spaziale e Climatica — Val Brembana / San Pellegrino</h1>
+    <p id="h-sub">Correlazioni spaziali · Gradienti altimetrici · Segnali di cambiamento climatico</p>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <a href="index.html" class="btn btn-outline">← Dashboard Map</a>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-outline" id="langBtn" onclick="toggleLang()" style="font-size:11px">🇬🇧 EN</button>
+    <a href="index.html" class="btn btn-outline">← Mappa</a>
+    <a href="cornalita.html" class="btn btn-outline">Cornalita</a>
   </div>
 </header>
 
 <div class="main">
+
+  <div class="warn" id="dataWarn" style="display:none"></div>
+
   <div class="tabs">
-    <button class="tab on" data-p="gradiente">📐 Gradiente</button>
-    <button class="tab" data-p="correlazione">🔗 Correlazione</button>
-    <button class="tab" data-p="trend">📉 Trend Storico</button>
-    <button class="tab" data-p="intensita">⚡ Intensità</button>
+    <button class="tab on" data-p="gradiente">📐 Gradiente Altimetrico</button>
+    <button class="tab" data-p="correlazione">🔗 Correlazione Stazioni</button>
+    <button class="tab" data-p="trend">📉 Trend Climatico</button>
+    <button class="tab" data-p="intensita">⚡ Evoluzione Intensità</button>
     <button class="tab" data-p="stagionalita">📅 Stagionalità</button>
-    <button class="tab" data-p="eventi">🌊 Eventi Estremi</button>
-    <button class="tab" data-p="sincronia">🔄 Sincronia</button>
-    <button class="tab" data-p="tipologia">🌦 Tipologia</button>
+    <button class="tab" data-p="note">📝 Note Idrologiche</button>
+    <button class="tab" data-p="eventi">🌊 Analisi Eventi Estremi</button>
+    <button class="tab" data-p="sincronia">🔄 Sincronia Spaziale</button>
+    <button class="tab" data-p="tipologia">🌦 Tipologia Piogge</button>
     <button class="tab" data-p="mannkendall">📊 Mann-Kendall</button>
-    <button class="tab" data-p="gev">📈 Tempi Ritorno (GEV)</button>
-    <button class="tab" data-p="spi">🌵 Siccità (SPI)</button>
+    <button class="tab" data-p="gev">📈 Tempi di Ritorno</button>
+    <button class="tab" data-p="spi">🌵 Siccità / SPI</button>
   </div>
 
+  <!-- GRADIENTE ALTIMETRICO -->
   <div class="panel on" id="p-gradiente">
     <div class="card">
-      <div class="card-title">Gradiente Altimetrico delle Precipitazioni</div>
+      <div class="card-title">📐 Gradiente Altimetrico Precipitazione</div>
+      <div class="card-sub">
+        Relazione tra quota (m s.l.m.) e precipitazione media annua per ciascuna stazione.
+        <b>Il gradiente altimetrico</b> esprime quanto aumentano le precipitazioni per ogni 100m di quota guadagnata.
+        In contesti alpini prealpini come la Val Brembana, valori tipici sono <em>+50÷150 mm/100m</em>,
+        con forte variabilità legata all'esposizione ai flussi umidi meridionali e all'effetto di sbarramento.
+        <span class="nota">ℹ Le stazioni con serie storiche più corte mostrano medie meno stabili — la retta di regressione usa solo stazioni con almeno 3 anni di dati.</span>
+      </div>
       <div class="stat-row" id="gradStatsRow"></div>
-      <div class="ch-wrap" style="height:450px"><canvas id="cGrad"></canvas></div>
+      <div class="ch-wrap" style="height:380px"><canvas id="cGrad"></canvas></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">📊 Media annua per stazione</div>
+        <div class="tbl-wrap" id="gradTbl"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💬 Interpretazione</div>
+        <div id="gradInterp" class="card-sub" style="line-height:1.8"></div>
+      </div>
     </div>
   </div>
 
+  <!-- CORRELAZIONE -->
   <div class="panel" id="p-correlazione">
     <div class="card">
-       <div class="card-title">Matrice di Correlazione di Pearson (R)</div>
-       <div class="ch-wrap" style="height:500px"><canvas id="cCorr"></canvas></div>
+      <div class="card-title">🔗 Correlazione Precipitazioni Annuali tra Stazioni</div>
+      <div class="card-sub">
+        Anni in comune tra le stazioni con dati storici disponibili.
+        Una <em>correlazione elevata (r &gt; 0.85)</em> indica che le stazioni rispondono agli stessi sistemi meteorologici —
+        utile per gap-filling e per valutare la rappresentatività spaziale di una stazione.
+        <b>Anni umidi e secchi sincronizzati</b> confermano la coerenza del campo pluviometrico.
+      </div>
+      <div class="ch-wrap" style="height:360px"><canvas id="cCorr"></canvas></div>
+      <div id="corrMatrix" style="margin-top:14px"></div>
     </div>
   </div>
 
+  <!-- TREND CLIMATICO -->
   <div class="panel" id="p-trend">
     <div class="card">
-       <div class="card-title">Confronto Trend Storici (1950-Oggi)</div>
-       <div class="ch-wrap" style="height:450px"><canvas id="cTrend"></canvas></div>
+      <div class="card-title">📉 Trend Precipitazione Annua — Cornalita (serie 1950–oggi)</div>
+      <div class="card-sub">
+        Analisi della variazione tendenziale della precipitazione totale annua sulla serie storica disponibile.
+        La retta di regressione lineare (OLS) indica la direzione del trend;
+        la media mobile a <em>10 anni</em> filtra la variabilità interannuale e rivela le fluttuazioni decennali.
+        <b>Attenzione:</b> trend statistici su precipitazioni richiedono serie &gt; 30 anni per essere robusti;
+        la variabilità naturale è elevata e può mascherare segnali antropogenici.
+        <span class="nota">⚠ Il test di Mann-Kendall (non parametrico) è più affidabile del trend lineare per serie pluviometriche con distribuzione non normale.</span>
+      </div>
+      <div class="stat-row" id="trendStatsRow"></div>
+      <div class="ch-wrap" style="height:380px"><canvas id="cTrend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Anomalie rispetto alla media storica per decennio</div>
+      <div class="card-sub">Scarto percentuale della precipitazione media decennale rispetto alla media dell'intero periodo.
+        Decenni con anomalia positiva = più piovosi della media storica, negativi = più secchi.</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cDecAnom"></canvas></div>
     </div>
   </div>
 
+  <!-- INTENSITA -->
+  <div class="panel" id="p-intensita">
+    <div class="card">
+      <div class="card-title">⚡ Evoluzione dell'Intensità Massima Oraria nel Tempo</div>
+      <div class="card-sub">
+        Uno dei segnali più robusti del cambiamento climatico sulle precipitazioni è
+        <b>l'aumento dell'intensità degli eventi estremi</b> a fronte di totali annuali stabili o in calo.
+        Il meccanismo fisico è noto: <em>+1°C di temperatura atmosferica → +7% di capacità dell'aria di contenere vapore acqueo</em>
+        (relazione di Clausius-Clapeyron), con conseguente concentrazione delle precipitazioni in eventi più brevi e intensi.
+        <span class="nota">📌 Per Cornalita si confronta la distribuzione dell'intensità massima oraria nei decenni disponibili.
+        Una tendenza all'aumento suggerisce una "tropicalizzazione" del regime pluviometrico.</span>
+      </div>
+      <div class="stat-row" id="intTrendStats"></div>
+      <div class="ch-wrap" style="height:340px"><canvas id="cIntTrend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Distribuzione eventi per classe di intensità — confronto decenni</div>
+      <div class="card-sub">Frequenza degli eventi in classi di intensità (mm/h). Uno spostamento verso le classi più alte
+        nel tempo indica incremento degli eventi estremi.</div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cIntDist"></canvas></div>
+    </div>
   </div>
+
+  <!-- STAGIONALITA -->
+  <div class="panel" id="p-stagionalita">
+    <div class="card">
+      <div class="card-title">📅 Evoluzione della Stagionalità — Precipitazioni Mensili per Decennio</div>
+      <div class="card-sub">
+        Il regime pluviometrico prealpino è tipicamente <b>bimodale</b>: picchi in primavera (aprile-maggio) e autunno (ottobre-novembre),
+        con minimo relativo estivo e invernale. Un cambiamento nella stagionalità — es. anticipazione/ritardo dei picchi,
+        aumento della siccità estiva, incremento degli eventi autunnali — è un segnale rilevante a livello idrologico
+        per la gestione delle risorse idriche e del rischio alluvionale.
+        <em>La serie Cornalita dal 1950 permette un confronto robusto tra decenni.</em>
+      </div>
+      <div class="ch-wrap" style="height:360px"><canvas id="cStagDec"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Contributo stagionale % — confronto primo e ultimo decennio</div>
+      <div class="card-sub">Percentuale del totale annuo nelle quattro stagioni meteorologiche. Variazioni ≥ 3-4% tra decenni
+        sono idrologicamente significative.</div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cStagComp"></canvas></div>
+      <div id="stagNote" class="insight" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ANALISI EVENTI ESTREMI SPAZIALI -->
+  <div class="panel" id="p-eventi">
+    <div class="card">
+      <div class="card-title">🌊 Top 50 eventi — distribuzione spaziale</div>
+      <div class="card-sub">
+        Per ogni evento estremo (massimo su 1, 2 o 3 giorni consecutivi) viene mostrata
+        la precipitazione registrata contemporaneamente in tutte le stazioni disponibili.
+        Permette di capire se l'evento era <em>localizzato</em> (una stazione sola) o
+        <em>diffuso</em> (tutto il bacino), e se c'è un gradiente spaziale coerente.
+      </div>
+      <div class="ctrls">
+        <label>Finestra:</label>
+        <select id="evtWin">
+          <option value="1" selected>1 giorno</option>
+          <option value="2">2 giorni</option>
+          <option value="3">3 giorni</option>
+        </select>
+        <label>Stazione riferimento:</label>
+        <select id="evtRef"></select>
+        <label>N° eventi:</label>
+        <select id="evtN">
+          <option value="20">Top 20</option>
+          <option value="50" selected>Top 50</option>
+          <option value="100">Top 100</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:420px"><canvas id="cEvtSpaz"></canvas></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">📊 Indice di copertura spaziale</div>
+        <div class="card-sub">Per ogni evento: quante stazioni registrano &gt;5mm nello stesso periodo.
+          Un indice alto = evento diffuso su tutto il bacino.</div>
+        <div class="ch-wrap" style="height:280px"><canvas id="cEvtCover"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏆 Top 20 eventi con maggiore copertura spaziale</div>
+        <div class="tbl-wrap" id="tblEvtCover"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SINCRONIA SPAZIALE -->
+  <div class="panel" id="p-sincronia">
+    <div class="card">
+      <div class="card-title">🔄 Anomalie annuali sincronizzate</div>
+      <div class="card-sub">
+        Anni umidi e secchi nelle varie stazioni: se le anomalie sono sincronizzate
+        (tutte positive o tutte negative nello stesso anno) significa che le precipitazioni
+        sono governate da circolazioni su grande scala. Se divergono, prevalgono effetti locali
+        (orografia, convezione estiva).
+        <span class="nota">Gli anni sono mostrati solo se presenti in almeno 2 stazioni.</span>
+      </div>
+      <div class="ch-wrap" style="height:400px"><canvas id="cSinc"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📐 Rapporto precipitazione stazione / media bacino</div>
+      <div class="card-sub">
+        Ogni stazione normalizzata sulla media delle stazioni disponibili per quell'anno.
+        Valori stabili nel tempo indicano un campo pluviometrico spazialmente consistente;
+        variazioni sistematiche suggeriscono cambiamenti nel regime o nella misura.
+      </div>
+      <div class="ch-wrap" style="height:340px"><canvas id="cRatio"></canvas></div>
+      <div id="sincNote" class="insight" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- TIPOLOGIA PIOGGE -->
+  <div class="panel" id="p-tipologia">
+    <div class="card">
+      <div class="card-title">🌦 Tipologia degli eventi: orografici vs convettivi vs frontali</div>
+      <div class="card-sub">
+        Classificazione degli eventi piovosi in base alla loro firma spaziale e temporale:
+        <br>• <em style="color:#4fc3f7">Frontali</em> — evento diffuso su tutto il bacino, durata 2-3 giorni,
+          precipitazione simile a quote diverse
+        <br>• <em style="color:#ffb347">Orografici</em> — forte gradiente quota/pioggia, alta quota molto più piovosa,
+          evento moderato e persistente
+        <br>• <em style="color:#f06292">Convettivi</em> — evento molto localizzato (1-2 stazioni), breve durata,
+          intensità elevata, spesso in quota o fondovalle
+        <span class="nota">La classificazione usa: dispersione spaziale, gradiente altimetrico normalizzato e
+          rapporto intensità/durata stimato dai dati giornalieri disponibili.</span>
+      </div>
+      <div class="ctrls">
+        <label>Soglia mm:</label>
+        <select id="tipoSoglia">
+          <option value="20">≥ 20mm</option>
+          <option value="30" selected>≥ 30mm</option>
+          <option value="50">≥ 50mm</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:360px"><canvas id="cTipo"></canvas></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">📅 Stagionalità per tipo evento</div>
+        <div class="card-sub">Distribuzione mensile degli eventi per tipologia — rivela quando dominano
+          i diversi meccanismi precipitativi.</div>
+        <div class="ch-wrap" style="height:280px"><canvas id="cTipoSeas"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Evoluzione temporale per tipo</div>
+        <div class="card-sub">Frequenza per decennio — segnali di cambiamento nella tipologia
+          degli eventi coerenti con il riscaldamento climatico.</div>
+        <div class="ch-wrap" style="height:280px"><canvas id="cTipoDec"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTE IDROLOGICHE -->
+  <div class="panel" id="p-note">
+    <div class="card">
+      <div class="card-title">📝 Note e Disamine Idrologiche — Val Brembana / San Pellegrino</div>
+      <div id="noteContent" class="card-sub" style="line-height:1.9;font-size:13px"></div>
+    </div>
+  </div>
+
+
+  <!-- MANN-KENDALL -->
+  <div class="panel" id="p-mannkendall">
+    <div class="card">
+      <div class="card-title" id="mk-title">📊 Test di Mann-Kendall — Significatività statistica dei trend</div>
+      <div class="card-sub" id="mk-desc">
+        Il <b>test di Mann-Kendall</b> (non parametrico) è il metodo standard in idrologia per rilevare trend
+        monotoni in serie storiche senza assumere una distribuzione normale dei dati
+        (Faquseh &amp; Grossi, <em>Sustain. Water Resour. Manag.</em>, 2024).
+        Il <b>Sen's slope</b> stima la pendenza robusta del trend in mm/anno.
+        <br>• <em>p &lt; 0.05</em>: trend statisticamente significativo al 95%
+        <br>• <em>τ &gt; 0</em>: trend positivo (aumento), <em>τ &lt; 0</em>: trend negativo (diminuzione)
+        <span class="nota">⚠ Il test MK richiede almeno 10 anni di dati per essere robusto.
+        La presenza di autocorrelazione positiva può gonfiare la significatività — per serie con forte persistenza
+        usare la variante modificata (Hamed &amp; Rao, 1998).</span>
+      </div>
+      <div class="ctrls">
+        <label id="mk-var-lbl">Variabile:</label>
+        <select id="mkVar">
+          <option value="annual">Totale annuo</option>
+          <option value="max1">Massimo giornaliero annuale</option>
+          <option value="wetdays">Giorni piovosi (≥1mm)</option>
+          <option value="seasonal">Per stagione</option>
+        </select>
+      </div>
+      <div id="mkResults" style="margin-bottom:12px"></div>
+      <div class="ch-wrap" style="height:360px"><canvas id="cMK"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="pci-title">📊 Precipitation Concentration Index (PCI)</div>
+      <div class="card-sub" id="pci-desc">
+        Il PCI misura quanto le precipitazioni sono concentrate nel tempo durante l'anno.
+        <b>PCI = 100 × Σ(pi²) / (Σpi)²</b> dove pi è la precipitazione mensile.
+        <br>• PCI &lt; 10: distribuzione uniforme · 11–20: moderata · &gt; 20: alta concentrazione stagionale
+        <br>Un <em>aumento del PCI nel tempo</em> indica che le piogge si concentrano in meno mesi —
+        segnale coerente con l'intensificazione del ciclo idrologico sotto riscaldamento climatico.
+      </div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cPCI"></canvas></div>
+    </div>
+  </div>
+
+  <!-- GEV / TEMPI DI RITORNO -->
+  <div class="panel" id="p-gev">
+    <div class="card">
+      <div class="card-title" id="gev-title">📈 Analisi degli estremi — Tempi di Ritorno (GEV)</div>
+      <div class="card-sub" id="gev-desc">
+        La distribuzione <b>GEV (Generalised Extreme Value)</b> con approccio "block maxima"
+        è il metodo standard per stimare i tempi di ritorno delle precipitazioni estreme
+        (Moccia et al., <em>Water Resour. Manage.</em>, 2024; Crisci et al., 2023).
+        Si adatta la GEV ai massimi annuali giornalieri tramite il metodo dei momenti (L-moments).
+        <br>I <b>quantili</b> stimati indicano la precipitazione attesa mediamente ogni T anni.
+        <span class="nota">📌 Con serie &lt;30 anni le stime per T&gt;50 anni hanno grande incertezza.
+        Le serie storiche lunghe (Cornalita dal 1950, Taleggio dal 1951) permettono stime più robuste.</span>
+      </div>
+      <div class="ctrls">
+        <label id="gev-st-lbl">Stazione:</label>
+        <select id="gevSt"></select>
+      </div>
+      <div id="gevStats" style="margin-bottom:12px"></div>
+      <div class="grid2">
+        <div class="ch-wrap" style="height:340px"><canvas id="cGEV"></canvas></div>
+        <div class="ch-wrap" style="height:340px"><canvas id="cGEVret"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="gev-comp-title">📊 Confronto tempi di ritorno tra stazioni</div>
+      <div class="card-sub" id="gev-comp-desc">Per T=2,5,10,50,100 anni — stima della precipitazione massima giornaliera attesa.</div>
+      <div class="ch-wrap" style="height:320px"><canvas id="cGEVcomp"></canvas></div>
+      <div class="tbl-wrap" id="gevTable" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- SPI / SICCITÀ -->
+  <div class="panel" id="p-spi">
+    <div class="card">
+      <div class="card-title" id="spi-title">🌵 Standardized Precipitation Index (SPI) — Analisi Siccità</div>
+      <div class="card-sub" id="spi-desc">
+        Lo <b>SPI</b> (McKee et al., 1993) è l'indice standard WMO per caratterizzare la siccità meteorologica.
+        Si calcola standardizzando la precipitazione cumulata su una finestra temporale rispetto alla distribuzione
+        storica (adattamento gamma).
+        <br>• SPI &lt; -1.0: siccità moderata · &lt; -1.5: severa · &lt; -2.0: estrema
+        <br>• SPI &gt; +1.0: umidità moderata · &gt; +2.0: estrema
+        <span class="nota">Finestre temporali: SPI-3 = siccità agricola · SPI-12 = siccità idrologica</span>
+      </div>
+      <div class="ctrls">
+        <label id="spi-st-lbl">Stazione:</label>
+        <select id="spiSt"></select>
+        <label id="spi-win-lbl">Finestra:</label>
+        <select id="spiWin">
+          <option value="3">SPI-3 (trimestrale)</option>
+          <option value="6">SPI-6 (semestrale)</option>
+          <option value="12" selected>SPI-12 (annuale)</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:380px"><canvas id="cSPI"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="spi-stat-title">📊 Statistiche siccità per decennio</div>
+      <div class="card-sub" id="spi-stat-desc">Frequenza e durata media degli episodi siccitosi (SPI &lt; -1) per decennio.</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cSPIdec"></canvas></div>
+      <div id="spiNote" class="insight" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+</div>
 
 <script>
 'use strict';
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+const SOCRATA = 'https://www.dati.lombardia.it/resource/647i-nhxk.json';
+const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const CY = new Date().getFullYear();
+const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
+                 '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a'];
+const charts = {};
+const f = (v,d=1) => v==null||isNaN(v)?'—':Number(v).toFixed(d);
 
-// --- LISTA STAZIONI AGGIORNATA ---
+Chart.defaults.color = '#7a94b8';
+Chart.defaults.borderColor = '#1e3050';
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+// ── Stazioni disponibili per analisi
+// STAZIONI_META viene popolata da index.json in init() — quote sempre aggiornate
+let STAZIONI_META = [];
+
+// Colori di fallback per stazione (se non definiti in index.json)
+const COLORI_DEFAULT = {
+  cornalita:'#4fc3f7', brembilla:'#4caf82', taleggio:'#81c784',
+  piazzacava:'#ffb347', pracastello:'#f06292', vettarola:'#b39ddb',
+  valtorta:'#4dd0e1', sangiovannibianco_storico:'#ce93d8', zogno:'#ffcc02',
+};
+// Stazioni da includere nell'analisi (ha dati storici significativi)
 const STAZIONI_IDS = [
-  'brembilla',
-  'cornalita',
-  'dossena',
-  'sangiovannibianco_storico',
-  'stazione',
-  'taleggio',
-  'valtorta'
+  'cornalita','brembilla','taleggio','piazzacava','pracastello',
+  'vettarola','valtorta','sangiovannibianco_storico','zogno','dossena_st1'
 ];
 
-// Metadati (Altezze recuperate dai tuoi file)
-const STAZIONI_INFO = {
-  'brembilla': { name: 'Brembilla', alt: 425, color: '#4fc3f7' },
-  'cornalita': { name: 'Cornalita', alt: 510, color: '#4caf82' },
-  'dossena': { name: 'Dossena', alt: 986, color: '#ffb347' },
-  'sangiovannibianco_storico': { name: 'S. Giovanni B.', alt: 445, color: '#ef5350' },
-  'stazione': { name: 'S. Pellegrino (Staz)', alt: 358, color: '#b39ddb' },
-  'taleggio': { name: 'Taleggio', alt: 850, color: '#f06292' },
-  'valtorta': { name: 'Valtorta', alt: 935, color: '#81c784' }
-};
+// Dati caricati per stazione: { id → { ppByDate, ppYM, intByDate } }
+const stData = {};
 
-let db = {}; 
-const charts = {};
-
-// --- FIX ERRORE SINTASSI ---
-function linearRegression(xs, ys) {
-  const n = xs.length;
-  if (n < 2) return { m: 0, b: 0, r2: 0 };
-  let sX=0, sY=0, sXY=0, sX2=0, sY2=0;
-  for(let i=0; i<n; i++){
-    sX += xs[i]; sY += ys[i];
-    sXY += xs[i]*ys[i];
-    sX2 += Math.pow(xs[i], 2); // FIX: Math.pow invece di **
-    sY2 += Math.pow(ys[i], 2); // FIX: Math.pow invece di **
-  }
-  const den = (n * sX2 - Math.pow(sX, 2));
-  if (den === 0) return { m: 0, b: 0, r2: 0 };
-  const m = (n * sXY - sX * sY) / den;
-  const b = (sY - m * sX) / n;
-  
-  // R2
-  const numR = (n * sXY - sX * sY);
-  const denR = Math.sqrt((n * sX2 - Math.pow(sX, 2)) * (n * sY2 - Math.pow(sY, 2)));
-  const r2 = denR !== 0 ? Math.pow(numR / denR, 2) : 0;
-  
-  return { m, b, r2 };
+// ════════════════════════════════════════════
+// PARSING (subset da cornalita.html)
+// ════════════════════════════════════════════
+function normalizeDate(s) {
+  s=(s||'').trim().split(' ')[0];
+  if(/^\d{4}[\/\-]\d{2}[\/\-]\d{2}$/.test(s)) return s.replace(/\//g,'-');
+  if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){const[d,m,y]=s.split('/');return`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  if(/^\d{1,2}-\d{1,2}-\d{4}$/.test(s)){const[d,m,y]=s.split('-');return`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  return null;
 }
-
-// ... CALCOLO MANN-KENDALL INTEGRALE (Senza errori unari) ...
-function calculateMK(data) {
-  const n = data.length;
-  let s = 0;
-  for (let i = 0; i < n - 1; i++) {
-    for (let j = i + 1; j < n; j++) {
-      let diff = data[j] - data[i];
-      if (diff > 0) s++; else if (diff < 0) s--;
-    }
-  }
-  // Varianza protetta da errori di precedenza
-  const varS = (n * (n - 1) * (2 * n + 5)) / 18;
-  let z = 0;
-  if (s > 0) z = (s - 1) / Math.sqrt(varS);
-  else if (s < 0) z = (s + 1) / Math.sqrt(varS);
-  
-  return { s, z, p: 2 * (1 - normalCDF(Math.abs(z))) };
-}
-
-function normalCDF(x) {
-  const t = 1 / (1 + 0.2316419 * Math.abs(x));
-  const d = 0.3989423 * Math.exp(-Math.pow(x,2) / 2);
-  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-  return x > 0 ? 1 - p : p;
-}
-
-// --- LOGICA CARICAMENTO ---
-async function init() {
-  const msg = document.getElementById('loadMsg');
-  
-  for (const id of STAZIONI_IDS) {
-    msg.textContent = `Scaricamento dati: ${STAZIONI_INFO[id].name}...`;
-    try {
-      const response = await fetch(GITHUB_BASE + id + '.csv'); // O .xlsx a seconda del tuo repo
-      if (!response.ok) continue;
-      const csvText = await response.text();
-      db[id] = parseCSV(csvText);
-    } catch (e) { console.error("Errore caricamento " + id, e); }
-  }
-
-  // --- RENDERING DEI GRAFICI ORIGINALI ---
-  renderAll();
-  document.getElementById('loading').style.display = 'none';
-}
+function findCol(hdr,kws){for(const kw of kws){const i=hdr.findIndex(h=>h.includes(kw));if(i>=0)return i;}return -1;}
 
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  return lines.map(line => {
-    const parts = line.split(',');
-    return { yr: parseInt(parts[0]), val: parseFloat(parts[1]) };
-  }).filter(d => !isNaN(d.yr) && !isNaN(d.val));
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length)return{ppByDate:{}};
+  const sep=lines[0].includes(';')?';':',';
+  const hdr=lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  const iD=findCol(hdr,['localdatetime','data-ora','data','date','time']);
+  const iV=findCol(hdr,['datavalue','precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iIn=findCol(hdr,['intensit','maxint','int_max','imax']);
+  const iQC=findCol(hdr,['qualitycontrollevelcode','qualitycontrol','qclevel','qc']);
+  const NODATA=-999;
+  const ppByDate={}, intByDate={}, ppRaw={};
+  for(let i=1;i<lines.length;i++){
+    const c=lines[i].split(sep).map(x=>x.replace(/"/g,'').trim());
+    if(iQC>=0){const qc=parseInt(c[iQC]);if(!isNaN(qc)&&qc>=150)continue;}
+    const date=normalizeDate(iD>=0?c[iD]:c[0]);
+    if(!date)continue;
+    if(iV>=0){const v=parseFloat(c[iV].replace(',','.'));if(!isNaN(v)&&v>=0&&v!==NODATA){ppByDate[date]=Math.round(((ppByDate[date]||0)+v)*10)/10;if(!ppRaw[date])ppRaw[date]=[];ppRaw[date].push(v);}}
+    if(iIn>=0){const v=parseFloat(c[iIn].replace(',','.'));if(!isNaN(v)&&v>=0&&v!==NODATA)intByDate[date]=v;}
+  }
+  for(const[date,vals]of Object.entries(ppRaw)){if(intByDate[date]===undefined&&vals.length>1)intByDate[date]=Math.round(Math.max(...vals)*10)/10;}
+  return{ppByDate,intByDate};
 }
-  // --- FUNZIONI DI CALCOLO E RENDERING (CORRETTE) ---
 
-function renderGradiente() {
-  const canvas = document.getElementById('cGrad');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  
-  // Recupero medie e quote da TUTTE le stazioni caricate
-  const points = STAZIONI_IDS.map(id => {
-    const meta = STAZIONI_INFO[id];
-    const sData = db[id];
-    if(!sData || sData.length === 0) return null;
-    const avg = sData.reduce((a, b) => a + b.val, 0) / sData.length;
-    return { x: meta.alt, y: avg, label: meta.name, color: meta.color };
-  }).filter(p => p !== null);
-
-  if(points.length < 2) return;
-
-  const reg = linearRegression(points.map(p => p.x), points.map(p => p.y));
-  
-  if(charts.grad) charts.grad.destroy();
-  charts.grad = new Chart(ctx, {
-    type: 'scatter',
-    data: {
-      datasets: [{
-        label: 'Stazioni',
-        data: points,
-        backgroundColor: points.map(p => p.color),
-        pointRadius: 8
-      }, {
-        label: 'Regressione (Gradiente)',
-        type: 'line',
-        data: [
-          { x: 300, y: reg.m * 300 + reg.b },
-          { x: 1100, y: reg.m * 1100 + reg.b }
-        ],
-        borderColor: 'rgba(255,255,255,0.3)',
-        borderDash: [5, 5],
-        showLine: true,
-        fill: false
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (c) => `${c.raw.label}: ${c.raw.y.toFixed(1)} mm a ${c.raw.x}m`
-          }
-        }
-      },
-      scales: {
-        x: { grid: { color: '#1e3050' }, title: { display: true, text: 'Quota (m s.l.m.)', color: 'var(--muted)' } },
-        y: { grid: { color: '#1e3050' }, title: { display: true, text: 'Media Annua (mm)', color: 'var(--muted)' } }
+function parseXLSXRows(rows) {
+  if(!rows.length) return {ppByDate:{},intByDate:{}};
+  const hdr=rows[0].map(h=>String(h||'').toLowerCase().trim());
+  const iD  =findCol(hdr,['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  =findCol(hdr,['precipitazione cumulata giornaliera','precipitazione giornaliera',
+                           'valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iIn =findCol(hdr,['intensit','maxint','int_max','imax']);
+  const iQC =findCol(hdr,['qualitycontrollevelcode','qualitycontrol','qclevel','qc']);
+  const NODATA=-999;
+  const ppByDate={},intByDate={},ppRaw={};
+  for(let i=1;i<rows.length;i++){
+    const row=rows[i];
+    // Filtra QC code >= 150 (dati stimati o non validi)
+    if(iQC>=0){const qc=parseInt(row[iQC]);if(!isNaN(qc)&&qc>=150)continue;}
+    let rawD=iD>=0?row[iD]:row[0];
+    if(!rawD&&rawD!==0)continue;
+    let date;
+    if(typeof rawD==='number'){
+      const d=XLSX.SSF.parse_date_code(rawD);
+      if(!d||!d.y)continue;
+      date=`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+    } else {
+      date=normalizeDate(String(rawD));
+    }
+    if(!date)continue;
+    if(iV>=0){
+      const v=parseFloat(String(row[iV]||0).replace(',','.'));
+      if(!isNaN(v)&&v>=0&&v!==NODATA){
+        ppByDate[date]=Math.round(((ppByDate[date]||0)+v)*10)/10;
+        if(!ppRaw[date])ppRaw[date]=[];
+        ppRaw[date].push(v);
       }
     }
-  });
+    if(iIn>=0){const v=parseFloat(String(row[iIn]||0).replace(',','.'));if(!isNaN(v)&&v>=0&&v!==NODATA)intByDate[date]=v;}
+  }
+  // Intensità automatica dal max orario se non esplicita
+  for(const[date,vals]of Object.entries(ppRaw)){
+    if(intByDate[date]===undefined&&vals.length>1)
+      intByDate[date]=Math.round(Math.max(...vals)*10)/10;
+  }
+  return{ppByDate,intByDate};
+}
 
-  // Aggiorno i box statistici del gradiente
-  const container = document.getElementById('gradStatsRow');
-  if(container) {
-    container.innerHTML = `
-      <div class="stat-box"><div class="l">Gradiente</div><div class="v">+${(reg.m * 100).toFixed(1)}</div><div class="s">mm / 100m quota</div></div>
-      <div class="stat-box"><div class="l">Correlazione (R²)</div><div class="v">${reg.r2.toFixed(2)}</div><div class="s">Bontà del fit orografico</div></div>
-    `;
+function parseSuborario(text) {
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)return{ppByDate:{},intByDate:{}};
+  const hdr=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  const iTime=hdr.findIndex(h=>h==='time'||h==='data');
+  const iPP=hdr.findIndex(h=>h.includes('precipit'));
+  const iInt=hdr.findIndex(h=>h.includes('intensit'));
+  if(iTime<0||iPP<0)return{ppByDate:{},intByDate:{}};
+  const ppByDate={},intByDate={};
+  const ppHour={};
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(',').map(c=>c.replace(/"/g,'').trim());
+    const ts=cols[iTime]||'';
+    const date=ts.slice(0,10);
+    if(!date||date.length<10)continue;
+    if(iPP>=0){const v=parseFloat(cols[iPP]);if(!isNaN(v)&&v>=0){ppByDate[date]=Math.round(((ppByDate[date]||0)+v)*10)/10;}}
+    if(iInt>=0){const v=parseFloat(cols[iInt]);if(!isNaN(v)&&v>0&&(intByDate[date]===undefined||v>intByDate[date]))intByDate[date]=v;}
+    if(iInt<0&&iPP>=0){const v=parseFloat(cols[iPP]);if(!isNaN(v)&&v>=0){const h=ts.slice(0,13);if(!ppHour[h])ppHour[h]={date,mm:0};ppHour[h].mm+=v;}}
+  }
+  if(iInt<0){for(const{date,mm}of Object.values(ppHour)){const mmh=Math.round(mm*6*10)/10;if(intByDate[date]===undefined||mmh>intByDate[date])intByDate[date]=mmh;}}
+  return{ppByDate,intByDate};
+}
+
+function buildPpYM(ppByDate, forceExclude=[]) {
+  const raw={};
+  for(const[d,mm]of Object.entries(ppByDate)){const[y,m]=d.split('-').map(Number);if(!raw[y])raw[y]=new Array(12).fill(0);raw[y][m-1]+=mm;}
+  const forced=new Set(forceExclude);
+  const ppYM={};
+  for(const[y,months]of Object.entries(raw)){
+    const yr=Number(y);
+    if(yr>=CY) continue;
+    if(forced.has(yr)) continue;  // escludi anni con strumento non funzionante
+    const total=months.reduce((a,b)=>a+b,0);if(total===0)continue;
+    // Filtro anni con troppi mesi a zero (dati mancanti)
+    const zeros=months.filter(v=>v===0).length;
+    let consec=0,maxC=0;
+    for(const v of months){if(v===0){consec++;maxC=Math.max(maxC,consec);}else consec=0;}
+    if(maxC>=4||zeros>=7) continue;
+    ppYM[y]=months;
+  }
+  return ppYM;
+}
+
+// ════════════════════════════════════════════
+// CARICA DATI DA GITHUB
+// ════════════════════════════════════════════
+async function loadStation(meta, indexData=null) {
+  try {
+    // Usa indexData già caricato in init() — evita N fetch ridondanti
+    let idx = indexData;
+    if(!idx) {
+      const idxR = await fetch(GITHUB_BASE+'index.json');
+      if(!idxR.ok) return null;
+      idx = await idxR.json();
+    }
+    const entry = (idx.stazioni||[]).find(s=>s.id===meta.id);
+    if(!entry||!entry.file_dati?.length) return null;
+
+    let ppByDate={}, intByDate={};
+    for(const fname of entry.file_dati) {
+      const r = await fetch(GITHUB_BASE+encodeURIComponent(fname));
+      if(!r.ok) continue;
+      const fname_lc=fname.toLowerCase();
+      let parsed;
+      if(fname_lc.includes('suborario')) parsed=parseSuborario(await r.text());
+      else if(fname_lc.match(/\.xlsx?$/)) {
+        const buf=await r.arrayBuffer();
+        // raw:true = date come serial number, numeri come numeri — più affidabile
+        const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const xlrows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
+        if(xlrows.length) {
+          // Parsa direttamente senza passare per CSV
+          parsed=parseXLSXRows(xlrows);
+        } else parsed={ppByDate:{},intByDate:{}};
+      } else parsed=parseCSV(await r.text());
+
+      // MERGE CORRETTO: il primo file che ha un valore per una data "vince".
+      // I file successivi riempiono solo i gap (date non ancora presenti).
+      // Questo evita di sommare due volte le date coperte da entrambi i file
+      // (es. Cornalita: file storico 1950-2026 + file intensità 2002-2026).
+      for(const[d,v]of Object.entries(parsed.ppByDate||{})) {
+        if(ppByDate[d]===undefined) ppByDate[d]=v;  // solo gap-fill, non sommare
+      }
+      // Intensità: prendi il massimo tra i file (può venire da fonti diverse)
+      for(const[d,v]of Object.entries(parsed.intByDate||{})) {
+        if(intByDate[d]===undefined||v>intByDate[d]) intByDate[d]=v;
+      }
+    }
+    // Leggi forceExclude da index.json se disponibile
+    const forceExclude = entry.forceExclude || [];
+    const ppYM=buildPpYM(ppByDate, forceExclude);
+    return {ppByDate, intByDate, ppYM};
+  } catch(e) {
+    console.warn(`Errore caricamento ${meta.id}:`, e);
+    return null;
   }
 }
 
-// --- CALCOLO MANN-KENDALL (LOGICA ORIGINALE RIPRISTINATA) ---
-function renderMannKendall() {
-  const v = document.getElementById('mkVar').value;
-  const resultsDiv = document.getElementById('mkResults');
-  let html = '<table class="dtbl"><thead><tr><th>Stazione</th><th>Trend (S)</th><th>Z-Score</th><th>p-value</th><th>Signif.</th></tr></thead><tbody>';
-
-  STAZIONI_IDS.forEach(id => {
-    const sData = db[id];
-    if(!sData || sData.length < 5) return;
-
-    const values = sData.map(d => d.val);
-    const mk = calculateMK(values);
-    const isSig = mk.p < 0.05 ? '<span style="color:var(--green)">SÌ</span>' : '<span style="color:var(--red)">NO</span>';
-    const trendDir = mk.s > 0 ? '📈' : '📉';
-
-    html += `<tr>
-      <td>${STAZIONI_INFO[id].name}</td>
-      <td>${trendDir} (${mk.s})</td>
-      <td>${mk.z.toFixed(2)}</td>
-      <td>${mk.p.toFixed(4)}</td>
-      <td>${isSig}</td>
-    </tr>`;
-  });
-
-  html += '</tbody></table>';
-  resultsDiv.innerHTML = html;
+// ════════════════════════════════════════════
+// CALCOLI
+// ════════════════════════════════════════════
+function annualTotal(ppByDate, y) {
+  return Object.entries(ppByDate).filter(([d])=>d.startsWith(y)).reduce((a,[,v])=>a+v,0);
 }
 
-// --- LOGICA GEV (VALORI ESTREMI) ---
-function renderGEV() {
-  const stId = document.getElementById('gevSt').value;
-  const sData = db[stId];
-  if(!sData) return;
+function meanAnnual(ppYM) {
+  const yrs=Object.keys(ppYM).map(Number).filter(y=>y<CY);
+  if(!yrs.length) return 0;
+  return yrs.map(y=>Object.values(ppYM[y]).reduce((a,b)=>a+b,0)).reduce((a,b)=>a+b)/yrs.length;
+}
 
-  const ctx = document.getElementById('cGEV').getContext('2d');
-  const annMax = sData.map(d => d.val); // Assumendo dati già massimi o elaborati
-  
-  // Qui inserisco la logica L-Moments per GEV (semplificata per stabilità)
-  // In un file reale qui ci sono le 200 righe di calcolo parametri k, sigma, mu
-  // che ho mantenuto protette da errori di potenza.
-  
-  // Rendering grafico tempi di ritorno (2, 5, 10, 20, 50, 100 anni)
-  const tr = [2, 5, 10, 20, 50, 100];
-  const estimates = tr.map(t => {
-      // Formula GEV: x = mu + (sigma/k) * (1 - (-ln(1-1/t))^k)
-      // Correzione SyntaxError qui sotto:
-      return { x: t, y: 150 + Math.log(t) * 40 }; // Esempio placeholder della tua logica
+function linearRegression(xs, ys) {
+  const n=xs.length; if(n<2)return{m:0,b:0,r2:0};
+  const mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
+  let num=0, den=0, ss_tot=0;
+  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)**2;ss_tot+=(ys[i]-my)**2;}
+  const m=den?num/den:0, b=my-m*mx;
+  const ss_res=ys.reduce((a,y,i)=>a+(y-(m*xs[i]+b))**2,0);
+  return{m,b,r2:ss_tot?1-ss_res/ss_tot:0};
+}
+
+function movingAvg(arr, w) {
+  return arr.map((_,i)=>{
+    if(i<w-1)return null;
+    const sl=arr.slice(i-w+1,i+1).filter(v=>v!=null);
+    return sl.length===w?sl.reduce((a,b)=>a+b)/w:null;
   });
+}
 
-  if(charts.gev) charts.gev.destroy();
-  charts.gev = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: tr,
-      datasets: [{
-        label: `Tempi di Ritorno - ${STAZIONI_INFO[stId].name}`,
-        data: estimates,
-        borderColor: 'var(--accent)',
-        backgroundColor: 'rgba(79, 195, 247, 0.1)',
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      scales: {
-        x: { type: 'logarithmic', title: { display: true, text: 'Tempo di Ritorno (Anni)' } },
-        y: { title: { display: true, text: 'Precipitazione (mm)' } }
+function pearsonR(xs, ys) {
+  const n=xs.length; if(n<3)return null;
+  const mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
+  let num=0,dx=0,dy=0;
+  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);dx+=(xs[i]-mx)**2;dy+=(ys[i]-my)**2;}
+  return dx&&dy?num/Math.sqrt(dx*dy):null;
+}
+
+// ════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════
+
+// ── Gradiente altimetrico
+function renderGradiente() {
+  const avail = STAZIONI_META.filter(m=>stData[m.id]);
+  if(avail.length<2){
+    document.getElementById('p-gradiente').innerHTML+=
+      '<div class="warn">Dati insufficienti per l\'analisi del gradiente — carica almeno 2 stazioni.</div>';
+    return;
+  }
+
+  const pts = avail.map(m=>{
+    const d=stData[m.id];
+    const mean=meanAnnual(d.ppYM);
+    const nYrs=Object.keys(d.ppYM).filter(y=>Number(y)<CY).length;
+    return{nome:m.nome, quota:m.quota, mean:Math.round(mean), nYrs, colore:m.colore};
+  }).filter(p=>p.nYrs>=3);
+
+  pts.sort((a,b)=>a.quota-b.quota);
+  const xs=pts.map(p=>p.quota), ys=pts.map(p=>p.mean);
+  const reg=linearRegression(xs,ys);
+
+  // Stats
+  const gradMM100=(reg.m*100).toFixed(0);
+  document.getElementById('gradStatsRow').innerHTML=`
+    <div class="stat-box"><div class="l">Gradiente</div><div class="v">${gradMM100>0?'+':''}${gradMM100}</div><div class="s">mm per 100m quota</div></div>
+    <div class="stat-box"><div class="l">R²</div><div class="v">${f(reg.r2,2)}</div><div class="s">correlazione quota–pioggia</div></div>
+    <div class="stat-box"><div class="l">Stazioni</div><div class="v">${pts.length}</div><div class="s">con ≥3 anni di dati</div></div>
+  `;
+
+  // Retta di regressione
+  const qMin=Math.min(...xs)-50, qMax=Math.max(...xs)+50;
+  const regLine=[{x:qMin,y:reg.m*qMin+reg.b},{x:qMax,y:reg.m*qMax+reg.b}];
+
+  dc('cGrad');
+  charts['cGrad']=new Chart(document.getElementById('cGrad'),{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Stazioni',data:pts.map(p=>({x:p.quota,y:p.mean,nome:p.nome})),
+       backgroundColor:pts.map(p=>p.colore),pointRadius:12,pointHoverRadius:14},
+      {label:`Regressione (r²=${f(reg.r2,2)})`,type:'line',data:regLine,
+       borderColor:'rgba(255,179,71,.6)',borderWidth:2,borderDash:[6,4],
+       pointRadius:0,fill:false,parsing:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{title:{display:true,text:'Quota (m s.l.m.)',color:'#7a94b8'},grid:{color:'#1e3050'}},
+        y:{title:{display:true,text:'Precipitazione media annua (mm)',color:'#7a94b8'},grid:{color:'#1e3050'},beginAtZero:false}
+      },
+      plugins:{
+        legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+        tooltip:{callbacks:{
+          label:i=>{
+            if(i.dataset.label==='Stazioni'){const p=pts[i.dataIndex];return`${p.nome}: ${p.mean} mm/anno (${p.nYrs} anni, ${p.quota}m)`;}
+            return`${f(i.parsed.y,0)} mm`;
+          }
+        }}
       }
     }
   });
+
+  // Tabella
+  let h=`<table class="dtbl"><thead><tr><th>Stazione</th><th>Quota m</th><th>Media mm/anno</th><th>Anni</th></tr></thead><tbody>`;
+  pts.forEach(p=>h+=`<tr><td style="color:${p.colore};font-weight:700">${p.nome}</td><td>${p.quota}</td><td>${p.mean}</td><td>${p.nYrs}</td></tr>`);
+  document.getElementById('gradTbl').innerHTML=h+'</tbody></table>';
+
+  // Interpretazione
+  const r2cl=reg.r2>0.85?'molto elevata':reg.r2>0.65?'moderata':reg.r2>0.4?'debole':'molto debole';
+  const gradCl=Math.abs(Number(gradMM100))>100?'molto marcato (tipico versante sopravento)':Math.abs(Number(gradMM100))>50?'moderato (tipico prealpino)':'contenuto (possibile effetto di sottovento o dati limitati)';
+  // Nota se ci sono stazioni molto vicine (rischio ridondanza)
+  const nearPairs=[];
+  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+    const dq=Math.abs(pts[i].quota-pts[j].quota);
+    // Calcola distanza approssimativa in km
+    const m1=STAZIONI_META.find(m=>m.nome===pts[i].nome||pts[i].nome.includes(m.nome));
+    const m2=STAZIONI_META.find(m=>m.nome===pts[j].nome||pts[j].nome.includes(m.nome));
+    if(m1&&m2&&m1.lat&&m2.lat){
+      const dlat=(m1.lat-m2.lat)*111, dlon=(m1.lon-m2.lon)*78;
+      const dist=Math.round(Math.sqrt(dlat*dlat+dlon*dlon)*10)/10;
+      if(dist<5) nearPairs.push(`${pts[i].nome} / ${pts[j].nome} (${dist}km, Δ${dq}m quota)`);
+    }
+  }
+  const nearNote=nearPairs.length?`<br><br>⚠ <strong>Stazioni molto vicine (< 5km):</strong> ${nearPairs.join(', ')} — valori simili attesi, utili per gradiente ma ridondanti per correlazione inter-annuale.`:'';
+
+  document.getElementById('gradInterp').innerHTML=`
+    <div class="insight">
+      <strong>Gradiente altimetrico: ${gradMM100>0?'+':''}${gradMM100} mm/100m</strong><br>
+      La correlazione quota-precipitazione è <em>${r2cl}</em> (R²=${f(reg.r2,2)}).
+      Il gradiente è ${gradCl}.<br><br>
+      ${reg.r2>0.5?`Con ${pts.length} stazioni la relazione altimetrica è statisticamente significativa e può essere usata per stimare le precipitazioni in punti non strumentati tramite interpolazione.`
+      :`Con ${pts.length} stazioni i dati sono ancora insufficienti per una relazione robusta — l'aggiunta di altre stazioni (es. Cancervo, Monte Zucco) consoliderebbe l'analisi.`}
+      <br><br>
+      <strong>Implicazioni idrologiche:</strong> un gradiente positivo significa che i bacini di alta quota ricevono significativamente più pioggia degli ambiti di fondovalle. Per il bilancio idrico del bacino del Brembo questo implica che le stazioni di pianura sottostimano sistematicamente gli apporti medi areali.
+      ${nearNote}
+    </div>`;
 }
 
-// --- LOGICA SPI (SICCITA') ---
-function renderSPI() {
-  const stId = document.getElementById('spiSt').value;
-  const windowSize = parseInt(document.getElementById('spiWin').value);
-  const sData = db[stId];
-  if(!sData) return;
+// ── Correlazione tra stazioni
+function renderCorrelazione() {
+  const avail=STAZIONI_META.filter(m=>stData[m.id]&&Object.keys(stData[m.id].ppYM).length>=3);
+  if(avail.length<2){document.getElementById('p-correlazione').innerHTML+='<div class="warn">Servono almeno 2 stazioni con dati storici.</div>';return;}
 
-  const ctx = document.getElementById('cSPI').getContext('2d');
-  
-  // Calcolo SPI (Semplificato per questa demo, ma con Math.pow per sicurezza)
-  const spiData = sData.map((d, i) => {
-      const val = (d.val - 1200) / 300; // Normalizzazione standard
-      return { x: d.yr, y: val };
+  // Serie annuali per stazione
+  const serieAnnue={};
+  avail.forEach(m=>{
+    const d=stData[m.id];
+    serieAnnue[m.id]=Object.keys(d.ppYM).map(Number).filter(y=>y<CY)
+      .map(y=>({y,v:Object.values(d.ppYM[y]).reduce((a,b)=>a+b,0)}));
   });
 
-  if(charts.spi) charts.spi.destroy();
-  charts.spi = new Chart(ctx, {
+  // Anni comuni tra Cornalita e la stazione con più dati
+  const refId=avail.sort((a,b)=>Object.keys(stData[b.id].ppYM).length-Object.keys(stData[a.id].ppYM).length)[0].id;
+  const refYears=new Set(serieAnnue[refId]?.map(p=>p.y)||[]);
+
+  // Grafico scatter — prima coppia disponibile
+  const pairs=[];
+  for(let i=0;i<avail.length;i++)for(let j=i+1;j<avail.length;j++)pairs.push([avail[i],avail[j]]);
+
+  const datasets=[];
+  const corrRows=[];
+  pairs.forEach(([a,b])=>{
+    const sa=serieAnnue[a.id], sb=serieAnnue[b.id];
+    const sbMap=Object.fromEntries(sb.map(p=>[p.y,p.v]));
+    const common=sa.filter(p=>sbMap[p.y]!=null);
+    if(common.length<3)return;
+    const xs=common.map(p=>p.v), ys=common.map(p=>sbMap[p.y]);
+    const r=pearsonR(xs,ys);
+    // Calcola distanza tra le due stazioni
+    let dist=null;
+    if(a.lat&&b.lat){
+      const dlat=(a.lat-b.lat)*111, dlon=(a.lon-b.lon)*78;
+      dist=Math.round(Math.sqrt(dlat*dlat+dlon*dlon)*10)/10;
+    }
+    const isNear = dist!==null && dist<4; // < 4km = stazioni molto vicine
+    corrRows.push({a:a.nome,b:b.nome,r,n:common.length,dist,isNear});
+    datasets.push({
+      label:`${a.nome} vs ${b.nome} (r=${r!=null?f(r,2):'?'})${isNear?' ⚠':''}`,
+      data:common.map((p,i)=>({x:p.v,y:ys[i],anno:p.y})),
+      backgroundColor:a.colore+(isNear?'44':'99'),
+      borderColor: isNear ? a.colore+'66' : 'transparent',
+      borderWidth: isNear ? 1.5 : 0,
+      borderDash: isNear ? [3,3] : [],
+      pointRadius:isNear?3:5, pointHoverRadius:7
+    });
+  });
+
+  dc('cCorr');
+  charts['cCorr']=new Chart(document.getElementById('cCorr'),{
+    type:'scatter',data:{datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{title:{display:true,text:'Precipitazione annua stazione A (mm)',color:'#7a94b8'},grid:{color:'#1e3050'}},
+        y:{title:{display:true,text:'Precipitazione annua stazione B (mm)',color:'#7a94b8'},grid:{color:'#1e3050'}}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+               tooltip:{callbacks:{label:i=>`${i.dataset.label.split('(')[0].trim()} — ${i.raw.anno}: A=${f(i.parsed.x,0)} B=${f(i.parsed.y,0)} mm`}}}
+    }
+  });
+
+  // Matrice correlazione
+  let h=`<table class="dtbl"><thead><tr><th>Coppia stazioni</th><th>r Pearson</th><th>Anni comuni</th><th>Distanza</th><th>Interpretazione</th></tr></thead><tbody>`;
+  corrRows.forEach(row=>{
+    const cl=row.r>0.9?'Eccellente':row.r>0.8?'Buona':row.r>0.65?'Moderata':'Debole';
+    const col=row.r>0.9?'var(--green)':row.r>0.8?'var(--accent)':row.r>0.65?'var(--orange)':'var(--red)';
+    const distTxt=row.dist!=null?`${row.dist}km`:'—';
+    const nearFlag=row.isNear?` <span style="color:var(--orange);font-size:10px" title="Stazioni molto vicine — correlazione attesa alta per prossimità geografica">⚠ vicine</span>`:'';
+    h+=`<tr${row.isNear?' style="opacity:.65"':''}>
+      <td>${row.a} / ${row.b}${nearFlag}</td>
+      <td style="color:${col};font-weight:700">${row.r!=null?f(row.r,3):'n.d.'}</td>
+      <td>${row.n}</td><td>${distTxt}</td>
+      <td style="color:${col}">${cl}</td></tr>`;
+  });
+  // Nota se ci sono coppie vicine
+  const nearCount=corrRows.filter(r=>r.isNear).length;
+  const nearNote=nearCount>0?`<div class="insight" style="margin-top:10px;font-size:11px">
+    ⚠ <strong>${nearCount} coppia/e con distanza < 4km</strong> (es. Cornalita / S. Giovanni Bianco storica):
+    la correlazione elevata è in parte dovuta alla prossimità geografica, non solo ai pattern meteorologici su larga scala.
+    Queste coppie sono utili per il gradiente altimetrico ma ridondanti per l'analisi della variabilità spaziale.
+    </div>`:'';
+  document.getElementById('corrMatrix').innerHTML=h+'</tbody></table>'+nearNote;
+}
+
+// ── Trend climatico
+function renderTrend() {
+  const corn=stData['cornalita'];
+  if(!corn){document.getElementById('p-trend').innerHTML+='<div class="warn">Dati Cornalita non disponibili.</div>';return;}
+
+  const years=Object.keys(corn.ppYM).map(Number).filter(y=>y<CY).sort();
+  const totals=years.map(y=>Math.round(Object.values(corn.ppYM[y]).reduce((a,b)=>a+b,0)));
+  const reg=linearRegression(years,totals);
+  const ma10=movingAvg(totals,10);
+  const mean=totals.reduce((a,b)=>a+b)/totals.length;
+  const trend10y=reg.m*10;
+
+  document.getElementById('trendStatsRow').innerHTML=`
+    <div class="stat-box"><div class="l">Media storica</div><div class="v">${Math.round(mean)}</div><div class="s">mm/anno</div></div>
+    <div class="stat-box"><div class="l">Trend</div><div class="v" style="color:${trend10y>0?'var(--green)':'var(--red)'}">${trend10y>0?'+':''}${f(trend10y,0)}</div><div class="s">mm per decennio</div></div>
+    <div class="stat-box"><div class="l">R²</div><div class="v">${f(reg.r2,3)}</div><div class="s">varianza spiegata</div></div>
+    <div class="stat-box"><div class="l">Anni analisi</div><div class="v">${years.length}</div><div class="s">${years[0]}–${years[years.length-1]}</div></div>
+  `;
+
+  dc('cTrend');
+  charts['cTrend']=new Chart(document.getElementById('cTrend'),{
+    type:'bar',
+    data:{labels:years,datasets:[
+      {label:'Totale annuo (mm)',data:totals,
+       backgroundColor:totals.map(v=>v>mean?'rgba(79,195,247,.5)':'rgba(240,98,146,.5)'),
+       borderColor:totals.map(v=>v>mean?'#4fc3f7':'#f06292'),borderWidth:1,borderRadius:2,order:2},
+      {label:'Media mobile 10 anni',data:ma10,type:'line',
+       borderColor:'#ffb347',borderWidth:2.5,pointRadius:0,tension:.4,fill:false,order:1},
+      {label:'Trend lineare',data:years.map(y=>Math.round(reg.m*y+reg.b)),type:'line',
+       borderColor:'rgba(239,83,80,.7)',borderWidth:2,borderDash:[8,5],pointRadius:0,fill:false,order:0},
+      {label:`Media ${Math.round(mean)} mm`,data:years.map(()=>Math.round(mean)),type:'line',
+       borderColor:'rgba(122,148,184,.4)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false,order:0},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+               tooltip:{mode:'index',intersect:false}}}
+  });
+
+  // Anomalie per decennio
+  const decades={};
+  years.forEach((y,i)=>{const d=Math.floor(y/10)*10;if(!decades[d])decades[d]=[];decades[d].push(totals[i]);});
+  const decLabels=Object.keys(decades).sort();
+  const decMeans=decLabels.map(d=>decades[d].reduce((a,b)=>a+b)/decades[d].length);
+  const decAnoms=decMeans.map(m=>Math.round((m-mean)/mean*100));
+
+  dc('cDecAnom');
+  charts['cDecAnom']=new Chart(document.getElementById('cDecAnom'),{
+    type:'bar',
+    data:{labels:decLabels.map(d=>`${d}s`),datasets:[{
+      label:'Anomalia % vs media storica',
+      data:decAnoms,
+      backgroundColor:decAnoms.map(v=>v>=0?'rgba(79,195,247,.6)':'rgba(240,98,146,.6)'),
+      borderColor:decAnoms.map(v=>v>=0?'#4fc3f7':'#f06292'),
+      borderWidth:1.5,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{grid:{color:'#1e3050'},title:{display:true,text:'%',color:'#7a94b8'},
+                 ticks:{callback:v=>(v>0?'+':'')+v+'%'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}},
+               tooltip:{callbacks:{label:i=>`${i.raw>0?'+':''}${i.raw}% vs media (${Math.round(decMeans[i.dataIndex])} mm/anno)`}}}}
+  });
+}
+
+// ── Evoluzione intensità
+function renderIntensita() {
+  const corn=stData['cornalita'];
+  if(!corn||!Object.keys(corn.intByDate).length){
+    document.getElementById('p-intensita').innerHTML+=
+      '<div class="warn">Dati intensità Cornalita non disponibili — carica il file Cornalita_intensita.xlsx.</div>';return;
+  }
+  const years=Object.keys(corn.ppYM).map(Number).filter(y=>y<CY).sort();
+  const intByY=years.map(y=>{
+    const vs=Object.entries(corn.intByDate).filter(([d])=>d.startsWith(y)).map(([,v])=>v);
+    return vs.length?Math.max(...vs):null;
+  });
+  const intMean=intByY.filter(v=>v!=null).reduce((a,b)=>a+b,0)/intByY.filter(v=>v!=null).length;
+  const reg=linearRegression(years.filter((_,i)=>intByY[i]!=null),intByY.filter(v=>v!=null));
+
+  document.getElementById('intTrendStats').innerHTML=`
+    <div class="stat-box"><div class="l">Media int. max</div><div class="v">${f(intMean,1)}</div><div class="s">mm/h</div></div>
+    <div class="stat-box"><div class="l">Trend</div><div class="v" style="color:${reg.m>0?'var(--red)':'var(--green)'}">${reg.m>0?'+':''}${f(reg.m*10,1)}</div><div class="s">mm/h per decennio</div></div>
+    <div class="stat-box"><div class="l">R²</div><div class="v">${f(reg.r2,3)}</div><div class="s"></div></div>
+  `;
+
+  dc('cIntTrend');
+  charts['cIntTrend']=new Chart(document.getElementById('cIntTrend'),{
+    type:'bar',
+    data:{labels:years,datasets:[
+      {label:'Intensità max annuale (mm/h)',data:intByY,
+       backgroundColor:'rgba(179,157,219,.55)',borderColor:'#b39ddb',borderWidth:1.5,borderRadius:3,order:2},
+      {label:'Trend',data:years.map(y=>f(reg.m*y+reg.b,1)),type:'line',
+       borderColor:'rgba(239,83,80,.7)',borderWidth:2,borderDash:[8,5],pointRadius:0,fill:false,order:1},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{grid:{color:'#1e3050'},title:{display:true,text:'mm/h',color:'#7a94b8'},beginAtZero:true},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},tooltip:{mode:'index',intersect:false}}}
+  });
+
+  // Distribuzione per classi di intensità, confronto primo vs ultimo decennio
+  const firstDec=Math.floor(years[0]/10)*10;
+  const lastDec=Math.floor(years[years.length-1]/10)*10;
+  const classes=[0,5,10,20,30,50,100];
+  const classLabels=classes.map((v,i)=>i<classes.length-1?`${v}–${classes[i+1]}`:`>${v}`);
+  const countByDec=(dec)=>{
+    const ents=Object.entries(corn.intByDate).filter(([d])=>{const y=Number(d.slice(0,4));return y>=dec&&y<dec+10;});
+    return classes.map((lo,i)=>{const hi=classes[i+1]||Infinity;return ents.filter(([,v])=>v>=lo&&v<hi).length;});
+  };
+
+  dc('cIntDist');
+  charts['cIntDist']=new Chart(document.getElementById('cIntDist'),{
+    type:'bar',
+    data:{labels:classLabels,datasets:[
+      {label:`${firstDec}s`,data:countByDec(firstDec),backgroundColor:'rgba(79,195,247,.6)',borderRadius:3},
+      {label:`${lastDec}s`,data:countByDec(lastDec),backgroundColor:'rgba(240,98,146,.6)',borderRadius:3},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{title:{display:true,text:'Classe intensità (mm/h)',color:'#7a94b8'},grid:{color:'#1e3050'}},
+              y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'N° eventi',color:'#7a94b8'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+}
+
+// ── Stagionalità per decennio
+function renderStagionalita() {
+  const corn=stData['cornalita'];
+  if(!corn){document.getElementById('p-stagionalita').innerHTML+='<div class="warn">Dati Cornalita non disponibili.</div>';return;}
+
+  const years=Object.keys(corn.ppYM).map(Number).sort();
+  const firstDec=Math.floor(years[0]/10)*10;
+  const lastDec=Math.floor(years[years.length-1]/10)*10;
+  const decades=[...new Set(years.map(y=>Math.floor(y/10)*10))].sort();
+
+  // Media mensile per decennio
+  const decData=decades.map(d=>{
+    const yrs=years.filter(y=>y>=d&&y<d+10);
+    return MONTHS.map((_,m)=>{
+      const vs=yrs.map(y=>corn.ppYM[y]?.[m]??0);
+      return vs.length?vs.reduce((a,b)=>a+b)/vs.length:0;
+    });
+  });
+
+  dc('cStagDec');
+  charts['cStagDec']=new Chart(document.getElementById('cStagDec'),{
+    type:'line',
+    data:{labels:MONTHS,datasets:decades.map((d,i)=>({
+      label:`${d}s`,
+      data:decData[i],
+      borderColor:PALETTE[i%PALETTE.length],
+      backgroundColor:'transparent',
+      borderWidth:d===lastDec?3:1.5,
+      borderDash:d===lastDec?[]:[4,3],
+      pointRadius:3,tension:.3
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm medi mensili',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},tooltip:{mode:'index',intersect:false}}}
+  });
+
+  // Stagioni: DJF=gen-feb-dic, MAM=mar-apr-mag, JJA=giu-lug-ago, SON=set-ott-nov
+  const stagIdx={INV:[11,0,1],PRI:[2,3,4],EST:[5,6,7],AUT:[8,9,10]};
+  const stagLabels=['Inverno (DJF)','Primavera (MAM)','Estate (JJA)','Autunno (SON)'];
+  const stagFirst=Object.values(stagIdx).map(idxs=>idxs.reduce((a,m)=>a+decData[0][m],0));
+  const stagLast=Object.values(stagIdx).map(idxs=>idxs.reduce((a,m)=>a+decData[decData.length-1][m],0));
+  const totFirst=stagFirst.reduce((a,b)=>a+b), totLast=stagLast.reduce((a,b)=>a+b);
+
+  dc('cStagComp');
+  charts['cStagComp']=new Chart(document.getElementById('cStagComp'),{
+    type:'bar',
+    data:{labels:stagLabels,datasets:[
+      {label:`${firstDec}s (%)`,data:stagFirst.map(v=>Math.round(v/totFirst*100)),
+       backgroundColor:'rgba(79,195,247,.6)',borderRadius:4},
+      {label:`${lastDec}s (%)`,data:stagLast.map(v=>Math.round(v/totLast*100)),
+       backgroundColor:'rgba(240,98,146,.6)',borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'% totale annuo',color:'#7a94b8'},
+                 ticks:{callback:v=>v+'%'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+
+  // Nota dinamica
+  const pctDelta=stagLabels.map((l,i)=>({l,d:Math.round(stagLast[i]/totLast*100-stagFirst[i]/totFirst*100)}));
+  const maxDelta=pctDelta.sort((a,b)=>Math.abs(b.d)-Math.abs(a.d))[0];
+  document.getElementById('stagNote').innerHTML=`
+    <strong>Variazione più significativa:</strong> ${maxDelta.l} —
+    ${maxDelta.d>0?`aumento di +${maxDelta.d}% dal ${firstDec}s al ${lastDec}s`:
+                   `riduzione di ${maxDelta.d}% dal ${firstDec}s al ${lastDec}s`}.
+    ${Math.abs(maxDelta.d)>=3?'<em>Variazione statisticamente rilevante a livello idrologico.</em>':
+                               'Variazione contenuta — il regime stagionale appare sostanzialmente stabile nel periodo analizzato.'}
+  `;
+}
+
+// ── Note idrologiche
+function renderNote() {
+  const corn=stData['cornalita'];
+  const nYrs=corn?Object.keys(corn.ppYM).filter(y=>Number(y)<CY).length:0;
+  const mean=corn?Math.round(meanAnnual(corn.ppYM)):0;
+
+  document.getElementById('noteContent').innerHTML=`
+<div class="insight">
+  <strong>Inquadramento del bacino</strong><br>
+  La Val Brembana è un bacino alpino-prealpino della Lombardia orientale che drena nel Fiume Brembo, affluente dell'Adda.
+  Il territorio è caratterizzato da un marcato gradiente altimetrico, dalle quote di fondovalle (San Giovanni Bianco ~410 m s.l.m.)
+  alle cime prealpine (Pizzo dei Tre Signori 2554 m). Questa conformazione orografica determina una forte variabilità spaziale
+  delle precipitazioni e rende la rete pluviometrica particolarmente importante per la gestione del rischio idraulico.
+</div>
+
+<div class="insight" style="margin-top:10px">
+  <strong>Regime pluviometrico prealpino</strong><br>
+  Il regime pluviometrico dell'area è classificabile come <em>prealpino orientale bimodale</em>, con precipitazioni distribuite
+  su tutto l'anno ma con picchi caratteristici in <b>aprile-maggio</b> (perturbazioni atlantiche con föhn in quota) e
+  <b>ottobre-novembre</b> (sistemi depressionari mediterranei con flussi sciroccali). Il minimo estivo è relativo —
+  non siccitoso come nel Mediterraneo — mentre il minimo invernale è dovuto alla predominanza di masse d'aria fredde e secche.
+  ${nYrs>0?`La serie di Cornalita (${nYrs} anni, media ${mean} mm/anno) è tra le più lunghe disponibili nell'area e costituisce il riferimento per l'analisi climatologica.`:''}
+</div>
+
+<div class="insight" style="margin-top:10px">
+  <strong>Impatto del cambiamento climatico — stato delle conoscenze</strong><br>
+  Per le Prealpi lombarde, le proiezioni climatiche (scenari CMIP6, Report IPCC AR6) indicano:
+  <br>• <em>Temperatura:</em> aumento di +1.5–3°C entro fine secolo (RCP4.5-8.5), con accelerazione dopo il 2050
+  <br>• <em>Precipitazioni totali:</em> variazioni contenute nei totali annui (-5/+5%), ma con redistribuzione stagionale
+  <br>• <em>Estremi:</em> aumento della frequenza e intensità degli eventi estremi (coerente con la relazione di Clausius-Clapeyron)
+  <br>• <em>Neve:</em> riduzione del manto nevoso e anticipo dello scioglimento, con impatti sui deflussi primaverili
+  <br>• <em>Siccità estiva:</em> periodi siccitosi più frequenti e prolungati in estate, nonostante totali annui stabili
+</div>
+
+<div class="insight" style="margin-top:10px">
+  <strong>Rischio idraulico e alluvionale</strong><br>
+  Il Brembo è classificato come torrente alpino con tempi di corrivazione brevi (6-12 ore dall'evento al picco di piena
+  per il bacino chiuso a Ponte San Pietro). Gli eventi più critici sono storicamente associati a:
+  <br>• <em>Precipitazioni intense e brevi</em> (≥30 mm/h per 1-3 ore) su bacini saturi
+  <br>• <em>Precipitazioni moderate prolungate</em> (>80 mm in 24h, >150 mm in 72h)
+  <br>• <em>Fusione nivale accelerata</em> associata a pioggia su neve (rain-on-snow)
+  <br><br>
+  I dati di intensità massima oraria raccolti sono particolarmente preziosi per la calibrazione dei modelli
+  di previsione idrologica e per l'aggiornamento delle curve di possibilità pluviometrica (IDF) locali.
+</div>
+
+<div class="insight" style="margin-top:10px">
+  <strong>Limite dell'analisi e prospettive</strong><br>
+  L'analisi presentata in questa pagina è di tipo esplorativo. Per conclusioni statisticamente robuste sul cambiamento climatico
+  sarebbero necessari: test di omogeneità delle serie storiche (SNHT, Pettitt), test non parametrici per la significatività
+  dei trend (Mann-Kendall, Theil-Sen), e confronto con dataset grillati di riferimento (E-OBS, GRIPHO per l'Italia).
+  <br><br>
+  <em>L'ampliamento della rete con le stazioni di Piazzacava, Pracastello e Vettarola permetterà in futuro
+  una caratterizzazione più accurata del gradiente altimetrico e della variabilità spaziale degli eventi estremi.</em>
+</div>
+  `;
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+// ════════════════════════════════════════════
+// ANALISI EVENTI ESTREMI SPAZIALI
+// ════════════════════════════════════════════
+
+function computeSlidingMulti(ppByDate, n) {
+  // Calcola tutte le finestre di n giorni consecutivi, restituisce array {date, end, tot}
+  const sorted = Object.entries(ppByDate).sort(([a],[b])=>a.localeCompare(b));
+  const results = [];
+  for(let i=0; i<=sorted.length-n; i++) {
+    let consec=true, tot=0;
+    for(let j=0;j<n;j++){
+      if(j>0){
+        const prev=new Date(sorted[i+j-1][0]), cur=new Date(sorted[i+j][0]);
+        if((cur-prev)/86400000>1.5){consec=false;break;}
+      }
+      tot+=sorted[i+j][1];
+    }
+    if(consec&&tot>0) results.push({date:sorted[i][0], end:sorted[i+n-1][0], tot:Math.round(tot*10)/10});
+  }
+  return results.sort((a,b)=>b.tot-a.tot);
+}
+
+function renderEventiSpaziali() {
+  const win   = Number(document.getElementById('evtWin').value);
+  const refId = document.getElementById('evtRef').value;
+  const topN  = Number(document.getElementById('evtN').value);
+  const f1    = (v,d=1)=>v==null||isNaN(v)?null:Number(v).toFixed(d);
+
+  const refData = stData[refId];
+  if(!refData) return;
+
+  // Calcola top N eventi sulla stazione di riferimento
+  const events = computeSlidingMulti(refData.ppByDate, win).slice(0, topN);
+  if(!events.length) return;
+
+  // Per ogni evento cerca i valori nelle altre stazioni nello stesso periodo
+  const avail = STAZIONI_META.filter(m=>stData[m.id]);
+  const datasets = avail.map(meta => {
+    const d = stData[meta.id];
+    const vals = events.map(ev => {
+      // Somma i giorni della finestra
+      let sum=0, found=false;
+      const start=new Date(ev.date);
+      for(let j=0;j<win;j++){
+        const dd=new Date(start); dd.setDate(dd.getDate()+j);
+        const key=dd.toISOString().slice(0,10);
+        if(d.ppByDate[key]!==undefined){sum+=d.ppByDate[key];found=true;}
+      }
+      return found ? Math.round(sum*10)/10 : null;
+    });
+    return {
+      label: meta.nome + ' ' + meta.quota + 'm',
+      data: vals,
+      backgroundColor: meta.colore + (meta.id===refId?'dd':'88'),
+      borderColor: meta.colore,
+      borderWidth: meta.id===refId ? 2 : 1,
+    };
+  });
+
+  dc('cEvtSpaz');
+  charts['cEvtSpaz'] = new Chart(document.getElementById('cEvtSpaz'), {
     type: 'bar',
     data: {
-      datasets: [{
-        label: `SPI-${windowSize} ${STAZIONI_INFO[stId].name}`,
-        data: spiData,
-        backgroundColor: spiData.map(d => d.y >= 0 ? 'var(--accent)' : 'var(--red)'),
-      }]
+      labels: events.map((e,i)=>`#${i+1} ${e.date.slice(0,7)}`),
+      datasets
     },
     options: {
+      responsive:true, maintainAspectRatio:false,
       scales: {
-        y: { min: -3, max: 3, title: { display: true, text: 'Indice SPI' } }
+        x: {grid:{color:'#1e3050'}, ticks:{maxRotation:45,font:{size:9}}},
+        y: {beginAtZero:true, grid:{color:'#1e3050'},
+            title:{display:true,text:'mm',color:'#7a94b8'}}
+      },
+      plugins: {
+        legend: {labels:{color:'#e3eaf8',usePointStyle:true,pointStyleWidth:10,
+                         font:{size:10}}},
+        tooltip: {mode:'index', intersect:false,
+          callbacks:{
+            title: (items) => {
+              const ev=events[items[0].dataIndex];
+              return `#${items[0].dataIndex+1} — ${ev.date}${win>1?' → '+ev.end:''} (ref: ${ev.tot}mm)`;
+            },
+            label: i => i.raw!=null ? ` ${i.dataset.label}: ${i.raw}mm` : ` ${i.dataset.label}: n.d.`
+          }}
       }
     }
   });
+
+  // Indice copertura spaziale
+  const nSt = avail.length;
+  const coverData = events.map((ev,idx) => {
+    let covered=0, withDataCount=0;
+    avail.forEach(meta=>{
+      const d=stData[meta.id]; let sum=0; let hasData=false;
+      const start=new Date(ev.date);
+      for(let j=0;j<win;j++){
+        const dd=new Date(start); dd.setDate(dd.getDate()+j);
+        const key=dd.toISOString().slice(0,10);
+        if(d.ppByDate[key]!==undefined){sum+=d.ppByDate[key];hasData=true;}
+      }
+      if(hasData) { withDataCount++; if(sum>5) covered++; }
+    });
+    // Copertura: % di stazioni CON DATI che registrano >5mm
+    const pct = withDataCount>0 ? Math.round(covered/withDataCount*100) : 0;
+    return {ev, idx, covered, total:withDataCount, pct};
+  });
+
+  dc('cEvtCover');
+  charts['cEvtCover'] = new Chart(document.getElementById('cEvtCover'), {
+    type:'bar',
+    data:{
+      labels: coverData.map((d,i)=>`#${i+1}`),
+      datasets:[{
+        label:'Stazioni con >5mm (%)',
+        data: coverData.map(d=>d.pct),
+        backgroundColor: coverData.map(d=>
+          d.pct>=80?'rgba(239,83,80,.7)':d.pct>=50?'rgba(255,179,71,.7)':'rgba(79,195,247,.6)'),
+        borderRadius:3
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,max:100,grid:{color:'#1e3050'},
+                 title:{display:true,text:'%',color:'#7a94b8'},
+                 ticks:{callback:v=>v+'%'}},
+              x:{grid:{color:'#1e3050'},ticks:{font:{size:9}}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}},
+               tooltip:{callbacks:{label:i=>`${i.raw}% (${coverData[i.dataIndex].covered}/${coverData[i.dataIndex].total} stazioni con dati)`}}}}
+  });
+
+  // Top 20 per copertura
+  const top20cov = [...coverData].sort((a,b)=>b.pct-a.pct).slice(0,20);
+  const medals=['🥇','🥈','🥉'];
+  let h=`<table class="dtbl"><thead><tr><th>#</th><th>Data</th><th>Ref mm</th><th>Copertura</th></tr></thead><tbody>`;
+  top20cov.forEach((d,i)=>{
+    const col=d.pct>=80?'var(--red)':d.pct>=50?'var(--orange)':'var(--accent)';
+    h+=`<tr><td>${medals[i]||i+1}</td><td>${d.ev.date}</td>
+        <td style="font-weight:700">${d.ev.tot}mm</td>
+        <td style="color:${col};font-weight:700">${d.pct}% (${d.covered}/${d.total})</td></tr>`;
+  });
+  document.getElementById('tblEvtCover').innerHTML=h+'</tbody></table>';
 }
-  <script>
-'use strict';
 
-const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+function initEvtRefSelect() {
+  const sel=document.getElementById('evtRef');
+  sel.innerHTML='';
+  STAZIONI_META.filter(m=>stData[m.id]).forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m.id; o.textContent=m.nome;
+    if(m.id==='cornalita') o.selected=true;
+    sel.appendChild(o);
+  });
+}
 
-// CONFIGURAZIONE COMPLETA STAZIONI (Nomi file e Metadati)
-const STAZIONI_IDS = [
-  'brembilla',
-  'cornalita',
-  'dossena',
-  'sangiovannibianco_storico',
-  'stazione',
-  'taleggio',
-  'valtorta'
-];
+// ════════════════════════════════════════════
+// SINCRONIA SPAZIALE
+// ════════════════════════════════════════════
+function renderSincronia() {
+  const avail=STAZIONI_META.filter(m=>stData[m.id]&&Object.keys(stData[m.id].ppYM).length>=3);
+  if(avail.length<2){document.getElementById('p-sincronia').querySelector('.card').innerHTML+='<div class="warn">Dati insufficienti.</div>';return;}
 
-const STAZIONI_INFO = {
-  'brembilla': { name: 'Brembilla', alt: 425, color: '#4fc3f7', url: 'brembilla.html' },
-  'cornalita': { name: 'Cornalita', alt: 510, color: '#4caf82', url: 'cornalita.html' },
-  'dossena': { name: 'Dossena', alt: 986, color: '#ffb347', url: 'dossena.html' },
-  'sangiovannibianco_storico': { name: 'S. Giovanni B.', alt: 445, color: '#ef5350', url: 'sangiovannibianco_storico.html' },
-  'stazione': { name: 'S. Pellegrino (Staz)', alt: 358, color: '#b39ddb', url: 'stazione.html' },
-  'taleggio': { name: 'Taleggio', alt: 850, color: '#f06292', url: 'taleggio.html' },
-  'valtorta': { name: 'Valtorta', alt: 935, color: '#81c784', url: 'valtorta.html' }
+  // Raccogli totali annuali per stazione
+  const allYears=new Set();
+  avail.forEach(m=>{Object.keys(stData[m.id].ppYM).forEach(y=>allYears.add(Number(y)));});
+  const years=[...allYears].sort().filter(y=>{
+    return avail.filter(m=>stData[m.id].ppYM[y]!==undefined).length>=2;
+  });
+
+  // Anomalia % rispetto alla media della singola stazione
+  const datasets=avail.map(meta=>{
+    const ppYM=stData[meta.id].ppYM;
+    const stYears=Object.keys(ppYM).map(Number).filter(y=>y<new Date().getFullYear());
+    const mean=stYears.length?stYears.map(y=>ppYM[y].reduce((a,b)=>a+b,0)).reduce((a,b)=>a+b)/stYears.length:0;
+    return {
+      label:meta.nome,
+      data:years.map(y=>{
+        if(!ppYM[y]) return null;
+        const tot=ppYM[y].reduce((a,b)=>a+b,0);
+        return mean>0?Math.round((tot-mean)/mean*100):null;
+      }),
+      borderColor:meta.colore, backgroundColor:'transparent',
+      borderWidth:2, pointRadius:3, pointHoverRadius:5,
+      tension:.3, spanGaps:true
+    };
+  });
+
+  dc('cSinc');
+  charts['cSinc']=new Chart(document.getElementById('cSinc'),{
+    type:'line', data:{labels:years,datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:'#1e3050'}},
+        y:{grid:{color:'#1e3050'},
+           title:{display:true,text:'Anomalia %',color:'#7a94b8'},
+           ticks:{callback:v=>(v>0?'+':'')+v+'%'}},
+      },
+      plugins:{
+        legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+        tooltip:{mode:'index',intersect:false,
+          callbacks:{label:i=>i.raw!=null?` ${i.dataset.label}: ${i.raw>0?'+':''}${i.raw}%`:` ${i.dataset.label}: n.d.`}}
+      }
+    }
+  });
+
+  // Rapporto stazione / media bacino
+  const ratioDatasets=avail.map(meta=>{
+    const ppYM=stData[meta.id].ppYM;
+    return {
+      label:meta.nome+' '+meta.quota+'m',
+      data:years.map(y=>{
+        if(!ppYM[y]) return null;
+        const tot=ppYM[y].reduce((a,b)=>a+b,0);
+        // Media bacino = media di tutte le stazioni disponibili quell'anno
+        const basin=avail.filter(m=>stData[m.id].ppYM[y]);
+        const basinMean=basin.length?basin.map(m=>stData[m.id].ppYM[y].reduce((a,b)=>a+b,0)).reduce((a,b)=>a+b)/basin.length:1;
+        return basinMean>0?Math.round(tot/basinMean*100)/100:null;
+      }),
+      borderColor:meta.colore,backgroundColor:'transparent',
+      borderWidth:2,pointRadius:2,tension:.3,spanGaps:true
+    };
+  });
+
+  dc('cRatio');
+  charts['cRatio']=new Chart(document.getElementById('cRatio'),{
+    type:'line',data:{labels:years,datasets:ratioDatasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:'#1e3050'}},
+        y:{grid:{color:'#1e3050'},
+           title:{display:true,text:'Ratio vs media bacino',color:'#7a94b8'},
+           ticks:{callback:v=>v+'×'}},
+      },
+      plugins:{
+        annotation:{
+          annotations:{line1:{type:'line',yMin:1,yMax:1,borderColor:'rgba(122,148,184,.4)',borderWidth:1.5,borderDash:[4,4]}}
+        },
+        legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:10}}},
+        tooltip:{mode:'index',intersect:false}
+      }
+    }
+  });
+
+  // Nota interpretativa
+  const corr_pairs=[];
+  for(let i=0;i<avail.length;i++) for(let j=i+1;j<avail.length;j++){
+    const a=avail[i],b=avail[j];
+    const ppA=stData[a.id].ppYM, ppB=stData[b.id].ppYM;
+    const commonYrs=years.filter(y=>ppA[y]&&ppB[y]);
+    if(commonYrs.length<5) continue;
+    const vA=commonYrs.map(y=>ppA[y].reduce((s,v)=>s+v,0));
+    const vB=commonYrs.map(y=>ppB[y].reduce((s,v)=>s+v,0));
+    const mA=vA.reduce((s,v)=>s+v)/vA.length, mB=vB.reduce((s,v)=>s+v)/vB.length;
+    let num=0,dA=0,dB=0;
+    vA.forEach((v,i)=>{num+=(v-mA)*(vB[i]-mB);dA+=(v-mA)**2;dB+=(vB[i]-mB)**2;});
+    const r=dA&&dB?num/Math.sqrt(dA*dB):0;
+    corr_pairs.push({a:a.nome,b:b.nome,r:Math.round(r*100)/100,n:commonYrs.length});
+  }
+  corr_pairs.sort((a,b)=>b.r-a.r);
+  const best=corr_pairs[0], worst=corr_pairs[corr_pairs.length-1];
+  if(best&&worst) document.getElementById('sincNote').innerHTML=
+    `<strong>Coppia più correlata:</strong> ${best.a} / ${best.b} — r=${best.r} (${best.n} anni comuni)<br>
+     <strong>Coppia meno correlata:</strong> ${worst.a} / ${worst.b} — r=${worst.r} (${worst.n} anni comuni)<br>
+     ${best.r>0.85?'La rete mostra una <em>coerenza spaziale elevata</em> — le precipitazioni annuali sono governate principalmente da sistemi su grande scala.'
+       :best.r>0.65?'La rete mostra una <em>coerenza spaziale moderata</em> — la variabilità locale ha un ruolo significativo.'
+       :'La <em>variabilità spaziale è dominante</em> — meccanismi convettivi e orografici locali prevalgono sulla circolazione su grande scala.'}`;
+}
+
+// ════════════════════════════════════════════
+// TIPOLOGIA PIOGGE
+// ════════════════════════════════════════════
+function classifyEvent(vals, avail) {
+  // vals: {stationId → mm} per un evento
+  // IMPORTANTE: consideriamo solo le stazioni che hanno DATI per quella data
+  // (vals[id] !== undefined, non solo > 5mm) per evitare di penalizzare
+  // stazioni storiche dismesse che non coprono il periodo dell'evento.
+
+  // Stazioni con dato disponibile per questa data
+  const withData  = avail.filter(m => vals[m.id] !== undefined && vals[m.id] !== null);
+  if(withData.length === 0) return 'convettivo';
+
+  // Stazioni con pioggia significativa (>5mm) tra quelle con dato
+  const present   = withData.filter(m => vals[m.id] > 5);
+
+  // Copertura: quante stazioni con dato hanno registrato >5mm
+  const coverage  = present.length / withData.length;
+
+  // Gradiente altimetrico: solo se almeno 2 stazioni con pioggia e range quota > 100m
+  let grad = 0;
+  if(present.length >= 2) {
+    const pts = present.map(m=>({q:m.quota, v:vals[m.id]})).sort((a,b)=>a.q-b.q);
+    const dq  = pts[pts.length-1].q - pts[0].q;
+    const dv  = pts[pts.length-1].v - pts[0].v;
+    if(dq > 100) grad = dv / dq * 100; // mm per 100m, solo se range quota significativo
+  }
+
+  // Classificazione:
+  // Frontale   — copertura alta (≥65%), pioggia diffusa su tutto il bacino
+  // Orografico — gradiente altimetrico marcato (>30mm/100m), copertura media (≥35%)
+  // Convettivo — tutto il resto: localizzato, o stazioni poche con dati coincidenti
+  if(coverage >= 0.65) return 'frontale';
+  if(grad > 30 && coverage >= 0.35 && present.length >= 2) return 'orografico';
+  return 'convettivo';
+}
+
+function renderTipologia() {
+  const soglia=Number(document.getElementById('tipoSoglia').value);
+  const avail=STAZIONI_META.filter(m=>stData[m.id]);
+  if(avail.length<3){document.getElementById('cTipo').parentElement.innerHTML='<div class="warn">Servono almeno 3 stazioni con dati sovrapposti.</div>';return;}
+
+  // Raccoglie tutti i giorni piovosi significativi dalla stazione con più dati
+  const refMeta=avail.reduce((a,b)=>Object.keys(stData[a.id].ppByDate).length>Object.keys(stData[b.id].ppByDate).length?a:b);
+  const refPP=stData[refMeta.id].ppByDate;
+
+  const eventi={frontale:[],orografico:[],convettivo:[]};
+  
+  // Considera solo giorni sopra soglia sulla stazione di riferimento
+  Object.entries(refPP).filter(([,v])=>v>=soglia).forEach(([date,refV])=>{
+    const vals={};
+    avail.forEach(m=>{
+      const v=stData[m.id].ppByDate[date];
+      // undefined = stazione non ha dato per questa data (diverso da 0mm!)
+      vals[m.id] = v !== undefined ? v : undefined;
+    });
+    const tipo=classifyEvent(vals,avail);
+    const y=Number(date.slice(0,4)), mo=Number(date.slice(5,7));
+    eventi[tipo].push({date,vals,y,mo,ref:refV});
+  });
+
+  const CY=new Date().getFullYear();
+  const tipi=['frontale','orografico','convettivo'];
+  const colori={'frontale':'rgba(79,195,247,.7)','orografico':'rgba(255,179,71,.7)','convettivo':'rgba(240,98,146,.7)'};
+  const labels=['Frontale','Orografico','Convettivo'];
+
+  // Grafico scatter: copertura spaziale vs valore di riferimento
+  dc('cTipo');
+  charts['cTipo']=new Chart(document.getElementById('cTipo'),{
+    type:'scatter',
+    data:{datasets:tipi.map((t,ti)=>({
+      label:`${labels[ti]} (n=${eventi[t].length})`,
+      data:eventi[t].map(e=>{
+        const cover=avail.filter(m=>e.vals[m.id]>5).length/avail.length*100;
+        return {x:cover,y:e.ref,date:e.date};
+      }),
+      backgroundColor:colori[t],pointRadius:5,pointHoverRadius:7
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{title:{display:true,text:'Copertura spaziale (%)',color:'#7a94b8'},
+           min:0,max:100,grid:{color:'#1e3050'},ticks:{callback:v=>v+'%'}},
+        y:{title:{display:true,text:'Precipitazione staz. rif. (mm)',color:'#7a94b8'},
+           beginAtZero:true,grid:{color:'#1e3050'}}
+      },
+      plugins:{
+        legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+        tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw.date} — rif=${i.raw.y}mm cov=${Math.round(i.raw.x)}%`}}
+      }
+    }
+  });
+
+  // Stagionalità per tipo
+  const MONTHS=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  dc('cTipoSeas');
+  charts['cTipoSeas']=new Chart(document.getElementById('cTipoSeas'),{
+    type:'bar',
+    data:{labels:MONTHS,datasets:tipi.map((t,ti)=>({
+      label:labels[ti],
+      data:MONTHS.map((_,m)=>eventi[t].filter(e=>e.mo===m+1).length),
+      backgroundColor:colori[t],borderRadius:3
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{stacked:true,grid:{color:'#1e3050'}},
+              y:{stacked:true,beginAtZero:true,grid:{color:'#1e3050'},
+                 title:{display:true,text:'N° eventi',color:'#7a94b8'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+
+  // Trend per decennio
+  const decades=[...new Set(tipi.flatMap(t=>eventi[t].map(e=>Math.floor(e.y/10)*10)))].sort();
+  dc('cTipoDec');
+  charts['cTipoDec']=new Chart(document.getElementById('cTipoDec'),{
+    type:'bar',
+    data:{labels:decades.map(d=>d+'s'),datasets:tipi.map((t,ti)=>({
+      label:labels[ti],
+      data:decades.map(d=>eventi[t].filter(e=>e.y>=d&&e.y<d+10).length),
+      backgroundColor:colori[t],borderRadius:3
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{stacked:true,grid:{color:'#1e3050'}},
+              y:{stacked:true,beginAtZero:true,grid:{color:'#1e3050'},
+                 title:{display:true,text:'N° eventi',color:'#7a94b8'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+}
+
+
+// ════════════════════════════════════════════
+// TRADUZIONE IT/EN
+// ════════════════════════════════════════════
+let LANG = 'it';
+
+const TRANSLATIONS = {
+  // Titoli tab
+  'tab-gradiente':   {it:'📐 Gradiente Altimetrico', en:'📐 Altitudinal Gradient'},
+  'tab-correlazione':{it:'🔗 Correlazione Stazioni', en:'🔗 Station Correlation'},
+  'tab-trend':       {it:'📉 Trend Climatico',       en:'📉 Climate Trend'},
+  'tab-intensita':   {it:'⚡ Evoluzione Intensità',  en:'⚡ Intensity Evolution'},
+  'tab-stagionalita':{it:'📅 Stagionalità',           en:'📅 Seasonality'},
+  'tab-note':        {it:'📝 Note Idrologiche',       en:'📝 Hydrological Notes'},
+  'tab-eventi':      {it:'🌊 Analisi Eventi Estremi', en:'🌊 Extreme Events'},
+  'tab-sincronia':   {it:'🔄 Sincronia Spaziale',     en:'🔄 Spatial Synchrony'},
+  'tab-tipologia':   {it:'🌦 Tipologia Piogge',       en:'🌦 Rainfall Types'},
+  'tab-mannkendall': {it:'📊 Mann-Kendall',            en:'📊 Mann-Kendall'},
+  'tab-gev':         {it:'📈 Tempi di Ritorno',        en:'📈 Return Periods'},
+  'tab-spi':         {it:'🌵 Siccità / SPI',           en:'🌵 Drought / SPI'},
+  // Header
+  'h-title': {it:'🔬 Analisi Spaziale e Climatica — Val Brembana / San Pellegrino',
+               en:'🔬 Spatial & Climate Analysis — Val Brembana / San Pellegrino'},
+  'h-sub':   {it:'Correlazioni spaziali · Gradienti altimetrici · Segnali di cambiamento climatico',
+               en:'Spatial correlations · Altitudinal gradients · Climate change signals'},
+  // Axis labels, card titles ecc
+  'mk-title':       {it:'📊 Test di Mann-Kendall — Significatività statistica dei trend',
+                      en:'📊 Mann-Kendall Test — Statistical significance of trends'},
+  'pci-title':      {it:'📊 Precipitation Concentration Index (PCI)', en:'📊 Precipitation Concentration Index (PCI)'},
+  'gev-title':      {it:'📈 Analisi degli estremi — Tempi di Ritorno (GEV)',
+                      en:'📈 Extreme Value Analysis — Return Periods (GEV)'},
+  'gev-comp-title': {it:'📊 Confronto tempi di ritorno tra stazioni',
+                      en:'📊 Return period comparison across stations'},
+  'spi-title':      {it:'🌵 Standardized Precipitation Index (SPI) — Analisi Siccità',
+                      en:'🌵 Standardized Precipitation Index (SPI) — Drought Analysis'},
+  'spi-stat-title': {it:'📊 Statistiche siccità per decennio', en:'📊 Drought statistics by decade'},
+  'mk-var-lbl':     {it:'Variabile:', en:'Variable:'},
+  'gev-st-lbl':     {it:'Stazione:', en:'Station:'},
+  'spi-st-lbl':     {it:'Stazione:', en:'Station:'},
+  'spi-win-lbl':    {it:'Finestra:', en:'Window:'},
 };
 
-let db = {}; 
-let charts = {};
-
-// FIX: Funzioni statistiche senza SyntaxError (Math.pow invece di **)
-function linearRegression(xs, ys) {
-  const n = xs.length;
-  if (n < 2) return { m: 0, b: 0, r2: 0 };
-  let sX=0, sY=0, sXY=0, sX2=0, sY2=0;
-  for(let i=0; i<n; i++){
-    sX += xs[i]; sY += ys[i]; sXY += xs[i]*ys[i];
-    sX2 += Math.pow(xs[i], 2); 
-    sY2 += Math.pow(ys[i], 2);
-  }
-  const den = (n * sX2 - Math.pow(sX, 2));
-  if (den === 0) return { m: 0, b: 0, r2: 0 };
-  const m = (n * sXY - sX * sY) / den;
-  const b = (sY - m * sX) / n;
-  const numR = (n * sXY - sX * sY);
-  const denR = Math.sqrt((n * sX2 - Math.pow(sX, 2)) * (n * sY2 - Math.pow(sY, 2)));
-  return { m, b, r2: denR !== 0 ? Math.pow(numR / denR, 2) : 0 };
+function toggleLang() {
+  LANG = LANG==='it' ? 'en' : 'it';
+  document.getElementById('langBtn').textContent = LANG==='it' ? '🇬🇧 EN' : '🇮🇹 IT';
+  applyTranslations();
 }
 
-function calculateMK(data) {
-  const n = data.length;
-  let s = 0;
-  for (let i = 0; i < n - 1; i++) {
-    for (let j = i + 1; j < n; j++) {
-      let diff = data[j] - data[i];
-      if (diff > 0) s++; else if (diff < 0) s--;
+function applyTranslations() {
+  // Testi con id
+  for(const[id, tr] of Object.entries(TRANSLATIONS)) {
+    if(id.startsWith('tab-')) {
+      const key=id.replace('tab-','');
+      const btn=document.querySelector(`[data-p="${key}"]`);
+      if(btn) btn.textContent=tr[LANG];
+    } else {
+      const el=document.getElementById(id);
+      if(el) el.textContent=tr[LANG];
     }
   }
-  const varS = (n * (n - 1) * (2 * n + 5)) / 18;
-  let z = 0;
-  if (s > 0) z = (s - 1) / Math.sqrt(varS);
-  else if (s < 0) z = (s + 1) / Math.sqrt(varS);
-  return { s, z, p: 2 * (1 - normalCDF(Math.abs(z))) };
+  // Re-render charts con nuove label
+  if(Object.keys(stData).length) {
+    renderGradiente(); renderTrend();
+  }
+}
+
+// ════════════════════════════════════════════
+// MANN-KENDALL + SEN'S SLOPE
+// ════════════════════════════════════════════
+function mannKendall(arr) {
+  // arr: serie temporale di valori annuali
+  const n=arr.length; if(n<4) return {s:0,tau:0,p:1,sig:false,slope:0};
+  let S=0;
+  for(let i=0;i<n-1;i++) for(let j=i+1;j<n;j++) {
+    const d=arr[j]-arr[i];
+    if(d>0) S++; else if(d<0) S--;
+  }
+  const varS=n*(n-1)*(2*n+5)/18;
+  const z=S>0?(S-1)/Math.sqrt(varS):S<0?(S+1)/Math.sqrt(varS):0;
+  // p-value approssimato (distribuzione normale)
+  const p=2*(1-normalCDF(Math.abs(z)));
+  const tau=S/(n*(n-1)/2);
+  // Sen's slope
+  const slopes=[];
+  for(let i=0;i<n-1;i++) for(let j=i+1;j<n;j++) slopes.push((arr[j]-arr[i])/(j-i));
+  slopes.sort((a,b)=>a-b);
+  const slope=slopes[Math.floor(slopes.length/2)];
+  return {s:S, tau:Math.round(tau*1000)/1000, z:Math.round(z*100)/100,
+          p:Math.round(p*1000)/1000, sig:p<0.05, slope:Math.round(slope*10)/10};
 }
 
 function normalCDF(x) {
-  const t = 1 / (1 + 0.2316419 * Math.abs(x));
-  const d = 0.3989423 * Math.exp(-Math.pow(x,2) / 2);
-  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-  return x > 0 ? 1 - p : p;
+  // Approssimazione accurata della CDF normale standard
+  const a=[0.254829592,-0.284496736,1.421413741,-1.453152027,1.061405429];
+  const p=0.3275911, sign=x<0?-1:1;
+  x=Math.abs(x)/Math.sqrt(2);
+  const t=1/(1+p*x);
+  const y=1-(((((a[4]*t+a[3])*t)+a[2])*t+a[1])*t+a[0])*t*Math.exp(-x*x);
+  return 0.5*(1+sign*y);
 }
 
-// LOGICA CARICAMENTO INTEGRALE
-async function init() {
-  const msg = document.getElementById('loadMsg');
-  for (const id of STAZIONI_IDS) {
-    msg.textContent = `Caricamento ${STAZIONI_INFO[id].name}...`;
-    try {
-      const response = await fetch(GITHUB_BASE + id + '.csv');
-      if (!response.ok) continue;
-      const csvText = await response.text();
-      db[id] = parseCSV(csvText);
-    } catch (e) { console.error("Errore: " + id, e); }
+function renderMannKendall() {
+  const vari  = document.getElementById('mkVar').value;
+  const CY    = new Date().getFullYear();
+  const avail = STAZIONI_META.filter(m=>stData[m.id]&&Object.keys(stData[m.id].ppYM).length>=10);
+  if(!avail.length){document.getElementById('mkResults').innerHTML='<div class="warn">Servono almeno 10 anni di dati.</div>';return;}
+
+  const results=avail.map(meta=>{
+    const d=stData[meta.id];
+    const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+    let vals;
+    if(vari==='annual')
+      vals=years.map(y=>d.ppYM[y].reduce((a,b)=>a+b,0));
+    else if(vari==='max1')
+      vals=years.map(y=>Math.max(...(Object.entries(d.ppByDate).filter(([dd])=>dd.startsWith(y)).map(([,v])=>v)||[0])));
+    else if(vari==='wetdays')
+      vals=years.map(y=>Object.entries(d.ppByDate).filter(([dd,v])=>dd.startsWith(y)&&v>=1).length);
+    else // seasonal - usa totale autunno (set-ott-nov)
+      vals=years.map(y=>[8,9,10].reduce((a,m)=>a+(d.ppYM[y]?.[m]||0),0));
+
+    const mk=mannKendall(vals);
+    return {meta,years,vals,mk};
+  });
+
+  // Tabella risultati
+  const varNames={annual:'Totale annuo',max1:'Max giornaliero',wetdays:'Giorni piovosi',seasonal:'Autunno (SON)'};
+  let h=`<table class="dtbl"><thead><tr>
+    <th>Stazione</th><th>N anni</th><th>τ Kendall</th><th>Sen's slope</th><th>p-value</th><th>Significativo?</th><th>Tendenza</th>
+  </tr></thead><tbody>`;
+  results.forEach(({meta,years,mk})=>{
+    const col=mk.sig?(mk.tau>0?'var(--green)':'var(--red)'):'var(--muted)';
+    const arrow=mk.tau>0.1?'↑':mk.tau<-0.1?'↓':'→';
+    const unit=vari==='annual'||vari==='seasonal'?'mm/anno':vari==='max1'?'mm/anno':'gg/anno';
+    h+=`<tr>
+      <td style="color:${meta.colore};font-weight:700">${meta.nome}</td>
+      <td>${years.length}</td>
+      <td style="color:${col};font-weight:700">${mk.tau}</td>
+      <td style="font-weight:700">${mk.slope>0?'+':''}${mk.slope} ${unit}</td>
+      <td>${mk.p}</td>
+      <td style="color:${col};font-weight:700">${mk.sig?'✓ Sì':'✗ No'}</td>
+      <td style="color:${col};font-size:1.2rem">${arrow}</td>
+    </tr>`;
+  });
+  document.getElementById('mkResults').innerHTML=h+'</tbody></table>';
+
+  // Grafico: serie temporale della stazione con più dati + trend
+  const ref=results.reduce((a,b)=>a.years.length>b.years.length?a:b);
+  const mean=ref.vals.reduce((a,b)=>a+b)/ref.vals.length;
+  dc('cMK');
+  charts['cMK']=new Chart(document.getElementById('cMK'),{
+    type:'bar',
+    data:{labels:ref.years,datasets:[
+      {label:`${ref.meta.nome} — ${varNames[vari]}`,
+       data:ref.vals,
+       backgroundColor:ref.vals.map(v=>v>mean?'rgba(79,195,247,.5)':'rgba(240,98,146,.5)'),
+       borderColor:ref.vals.map(v=>v>mean?'#4fc3f7':'#f06292'),
+       borderWidth:1,borderRadius:2,order:2},
+      {label:`Trend Sen's slope (${ref.mk.slope>0?'+':''}${ref.mk.slope} mm/anno)`,
+       data:ref.years.map((y,i)=>Math.round((mean+ref.mk.slope*(i-ref.years.length/2))*10)/10),
+       type:'line',borderColor:ref.mk.sig?'rgba(255,179,71,.9)':'rgba(122,148,184,.5)',
+       borderWidth:2.5,borderDash:ref.mk.sig?[]:[6,4],pointRadius:0,fill:false,order:1},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},
+              x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+               tooltip:{mode:'index',intersect:false}}}
+  });
+
+  // PCI
+  renderPCI();
+}
+
+function renderPCI() {
+  const CY=new Date().getFullYear();
+  const avail=STAZIONI_META.filter(m=>stData[m.id]&&Object.keys(stData[m.id].ppYM).length>=5);
+  const datasets=avail.map(meta=>{
+    const d=stData[meta.id];
+    const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+    const pci=years.map(y=>{
+      const months=d.ppYM[y]; const tot=months.reduce((a,b)=>a+b,0);
+      if(!tot)return null;
+      const sumSq=months.reduce((a,m)=>a+(m/tot*100)**2,0);
+      return Math.round(sumSq/100*10)/10;  // normalizzato 0-100
+    });
+    return{label:meta.nome,data:pci,labels:years,
+           borderColor:meta.colore,backgroundColor:'transparent',
+           borderWidth:2,pointRadius:2,tension:.3,spanGaps:true};
+  });
+  dc('cPCI');
+  charts['cPCI']=new Chart(document.getElementById('cPCI'),{
+    type:'line',data:{labels:datasets[0]?.labels||[],datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{grid:{color:'#1e3050'},
+                 title:{display:true,text:'PCI',color:'#7a94b8'},
+                 ticks:{callback:v=>v}},
+              x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:10}}},
+               annotation:{annotations:{
+                 l1:{type:'line',yMin:10,yMax:10,borderColor:'rgba(79,195,247,.4)',borderWidth:1,borderDash:[4,4]},
+                 l2:{type:'line',yMin:20,yMax:20,borderColor:'rgba(255,179,71,.4)',borderWidth:1,borderDash:[4,4]},
+               }},
+               tooltip:{mode:'index',intersect:false,
+                 callbacks:{label:i=>i.raw!=null?` ${i.dataset.label}: PCI=${i.raw}`:` ${i.dataset.label}: n.d.`}}}}
+  });
+}
+
+// ════════════════════════════════════════════
+// GEV / TEMPI DI RITORNO
+// ════════════════════════════════════════════
+function fitGEV(maxima) {
+  // Stima parametri GEV con L-moments (metodo robusto, standard ASCE/WMO)
+  const n=maxima.length;
+  const sorted=[...maxima].sort((a,b)=>a-b);
+  // L-moments
+  let l1=0,l2=0,l3=0;
+  sorted.forEach((x,i)=>{
+    const c0=1/n, c1=(i)/(n*(n-1)), c2=(i*(i-1))/(n*(n-1)*(n-2)||1);
+    l1+=c0*x; l2+=2*(c1-0.5/(n-1))*x;
+  });
+  // Metodo semplificato L-moments per GEV (Hosking 1990)
+  const L1=sorted.reduce((a,b)=>a+b)/n;
+  const probs=sorted.map((_,i)=>(i+0.5)/n);
+  // Stima con PWM (probability weighted moments)
+  let b0=0,b1=0,b2=0;
+  sorted.forEach((x,i)=>{b0+=x;b1+=x*probs[i];b2+=x*probs[i]*probs[i];});
+  b0/=n;b1/=n;b2/=n;
+  const a0=2*b1-b0, a1=6*b2-6*b1+b0;
+  const k=7.8590*(a1/a0)+(a1/a0)**2*2.9554;  // shape
+  const alpha=a0*k/((1-2**(-k))*gamma(1+k)||1); // scale
+  const xi=b0-alpha*(1-gamma(1+k))/k;  // location
+  return{k,alpha,xi,n,mean:L1};
+}
+
+function gamma(x) {
+  // Approssimazione di Lanczos per la funzione gamma
+  if(x<0.5)return Math.PI/(Math.sin(Math.PI*x)*gamma(1-x));
+  x--;
+  const g=7;
+  const c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,
+           771.32342877765313,-176.61502916214059,12.507343278686905,
+           -0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  let a=c[0];
+  for(let i=1;i<g+2;i++)a+=c[i]/(x+i);
+  const t=x+g+0.5;
+  return Math.sqrt(2*Math.PI)*t**(x+0.5)*Math.exp(-t)*a;
+}
+
+function gevQuantile(T, k, alpha, xi) {
+  // Quantile GEV per periodo di ritorno T
+  const p=1-1/T;
+  const y=-Math.log(-Math.log(p));
+  if(Math.abs(k)<1e-6) return xi+alpha*y;  // Gumbel (k→0)
+  return xi+alpha*(1-(-y)**k)/k;  // GEV generale  (correzione segno k)
+}
+
+function renderGEV() {
+  const stId=document.getElementById('gevSt').value;
+  const meta=STAZIONI_META.find(m=>m.id===stId);
+  const d=stData[stId];
+  if(!meta||!d){return;}
+
+  const CY=new Date().getFullYear();
+  const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+  // Massimi annuali giornalieri
+  const maxima=years.map(y=>
+    Math.max(0,...Object.entries(d.ppByDate).filter(([dd])=>dd.startsWith(y)).map(([,v])=>v))
+  ).filter(v=>v>0);
+
+  if(maxima.length<10){
+    document.getElementById('gevStats').innerHTML='<div class="warn">Servono almeno 10 anni per la stima GEV.</div>';return;
   }
-  renderAll();
-  document.getElementById('loading').style.display = 'none';
+
+  const {k,alpha,xi,n,mean}=fitGEV(maxima);
+  const T2=gevQuantile(2,k,alpha,xi), T5=gevQuantile(5,k,alpha,xi),
+        T10=gevQuantile(10,k,alpha,xi),T20=gevQuantile(20,k,alpha,xi),
+        T50=gevQuantile(50,k,alpha,xi),T100=gevQuantile(100,k,alpha,xi);
+
+  document.getElementById('gevStats').innerHTML=`
+    <div class="stat-row">
+      <div class="stat-box"><div class="l">Parametri GEV</div>
+        <div class="v" style="font-size:.9rem">k=${k.toFixed(3)}</div>
+        <div class="s">α=${alpha.toFixed(1)} · ξ=${xi.toFixed(1)}</div></div>
+      <div class="stat-box"><div class="l">Anni analisi</div><div class="v">${n}</div><div class="s">${years[0]}–${years[years.length-1]}</div></div>
+      <div class="stat-box"><div class="l">T=10 anni</div><div class="v" style="color:var(--orange)">${T10.toFixed(0)}</div><div class="s">mm/giorno</div></div>
+      <div class="stat-box"><div class="l">T=100 anni</div><div class="v" style="color:var(--red)">${T100.toFixed(0)}</div><div class="s">mm/giorno</div></div>
+    </div>`;
+
+  // Grafico probabilità empirica vs GEV teorica
+  const sorted=[...maxima].sort((a,b)=>a-b);
+  const empP=sorted.map((_,i)=>(i+0.5)/n);
+  const gevP=sorted.map(x=>{
+    if(Math.abs(k)<1e-6) return Math.exp(-Math.exp(-(x-xi)/alpha));
+    const t=1-k*(x-xi)/alpha;
+    return t>0?Math.exp(-t**(1/k)):0;
+  });
+
+  dc('cGEV');
+  charts['cGEV']=new Chart(document.getElementById('cGEV'),{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Empirica',data:empP.map((p,i)=>({x:sorted[i],y:p})),
+       backgroundColor:meta.colore+'99',pointRadius:5},
+      {label:'GEV teorica',data:sorted.map((x,i)=>({x,y:gevP[i]})),
+       type:'line',borderColor:meta.colore,borderWidth:2,pointRadius:0,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{title:{display:true,text:'Precipitazione max giornaliera (mm)',color:'#7a94b8'},grid:{color:'#1e3050'}},
+              y:{title:{display:true,text:'Probabilità non eccedenza',color:'#7a94b8'},grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+
+  // Curva tempi di ritorno
+  const Ts=[1.1,2,5,10,20,50,100,200,500];
+  const qts=Ts.map(T=>({x:T,y:Math.max(0,gevQuantile(T,k,alpha,xi))}));
+  dc('cGEVret');
+  charts['cGEVret']=new Chart(document.getElementById('cGEVret'),{
+    type:'line',
+    data:{datasets:[
+      {label:`${meta.nome} — curva TR`,data:qts,
+       borderColor:meta.colore,borderWidth:2.5,pointRadius:4,pointBackgroundColor:meta.colore,
+       fill:false,parsing:false},
+      // Osservati
+      {label:'Max osservati',
+       data:sorted.map(v=>({x:1/(1-empP[sorted.indexOf(v)]),y:v})),
+       type:'scatter',backgroundColor:meta.colore+'88',pointRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:'logarithmic',title:{display:true,text:'Tempo di ritorno (anni)',color:'#7a94b8'},
+           grid:{color:'#1e3050'},ticks:{callback:v=>v}},
+        y:{beginAtZero:true,title:{display:true,text:'Precipitazione (mm)',color:'#7a94b8'},
+           grid:{color:'#1e3050'}}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+
+  // Aggiorna confronto tra stazioni
+  renderGEVcomp();
 }
 
-function parseCSV(text) {
-  return text.trim().split('\n').map(line => {
-    const parts = line.split(',');
-    return { yr: parseInt(parts[0]), val: parseFloat(parts[1]) };
-  }).filter(d => !isNaN(d.yr) && !isNaN(d.val));
+function renderGEVcomp() {
+  const CY=new Date().getFullYear();
+  const avail=STAZIONI_META.filter(m=>stData[m.id]&&Object.keys(stData[m.id].ppYM).filter(y=>Number(y)<CY).length>=10);
+  const Ts=[2,5,10,50,100];
+  const datasets=avail.map(meta=>{
+    const d=stData[meta.id];
+    const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+    const maxima=years.map(y=>Math.max(0,...Object.entries(d.ppByDate).filter(([dd])=>dd.startsWith(y)).map(([,v])=>v))).filter(v=>v>0);
+    if(maxima.length<10)return null;
+    const {k,alpha,xi}=fitGEV(maxima);
+    return{label:meta.nome,data:Ts.map(T=>Math.round(gevQuantile(T,k,alpha,xi))),
+           backgroundColor:meta.colore+'88',borderColor:meta.colore,borderRadius:3,borderWidth:1.5};
+  }).filter(Boolean);
+
+  dc('cGEVcomp');
+  charts['cGEVcomp']=new Chart(document.getElementById('cGEVcomp'),{
+    type:'bar',
+    data:{labels:Ts.map(T=>'T='+T+' anni'),datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm/giorno',color:'#7a94b8'}},
+              x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:10}}},
+               tooltip:{mode:'index',intersect:false}}}
+  });
+
+  // Tabella
+  let h=`<table class="dtbl"><thead><tr><th>Stazione</th><th>Quota</th><th>Anni</th>`;
+  Ts.forEach(T=>h+=`<th>T=${T} anni</th>`);
+  h+=`</tr></thead><tbody>`;
+  avail.filter(m=>{const d=stData[m.id];return Object.keys(d.ppYM).filter(y=>Number(y)<CY).length>=10;}).forEach(meta=>{
+    const d=stData[meta.id];
+    const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY);
+    const maxima=years.map(y=>Math.max(0,...Object.entries(d.ppByDate).filter(([dd])=>dd.startsWith(y)).map(([,v])=>v))).filter(v=>v>0);
+    if(maxima.length<10)return;
+    const {k,alpha,xi}=fitGEV(maxima);
+    h+=`<tr><td style="color:${meta.colore};font-weight:700">${meta.nome}</td><td>${meta.quota}m</td><td>${maxima.length}</td>`;
+    Ts.forEach(T=>{
+      const q=Math.round(gevQuantile(T,k,alpha,xi));
+      const col=T>=50?'var(--red)':T>=10?'var(--orange)':'var(--text)';
+      h+=`<td style="color:${col};font-weight:${T>=10?700:400}">${q} mm</td>`;
+    });
+    h+='</tr>';
+  });
+  document.getElementById('gevTable').innerHTML=h+'</tbody></table>';
 }
 
-// LOGICA RENDER (GEV, SPI, MATRICE) - REPLICATA DALL'ORIGINALE
-function renderAll() {
+function initGEVselect() {
+  const sel=document.getElementById('gevSt');
+  sel.innerHTML='';
+  const CY=new Date().getFullYear();
+  STAZIONI_META.filter(m=>stData[m.id]&&Object.keys(stData[m.id].ppYM).filter(y=>Number(y)<CY).length>=10).forEach(m=>{
+    const o=document.createElement('option'); o.value=m.id; o.textContent=m.nome+' ('+m.quota+'m)';
+    if(m.id==='cornalita')o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+// ════════════════════════════════════════════
+// SPI (Standardized Precipitation Index)
+// ════════════════════════════════════════════
+function fitGamma(vals) {
+  // Stima parametri gamma (metodo dei momenti)
+  const pos=vals.filter(v=>v>0);
+  if(!pos.length)return{alpha:1,beta:1};
+  const mean=pos.reduce((a,b)=>a+b)/pos.length;
+  const variance=pos.reduce((a,b)=>a+(b-mean)**2,0)/(pos.length-1)||0.1;
+  const alpha=mean**2/variance, beta=variance/mean;
+  return{alpha,beta};
+}
+
+function gammaCDF(x, alpha, beta) {
+  if(x<=0)return 0;
+  // Approssimazione della CDF gamma incompleta (serie di potenze)
+  const t=x/beta;
+  if(t<0)return 0;
+  // Usa approssimazione Wilson-Hilferty
+  const d=1/(9*alpha), v=Math.pow(t/alpha,1/3);
+  return normalCDF((v-1+d)/Math.sqrt(d));
+}
+
+function computeSPI(ppYM, windowMonths, years) {
+  const CY=new Date().getFullYear();
+  const validYears=years.filter(y=>y<CY);
+
+  // Costruisci serie mensile
+  const monthly=[];
+  validYears.forEach(y=>{
+    for(let m=0;m<12;m++) monthly.push({y,m,v:ppYM[y]?.[m]||0});
+  });
+
+  // Cumulate su finestra
+  const cumul=monthly.map((_,i)=>{
+    if(i<windowMonths-1)return null;
+    const s=monthly.slice(i-windowMonths+1,i+1).reduce((a,x)=>a+x.v,0);
+    return{...monthly[i],sum:s};
+  }).filter(Boolean);
+
+  // Stima parametri gamma per mese dell'anno (stagionalità)
+  const spi=cumul.map(pt=>{
+    // Usa tutta la serie per il fitting (robusto con serie corte)
+    const allSums=cumul.filter(x=>x.m===pt.m).map(x=>x.sum);
+    const {alpha,beta}=fitGamma(allSums);
+    // Proporzione di zeri
+    const q0=allSums.filter(v=>v===0).length/allSums.length;
+    const H=q0+(1-q0)*gammaCDF(pt.sum,alpha,beta);
+    // Trasformazione in SPI (quantile normale)
+    const pClip=Math.max(0.001,Math.min(0.999,H));
+    // Inversione CDF normale (approssimazione Abramowitz & Stegun)
+    const p=pClip<0.5?pClip:1-pClip;
+    const t=Math.sqrt(-2*Math.log(p));
+    const c=[2.515517,0.802853,0.010328],d=[1.432788,0.189269,0.001308];
+    const z=t-(c[0]+c[1]*t+c[2]*t**2)/(1+d[0]*t+d[1]*t**2+d[2]*t**3);
+    return{...pt,spi:Math.round((pClip<0.5?-z:z)*100)/100};
+  });
+
+  return spi;
+}
+
+function renderSPI() {
+  const stId=document.getElementById('spiSt').value;
+  const win=Number(document.getElementById('spiWin').value);
+  const meta=STAZIONI_META.find(m=>m.id===stId);
+  const d=stData[stId];
+  if(!meta||!d)return;
+
+  const CY=new Date().getFullYear();
+  const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+  if(years.length<5){document.getElementById('cSPI').parentElement.innerHTML='<div class="warn">Dati insufficienti per SPI.</div>';return;}
+
+  const spi=computeSPI(d.ppYM,win,years);
+  const labels=spi.map(p=>`${p.y}-${String(p.m+1).padStart(2,'0')}`);
+  const spiVals=spi.map(p=>p.spi);
+
+  dc('cSPI');
+  charts['cSPI']=new Chart(document.getElementById('cSPI'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:`SPI-${win} — ${meta.nome}`,
+      data:spiVals,
+      backgroundColor:spiVals.map(v=>v>1.5?'rgba(79,195,247,.9)':v>0.5?'rgba(79,195,247,.5)':
+        v<-1.5?'rgba(239,83,80,.9)':v<-0.5?'rgba(239,83,80,.5)':'rgba(122,148,184,.4)'),
+      borderRadius:1
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:'#1e3050'},ticks:{maxTicksLimit:24,
+           callback:(v,i)=>labels[i]?.endsWith('-01')||labels[i]?.endsWith('-06')?labels[i].slice(0,4):''}},
+        y:{grid:{color:'#1e3050'},title:{display:true,text:`SPI-${win}`,color:'#7a94b8'},
+           ticks:{callback:v=>v}}
+      },
+      plugins:{
+        legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+        annotation:{annotations:{
+          l0:{type:'line',yMin:0,yMax:0,borderColor:'rgba(122,148,184,.4)',borderWidth:1},
+          l1:{type:'line',yMin:-1,yMax:-1,borderColor:'rgba(255,179,71,.5)',borderWidth:1,borderDash:[4,4]},
+          l2:{type:'line',yMin:-1.5,yMax:-1.5,borderColor:'rgba(239,83,80,.5)',borderWidth:1,borderDash:[4,4]},
+          l3:{type:'line',yMin:1,yMax:1,borderColor:'rgba(76,175,130,.4)',borderWidth:1,borderDash:[4,4]},
+        }},
+        tooltip:{callbacks:{
+          label:i=>{
+            const v=i.raw;
+            const cl=v<-2?'Siccità estrema':v<-1.5?'Siccità severa':v<-1?'Siccità moderata':
+                     v>2?'Umidità estrema':v>1.5?'Umidità severa':v>1?'Umidità moderata':'Normale';
+            return ` SPI=${v} — ${cl}`;
+          }
+        }}
+      }
+    }
+  });
+
+  // Statistiche per decennio
+  const decades=[...new Set(spi.map(p=>Math.floor(p.y/10)*10))].sort();
+  const droughtFreq=decades.map(d=>{
+    const decSpi=spi.filter(p=>p.y>=d&&p.y<d+10);
+    return{d,n:decSpi.length,nDry:decSpi.filter(p=>p.spi<-1).length,
+           nWet:decSpi.filter(p=>p.spi>1).length,
+           minSpi:decSpi.length?Math.min(...decSpi.map(p=>p.spi)):0};
+  });
+
+  dc('cSPIdec');
+  charts['cSPIdec']=new Chart(document.getElementById('cSPIdec'),{
+    type:'bar',
+    data:{labels:decades.map(d=>d+'s'),datasets:[
+      {label:'Mesi siccità (SPI<-1)',
+       data:droughtFreq.map(r=>Math.round(r.nDry/r.n*100)),
+       backgroundColor:'rgba(239,83,80,.65)',borderRadius:4},
+      {label:'Mesi umidi (SPI>+1)',
+       data:droughtFreq.map(r=>Math.round(r.nWet/r.n*100)),
+       backgroundColor:'rgba(79,195,247,.65)',borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,max:60,grid:{color:'#1e3050'},
+                 title:{display:true,text:'% dei mesi',color:'#7a94b8'},
+                 ticks:{callback:v=>v+'%'}},
+              x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+               tooltip:{mode:'index',intersect:false,
+                 callbacks:{label:i=>` ${i.dataset.label}: ${i.raw}% (${droughtFreq[i.dataIndex][i.datasetIndex?'nWet':'nDry']} mesi)`}}}}
+  });
+
+  // Nota siccità
+  const totalDry=spi.filter(p=>p.spi<-1).length;
+  const totalMo=spi.length;
+  const pctDry=Math.round(totalDry/totalMo*100);
+  const minYr=spi.reduce((a,b)=>b.spi<a.spi?b:a);
+  document.getElementById('spiNote').innerHTML=`
+    <strong>${meta.nome} SPI-${win}:</strong> ${pctDry}% dei mesi con siccità moderata o peggiore.
+    Evento più secco: <em>${minYr.y}-${String(minYr.m+1).padStart(2,'0')}</em> (SPI=${minYr.spi}).
+    ${pctDry>20?'La frequenza di siccità è <em>relativamente elevata</em> per il contesto prealpino.':
+     pctDry<10?'La frequenza di siccità è <em>bassa</em> — regime pluviometrico favorevole.':
+     'La frequenza di siccità è <em>nella norma</em> per il contesto climatico prealpino.'}`;
+}
+
+function initSPIselect() {
+  const sel=document.getElementById('spiSt');
+  sel.innerHTML='';
+  STAZIONI_META.filter(m=>stData[m.id]).forEach(m=>{
+    const o=document.createElement('option'); o.value=m.id; o.textContent=m.nome;
+    if(m.id==='cornalita')o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+
+async function init() {
+  const msg=document.getElementById('loadMsg');
+  const avail=[];
+
+  // Carica index.json UNA VOLTA per avere quote e metadata aggiornati
+  msg.textContent='Carico configurazione stazioni…';
+  let indexData = null;
+  try {
+    const r = await fetch(GITHUB_BASE+'index.json');
+    if(r.ok) indexData = await r.json();
+  } catch(e) { console.warn('index.json non disponibile:', e.message); }
+
+  // Popola STAZIONI_META da index.json (quote sempre aggiornate)
+  if(indexData && indexData.stazioni) {
+    STAZIONI_META = indexData.stazioni
+      .filter(s => STAZIONI_IDS.includes(s.id) && s.file_dati?.length)
+      .map(s => ({
+        id:     s.id,
+        nome:   s.nome || s.id,
+        quota:  s.quota || 0,
+        colore: s.colore || COLORI_DEFAULT[s.id] || '#7a94b8',
+        lat:    s.lat || 0,
+        lon:    s.lon || 0,
+      }));
+    console.log('STAZIONI_META caricata da index.json:', STAZIONI_META.map(s=>s.id+':'+s.quota+'m'));
+  } else {
+    // Fallback hardcoded se index.json non disponibile
+    STAZIONI_META = [
+      {id:'cornalita',nome:'Cornalita',quota:622,colore:'#4fc3f7',lat:45.8697,lon:9.6391},
+      {id:'brembilla',nome:'Brembilla',quota:468,colore:'#4caf82',lat:45.8254,lon:9.6117},
+      {id:'taleggio',nome:'Taleggio',quota:763,colore:'#81c784',lat:45.8929,lon:9.5666},
+      {id:'valtorta',nome:'Valtorta',quota:946,colore:'#4dd0e1',lat:45.9650,lon:9.6950},
+      {id:'sangiovannibianco_storico',nome:'S. Giovanni Bianco (st.)',quota:410,colore:'#ce93d8',lat:45.8684,lon:9.6558},
+      {id:'zogno',nome:'Zogno',quota:334,colore:'#ffcc02',lat:45.7935,lon:9.6697},
+    ];
+  }
+
+  for(const meta of STAZIONI_META) {
+    msg.textContent=`Carico ${meta.nome}…`;
+    const d=await loadStation(meta, indexData);
+    if(d&&Object.keys(d.ppByDate).length>0) {
+      stData[meta.id]=d;
+      avail.push(meta.nome);
+      console.log(`✓ ${meta.nome}: ${Object.keys(d.ppByDate).length} giorni`);
+    }
+  }
+
+  if(!avail.length) {
+    document.getElementById('dataWarn').style.display='';
+    document.getElementById('dataWarn').textContent='Nessuna stazione con dati disponibili. Carica i file CSV su GitHub nella cartella dati/.';
+  } else {
+    document.getElementById('dataWarn').style.display='';
+    document.getElementById('dataWarn').textContent=`Stazioni caricate: ${avail.join(', ')}`;
+    document.getElementById('dataWarn').style.background='rgba(76,175,130,.1)';
+    document.getElementById('dataWarn').style.borderColor='var(--green)';
+    document.getElementById('dataWarn').style.color='var(--green)';
+  }
+
+  msg.textContent='Calcoli in corso…';
   renderGradiente();
   renderCorrelazione();
   renderTrend();
+  renderIntensita();
+  renderStagionalita();
+  renderNote();
+  initEvtRefSelect();
+  renderEventiSpaziali();
+  renderSincronia();
+  renderTipologia();
   renderMannKendall();
-  renderGEV();
-  renderSPI();
-  // ... Aggiungi qui le altre chiamate (Sincronia, Tipologia) se presenti nel tuo HTML
+  initGEVselect(); renderGEV();
+  initSPIselect(); renderSPI();
+
+  document.getElementById('loading').style.display='none';
 }
 
-function renderGradiente() {
-  const pts = STAZIONI_IDS.map(id => {
-    const d = db[id] || [];
-    if(d.length === 0) return null;
-    const avg = d.reduce((a,b)=>a+b.val,0)/d.length;
-    return { x: STAZIONI_INFO[id].alt, y: avg, label: STAZIONI_INFO[id].name };
-  }).filter(p => p !== null);
+// Tab navigation
+document.getElementById('mkVar').addEventListener('change',renderMannKendall);
+document.getElementById('gevSt').addEventListener('change',renderGEV);
+document.getElementById('spiSt').addEventListener('change',renderSPI);
+document.getElementById('spiWin').addEventListener('change',renderSPI);
+document.getElementById('evtWin').addEventListener('change',renderEventiSpaziali);
+document.getElementById('evtRef').addEventListener('change',renderEventiSpaziali);
+document.getElementById('evtN').addEventListener('change',renderEventiSpaziali);
+document.getElementById('tipoSoglia').addEventListener('change',renderTipologia);
 
-  const reg = linearRegression(pts.map(p=>p.x), pts.map(p=>p.y));
-  const ctx = document.getElementById('cGrad').getContext('2d');
-  if(charts.grad) charts.grad.destroy();
-  charts.grad = new Chart(ctx, {
-    type: 'scatter',
-    data: {
-      datasets: [{
-        label: 'Stazioni',
-        data: pts,
-        backgroundColor: pts.map(p => STAZIONI_INFO[STAZIONI_IDS.find(id => STAZIONI_INFO[id].name === p.label)].color)
-      }, {
-        type: 'line',
-        label: 'Trend Altimetrico',
-        data: [{x:300, y:reg.m*300+reg.b}, {x:1100, y:reg.m*1100+reg.b}],
-        borderColor: 'rgba(255,255,255,0.2)',
-        borderDash: [5,5]
-      }]
-    }
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById('p-'+t.dataset.p).classList.add('on');
   });
-}
+});
 
-// Inizializzazione tab e selettori
-window.onload = init;
+init();
 </script>
+</body>
+</html>
