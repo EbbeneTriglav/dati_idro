@@ -1922,12 +1922,19 @@ function initGEVselect() {
 // ════════════════════════════════════════════
 function fitGamma(vals) {
   // Stima parametri gamma (metodo dei momenti)
-  const pos=vals.filter(v=>v>0);
-  if(!pos.length)return{alpha:1,beta:1};
-  const mean=pos.reduce((a,b)=>a+b)/pos.length;
-  const variance=pos.reduce((a,b)=>a+((b - mean) ** 2)/(pos.length-1)||0.1;
-  const alpha=mean**2/variance, beta=variance/mean;
-  return{alpha,beta};
+  const pos = vals.filter(v => v > 0);
+  if(!pos.length) return {alpha:1,beta:1};
+
+  const mean = pos.reduce((a,b)=>a+b,0) / pos.length;
+
+  const variance =
+    pos.reduce((a,b)=>a + ((b - mean) ** 2), 0) /
+    (pos.length - 1) || 0.1;
+
+  const alpha = mean ** 2 / variance;
+  const beta  = variance / mean;
+
+  return {alpha, beta};
 }
 
 function gammaCDF(x, alpha, beta) {
