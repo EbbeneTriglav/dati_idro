@@ -668,7 +668,7 @@ function linearRegression(xs, ys) {
   let num=0, den=0, ss_tot=0;
   for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den += ((xs[i] - mx) ** 2);ss_tot+=(ys[i]-my)**2;}
   const m=den?num/den:0, b=my-m*mx;
-  const ss_res=ys.reduce((a,y,i)=>a+(y-(m*xs[i]+b))**2,0);
+  const ss_res=ys.reduce((a,y,i)=>a+((y - (m * xs[i] + b)) ** 2);
   return{m,b,r2:ss_tot?1-ss_res/ss_tot:0};
 }
 
@@ -684,7 +684,7 @@ function pearsonR(xs, ys) {
   const n=xs.length; if(n<3)return null;
   const mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
   let num=0,dx=0,dy=0;
-  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);dx+=(xs[i]-mx)**2;dy+=(ys[i]-my)**2;}
+  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);dx += ((xs[i] - mx) ** 2);dy += ((ys[i] - my) ** 2);}
   return dx&&dy?num/Math.sqrt(dx*dy):null;
 }
 
@@ -1378,7 +1378,7 @@ function renderSincronia() {
     const vB=commonYrs.map(y=>ppB[y].reduce((s,v)=>s+v,0));
     const mA=vA.reduce((s,v)=>s+v)/vA.length, mB=vB.reduce((s,v)=>s+v)/vB.length;
     let num=0,dA=0,dB=0;
-    vA.forEach((v,i)=>{num+=(v-mA)*(vB[i]-mB);dA+=(v-mA)**2;dB+=(vB[i]-mB)**2;});
+    vA.forEach((v,i)=>{num+=(v-mA)*(vB[i]-mB);dA+=((v - mA) ** 2);dB+=(vB[i]-mB)**2;});
     const r=dA&&dB?num/Math.sqrt(dA*dB):0;
     corr_pairs.push({a:a.nome,b:b.nome,r:Math.round(r*100)/100,n:commonYrs.length});
   }
@@ -1925,7 +1925,7 @@ function fitGamma(vals) {
   const pos=vals.filter(v=>v>0);
   if(!pos.length)return{alpha:1,beta:1};
   const mean=pos.reduce((a,b)=>a+b)/pos.length;
-  const variance=pos.reduce((a,b)=>a+(b-mean)**2,0)/(pos.length-1)||0.1;
+  const variance=pos.reduce((a,b)=>a+((b - mean) ** 2)/(pos.length-1)||0.1;
   const alpha=mean**2/variance, beta=variance/mean;
   return{alpha,beta};
 }
