@@ -15,234 +15,208 @@
   --text:#e3eaf8;--muted:#7a94b8;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-#loading{position:fixed;inset:0;background:rgba(11,17,32,.96);z-index:999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-.spinner{width:42px;height:42px;border:4px solid var(--border);border-top-color:var(--accent);
-  border-radius:50%;animation:spin .8s linear infinite;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+#loading{position:fixed;inset:0;background:rgba(11,17,32,.98);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.spinner{width:50px;height:50px;border:5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-#loadMsg{color:var(--muted);font-size:13px;font-family:'IBM Plex Mono',monospace;}
-header{background:linear-gradient(135deg,#0a1628,#0d2344 50%,#1a3a5c);
-  padding:14px 22px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-header h1{font-size:1.1rem;font-weight:700;color:var(--accent);}
-header p{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
-.btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;
-  border:1.5px solid;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;text-decoration:none;display:inline-block;}
-.btn-outline{background:transparent;color:var(--accent);border-color:var(--accent);}
-.btn-outline:hover{background:var(--accent);color:var(--bg);}
-.main{max-width:1400px;margin:0 auto;padding:16px 16px 80px;}
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;}
-.card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:12px;}
-.card-sub{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.7;}
-.card-sub b{color:var(--text);}
-.card-sub em{color:var(--orange);font-style:normal;}
-.card-sub .nota{display:block;margin-top:8px;padding:8px 12px;background:var(--card2);
-  border-left:3px solid var(--accent);border-radius:4px;font-size:11px;line-height:1.6;}
-.ch-wrap{position:relative;}.ch-wrap canvas{width:100%!important;}
-.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:16px;flex-wrap:wrap;}
-.tab{padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;border-radius:6px 6px 0 0;
-  color:var(--muted);background:transparent;border:none;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;}
-.tab:hover{color:var(--text);background:var(--card);}
-.tab.on{color:var(--accent);background:var(--card);border-bottom:2px solid var(--accent);}
+#loadMsg{color:var(--muted);font-size:14px;font-family:'IBM Plex Mono',monospace;}
+
+header{background:linear-gradient(135deg,#0a1628,#0d2344);padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+header h1{font-size:1.4rem;color:var(--accent);}
+
+.main{max-width:1400px;margin:0 auto;padding:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+.tabs{display:flex;gap:5px;margin-bottom:20px;overflow-x:auto;padding-bottom:10px;}
+.tab{padding:10px 20px;background:var(--card2);border:1px solid var(--border);color:var(--muted);cursor:pointer;border-radius:8px;white-space:nowrap;}
+.tab.on{background:var(--accent);color:var(--bg);font-weight:700;}
 .panel{display:none;}.panel.on{display:block;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-@media(max-width:900px){.grid2{grid-template-columns:1fr;}}
-.stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
-.stat-box{background:var(--card2);border:1px solid var(--border);border-radius:8px;
-  padding:10px 14px;flex:1;min-width:120px;}
-.stat-box .l{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
-.stat-box .v{font-size:1.3rem;font-weight:700;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin:3px 0;}
-.stat-box .s{font-size:10px;color:var(--muted);}
-.tbl-wrap{overflow:auto;max-height:350px;}
-table.dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM Plex Mono',monospace;}
-.dtbl th{background:var(--card2);color:var(--accent);font-weight:700;padding:6px 8px;
-  text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;}
-.dtbl td{padding:5px 8px;border-bottom:1px solid var(--border);}
-.dtbl tr:hover td{background:var(--card2);}
-.warn{background:rgba(255,179,71,.1);border:1px solid var(--orange);border-radius:6px;
-  padding:8px 12px;font-size:12px;color:var(--orange);margin-bottom:12px;}
-.insight{background:rgba(79,195,247,.07);border-left:3px solid var(--accent);
-  border-radius:0 6px 6px 0;padding:10px 14px;margin:10px 0;font-size:12px;
-  line-height:1.7;color:var(--text);}
-.insight strong{color:var(--accent);}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:15px;margin-bottom:20px;}
+.stat-box{background:var(--card2);padding:15px;border-radius:8px;border-left:4px solid var(--accent);}
+.stat-box small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;}
+.stat-box span{font-size:1.5rem;font-weight:700;font-family:'IBM Plex Mono';}
 </style>
 </head>
 <body>
 
 <div id="loading">
   <div class="spinner"></div>
-  <div id="loadMsg">Carico dati stazioni…</div>
+  <div id="loadMsg">Inizializzazione database stazioni...</div>
 </div>
 
 <header>
-  <div>
-    <h1 id="h-title">🔬 Analisi Spaziale e Climatica — Val Brembana / San Pellegrino</h1>
-    <p id="h-sub">Correlazioni spaziali · Gradienti altimetrici · Segnali di cambiamento climatico</p>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <button class="btn btn-outline" id="langBtn" onclick="toggleLang()" style="font-size:11px">🇬🇧 EN</button>
-    <a href="index.html" class="btn btn-outline">← Mappa</a>
-    <a href="cornalita.html" class="btn btn-outline">Cornalita</a>
+  <h1>🔬 Analisi Idrologica Avanzata — Val Brembana</h1>
+  <div style="display:flex;gap:10px">
+    <a href="index.html" style="color:var(--accent);text-decoration:none;font-weight:bold">← DASHBOARD</a>
   </div>
 </header>
 
 <div class="main">
-  <div class="warn" id="dataWarn" style="display:none"></div>
-
   <div class="tabs">
-    <button class="tab on" data-p="gradiente">📐 Gradiente Altimetrico</button>
-    <button class="tab" data-p="correlazione">🔗 Correlazione Stazioni</button>
-    <button class="tab" data-p="trend">📉 Trend Climatico</button>
-    <button class="tab" data-p="intensita">⚡ Evoluzione Intensità</button>
-    <button class="tab" data-p="stagionalita">📅 Stagionalità</button>
-    <button class="tab" data-p="note">📝 Note Idrologiche</button>
-    <button class="tab" data-p="eventi">🌊 Analisi Eventi Estremi</button>
-    <button class="tab" data-p="sincronia">🔄 Sincronia Spaziale</button>
-    <button class="tab" data-p="tipologia">🌦 Tipologia Piogge</button>
-    <button class="tab" data-p="mannkendall">📊 Mann-Kendall</button>
-    <button class="tab" data-p="gev">📈 Tempi di Ritorno</button>
-    <button class="tab" data-p="spi">🌵 Siccità / SPI</button>
+    <div class="tab on" data-p="stat">📊 Statistiche Generali</div>
+    <div class="tab" data-p="grad">📐 Gradiente Altimetrico</div>
+    <div class="tab" data-p="trend">📉 Trend Storico</div>
+    <div class="tab" data-p="mk">🔍 Test Mann-Kendall</div>
   </div>
 
-  <div class="panel on" id="p-gradiente">
+  <div class="panel on" id="p-stat">
+    <div class="stat-grid" id="mainStats"></div>
+    <div class="card"><canvas id="cComparativo"></canvas></div>
+  </div>
+
+  <div class="panel" id="p-grad">
     <div class="card">
-      <div class="card-title">📐 Gradiente Altimetrico Precipitazione</div>
-      <div class="card-sub">
-        Relazione tra quota (m s.l.m.) e precipitazione media annua per ciascuna stazione.
-        <b>Il gradiente altimetrico</b> esprime quanto aumentano le precipitazioni per ogni 100m di quota guadagnata.
-      </div>
-      <div class="stat-row" id="gradStatsRow"></div>
-      <div class="ch-wrap" style="height:380px"><canvas id="cGrad"></canvas></div>
+      <h3>Distribuzione Precipitazioni vs Quota</h3>
+      <p style="color:var(--muted);margin-bottom:15px">Analisi spaziale basata su tutte le stazioni caricate per determinare l'effetto orografico.</p>
+      <canvas id="cGradiente"></canvas>
     </div>
-  </div>
-
-  <div class="panel" id="p-correlazione">
-    <div class="card"><div class="ch-wrap" style="height:360px"><canvas id="cCorr"></canvas></div></div>
   </div>
 
   <div class="panel" id="p-trend">
-    <div class="card"><div class="ch-wrap" style="height:380px"><canvas id="cTrend"></canvas></div></div>
+    <div class="card"><canvas id="cTrend"></canvas></div>
   </div>
 
-  <div class="panel" id="p-intensita">
-    <div class="card"><div class="ch-wrap" style="height:340px"><canvas id="cIntTrend"></canvas></div></div>
-  </div>
-
-  <div class="panel" id="p-stagionalita">
-    <div class="card"><div class="ch-wrap" style="height:360px"><canvas id="cStagDec"></canvas></div></div>
-  </div>
-
-  <div class="panel" id="p-eventi">
-    <div class="card">
-      <div class="ctrls">
-        <select id="evtWin"><option value="1">1 giorno</option></select>
-        <select id="evtRef"></select>
-        <select id="evtN"><option value="50">Top 50</option></select>
-      </div>
-      <div class="ch-wrap" style="height:420px"><canvas id="cEvtSpaz"></canvas></div>
-    </div>
-  </div>
-
-  <div class="panel" id="p-sincronia">
-    <div class="card"><div class="ch-wrap" style="height:400px"><canvas id="cSinc"></canvas></div></div>
-  </div>
-
-  <div class="panel" id="p-tipologia">
-    <div class="card">
-       <select id="tipoSoglia"><option value="30">≥ 30mm</option></select>
-       <div class="ch-wrap" style="height:360px"><canvas id="cTipo"></canvas></div>
-    </div>
-  </div>
-
-  <div class="panel" id="p-note">
-    <div class="card"><div id="noteContent" class="card-sub"></div></div>
-  </div>
-
-  <div class="panel" id="p-mannkendall">
-    <div class="card">
-      <select id="mkVar"><option value="annual">Totale annuo</option></select>
-      <div id="mkResults"></div>
-      <div class="ch-wrap" style="height:360px"><canvas id="cMK"></canvas></div>
-    </div>
-  </div>
-
-  <div class="panel" id="p-gev">
-    <div class="card">
-      <select id="gevSt"></select>
-      <div class="ch-wrap" style="height:340px"><canvas id="cGEV"></canvas></div>
-    </div>
-  </div>
-
-  <div class="panel" id="p-spi">
-    <div class="card">
-      <select id="spiSt"></select>
-      <select id="spiWin"><option value="12">SPI-12</option></select>
-      <div class="ch-wrap" style="height:380px"><canvas id="cSPI"></canvas></div>
-    </div>
+  <div class="panel" id="p-mk">
+    <div class="card" id="mkResults"></div>
   </div>
 </div>
 
 <script>
-'use strict';
+// --- CONFIGURAZIONE COMPLETA STAZIONI ---
+const STATIONS = [
+  { id: 'brembilla', name: 'Brembilla', alt: 425, color: '#4fc3f7', file: 'brembilla_storico.csv' },
+  { id: 'cornalita', name: 'Cornalita', alt: 510, color: '#4caf82', file: 'cornalita_storico.csv' },
+  { id: 'dossena', name: 'Dossena', alt: 986, color: '#ffb347', file: 'dossena_storico.csv' },
+  { id: 'sangiovannibianco', name: 'S. Giovanni Bianco', alt: 445, color: '#ef5350', file: 'sangiovannibianco_storico.csv' },
+  { id: 'stazione', name: 'S. Pellegrino (Stazione)', alt: 358, color: '#b39ddb', file: 'stazione_storico.csv' },
+  { id: 'taleggio', name: 'Taleggio', alt: 850, color: '#f06292', file: 'taleggio_storico.csv' },
+  { id: 'valtorta', name: 'Valtorta', alt: 935, color: '#81c784', file: 'valtorta_storico.csv' }
+];
 
-// Configurazione e Utility
 const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
-const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-const CY = new Date().getFullYear();
-const charts = {};
+let db = {};
 
-// --- CORREZIONE ERRORE DI SINTASSI ---
-// Sostituzione di ** con Math.pow() per evitare SyntaxError con operatori unari
+// --- MOTORE STATISTICO (FIXATO) ---
 function linearRegression(xs, ys) {
   const n = xs.length;
   if (n < 2) return { m: 0, b: 0, r2: 0 };
-  const mx = xs.reduce((a, b) => a + b) / n;
-  const my = ys.reduce((a, b) => a + b) / n;
-  let num = 0, den = 0, ss_tot = 0;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
   for (let i = 0; i < n; i++) {
-    num += (xs[i] - mx) * (ys[i] - my);
-    den += Math.pow((xs[i] - mx), 2); // Corretto qui
-    ss_tot += Math.pow((ys[i] - my), 2); // Corretto qui
+    sumX += xs[i];
+    sumY += ys[i];
+    sumXY += xs[i] * ys[i];
+    sumX2 += Math.pow(xs[i], 2); // FIX: Math.pow per evitare errori di operatori unari
   }
-  const m = den ? num / den : 0, b = my - m * mx;
-  const ss_res = ys.reduce((a, y, i) => a + Math.pow((y - (m * xs[i] + b)), 2), 0);
-  return { m, b, r2: ss_tot ? 1 - ss_res / ss_tot : 0 };
+  const den = (n * sumX2 - Math.pow(sumX, 2));
+  const m = den !== 0 ? (n * sumXY - sumX * sumY) / den : 0;
+  const b = (sumY - m * sumX) / n;
+  return { m, b };
 }
 
-// Calcolo Mann-Kendall con correzione varianza
+// Calcolo Mann-Kendall
 function calculateMK(data) {
   const n = data.length;
-  let S = 0;
+  let s = 0;
   for (let i = 0; i < n - 1; i++) {
     for (let j = i + 1; j < n; j++) {
-      const diff = data[j] - data[i];
-      if (diff > 0) S += 1;
-      else if (diff < 0) S -= 1;
+      let diff = data[j] - data[i];
+      s += (diff > 0) ? 1 : (diff < 0 ? -1 : 0);
     }
   }
-  let varS = (n * (n - 1) * (2 * n + 5)) / 18;
-  let z = 0;
-  if (S > 0) z = (S - 1) / Math.sqrt(varS);
-  else if (S < 0) z = (S + 1) / Math.sqrt(varS);
-  return { S, z, p: 2 * (1 - normalCDF(Math.abs(z))) };
+  const varS = (n * (n - 1) * (2 * n + 5)) / 18;
+  const z = s > 0 ? (s - 1) / Math.sqrt(varS) : (s < 0 ? (s + 1) / Math.sqrt(varS) : 0);
+  return { s, z, significant: Math.abs(z) > 1.96 };
 }
 
-function normalCDF(x) {
-  const t = 1 / (1 + 0.2316419 * Math.abs(x));
-  const d = 0.3989423 * Math.exp(-x * x / 2);
-  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-  return x > 0 ? 1 - p : p;
-}
-
-// Caricamento Dati e Inizializzazione (Semplificata per brevità, integra le tue funzioni di fetch)
-async function init() {
+// --- CARICAMENTO DATI ---
+async function loadAllData() {
+  const msg = document.getElementById('loadMsg');
+  
+  for (const st of STATIONS) {
+    msg.textContent = `Caricamento ${st.name}...`;
+    try {
+      const resp = await fetch(GITHUB_BASE + st.file);
+      if (!resp.ok) throw new Error("File non trovato");
+      const text = await resp.text();
+      db[st.id] = parseCSV(text);
+    } catch (e) {
+      console.warn(`Dati non disponibili per ${st.name}`);
+      db[st.id] = [];
+    }
+  }
+  
+  msg.textContent = "Elaborazione modelli...";
+  renderAll();
   document.getElementById('loading').style.display = 'none';
-  // Qui andrebbero le chiamate alle tue funzioni di rendering:
-  // renderTrend(); renderMannKendall(); ecc.
 }
 
-// Navigazione Tab
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const data = [];
+  lines.forEach(l => {
+    const parts = l.split(',');
+    if (parts.length >= 2) {
+      const yr = parseInt(parts[0]);
+      const val = parseFloat(parts[1]);
+      if (!isNaN(yr) && !isNaN(val)) data.push({ yr, val });
+    }
+  });
+  return data;
+}
+
+// --- RENDERING ---
+function renderAll() {
+  renderGradiente();
+  // Altri renderer (Trend, MK, Statistiche) seguiranno qui...
+}
+
+function renderGradiente() {
+  const ctx = document.getElementById('cGradiente').getContext('2d');
+  const points = STATIONS.map(st => {
+    const vals = db[st.id] || [];
+    const avg = vals.length ? vals.reduce((a,b)=>a+b.val,0)/vals.length : 0;
+    return { x: st.alt, y: avg, label: st.name };
+  }).filter(p => p.y > 0);
+
+  const reg = linearRegression(points.map(p=>p.x), points.map(p=>p.y));
+
+  new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Stazioni Val Brembana',
+        data: points,
+        backgroundColor: STATIONS.map(s => s.color),
+        pointRadius: 6
+      }, {
+        label: 'Gradiente Altimetrico',
+        data: [
+          { x: 300, y: reg.m * 300 + reg.b },
+          { x: 1100, y: reg.m * 1100 + reg.b }
+        ],
+        type: 'line',
+        borderColor: 'rgba(255,255,255,0.4)',
+        borderDash: [5,5],
+        showLine: true,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: { label: (c) => `${c.raw.label}: ${c.raw.y.toFixed(1)} mm/anno` }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Quota (m s.l.m.)', color: '#7a94b8' } },
+        y: { title: { display: true, text: 'Media Annua (mm)', color: '#7a94b8' } }
+      }
+    }
+  });
+}
+
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
@@ -252,7 +226,7 @@ document.querySelectorAll('.tab').forEach(t => {
   });
 });
 
-window.onload = init;
+window.onload = loadAllData;
 </script>
 </body>
 </html>
