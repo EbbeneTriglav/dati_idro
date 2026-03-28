@@ -1730,27 +1730,35 @@ function renderPCI() {
 // GEV / TEMPI DI RITORNO
 // ════════════════════════════════════════════
 function fitGEV(maxima) {
-  // Stima parametri GEV con L-moments (metodo robusto, standard ASCE/WMO)
-  const n=maxima.length;
+  // GEV con PWM unbiased (Landwehr 1979) + constraint fisico su k
+  // Valori di k per precipitazioni montane italiane: tipicamente in [-0.3, 0.3]
+  const n=maxima.length; if(n<8)return null;
   const sorted=[...maxima].sort((a,b)=>a-b);
-  // L-moments
-  let l1=0,l2=0,l3=0;
-  sorted.forEach((x,i)=>{
-    const c0=1/n, c1=(i)/(n*(n-1)), c2=(i*(i-1))/(n*(n-1)*(n-2)||1);
-    l1+=c0*x; l2+=2*(c1-0.5/(n-1))*x;
-  });
-  // Metodo semplificato L-moments per GEV (Hosking 1990)
-  const L1=sorted.reduce((a,b)=>a+b)/n;
-  const probs=sorted.map((_,i)=>(i+0.5)/n);
-  // Stima con PWM (probability weighted moments)
   let b0=0,b1=0,b2=0;
-  sorted.forEach((x,i)=>{b0+=x;b1+=x*probs[i];b2+=x*probs[i]*probs[i];});
+  for(let i=0;i<n;i++){
+    b0+=sorted[i];
+    b1+=sorted[i]*(i)/(n-1);
+    b2+=sorted[i]*(i*(i-1))/((n-1)*(n-2)||1);
+  }
   b0/=n;b1/=n;b2/=n;
-  const a0=2*b1-b0, a1=6*b2-6*b1+b0;
-  const k=7.8590*(a1/a0)+(a1/a0)**2*2.9554;  // shape
-  const alpha=a0*k/((1-2**(-k))*gamma(1+k)||1); // scale
-  const xi=b0-alpha*(1-gamma(1+k))/k;  // location
-  return{k,alpha,xi,n,mean:L1};
+  const l2=2*b1-b0, l3=6*b2-6*b1+b0;
+  const t3=l3/l2;
+  let k=7.8590*t3+2.9554*t3*t3;
+  k=Math.max(-0.3,Math.min(0.3,k));  // constraint fisico
+  let alpha,xi;
+  if(Math.abs(k)<0.01){
+    alpha=l2/Math.log(2); xi=b0-0.5772*alpha;
+  } else {
+    const g1=gamma(1+k);
+    alpha=Math.abs(l2*k/((1-Math.pow(2,-k))*g1));
+    xi=b0-alpha*(1-g1)/k;
+  }
+  if(!isFinite(alpha)||alpha<=0||!isFinite(xi)){
+    // Fallback Gumbel
+    alpha=l2/Math.log(2); xi=b0-0.5772*alpha; k=0;
+  }
+  return{k:Math.round(k*1000)/1000, alpha:Math.round(alpha*10)/10,
+         xi:Math.round(xi*10)/10, n, mean:b0};
 }
 
 function gamma(x) {
@@ -1768,11 +1776,12 @@ function gamma(x) {
 }
 
 function gevQuantile(T, k, alpha, xi) {
-  // Quantile GEV per periodo di ritorno T
-  const p=1-1/T;
-  const y=-Math.log(-Math.log(p));
-  if(Math.abs(k)<1e-6) return xi+alpha*y;  // Gumbel (k→0)
-  return xi+alpha*(1-(-y)**k)/k;  // GEV generale  (correzione segno k)
+  // Formula standard Coles (2001): Q(T) = xi - alpha/k * (1 - yT^(-k))
+  // con yT = -log(1-1/T) > 0 sempre — nessun NaN possibile
+  const yT = -Math.log(1-1/T);
+  if(Math.abs(k)<0.01) return xi - alpha*Math.log(yT);  // Gumbel
+  const q = xi - alpha/k*(1-Math.pow(yT,-k));
+  return isFinite(q) ? Math.max(0,q) : xi - alpha*Math.log(yT);
 }
 
 function renderGEV() {
@@ -1813,7 +1822,7 @@ function renderGEV() {
   const gevP=sorted.map(x=>{
     if(Math.abs(k)<1e-6) return Math.exp(-Math.exp(-(x-xi)/alpha));
     const t=1-k*(x-xi)/alpha;
-    return t>0?Math.exp(-t**(1/k)):0;
+    return t>0?Math.exp(-(t**(1/k))):0;
   });
 
   dc('cGEV');
@@ -1931,13 +1940,44 @@ function fitGamma(vals) {
 }
 
 function gammaCDF(x, alpha, beta) {
-  if(x<=0)return 0;
-  // Approssimazione della CDF gamma incompleta (serie di potenze)
-  const t=x/beta;
-  if(t<0)return 0;
-  // Usa approssimazione Wilson-Hilferty
-  const d=1/(9*alpha), v=Math.pow(t/alpha,1/3);
-  return normalCDF((v-1+d)/Math.sqrt(d));
+  // Wilson-Hilferty (1931): approssimazione robusta della CDF gamma incompleta
+  // Errore tipico < 0.001 per alpha > 0.5
+  if(x<=0) return 0;
+  if(!isFinite(x)||!isFinite(alpha)||alpha<=0||beta<=0) return 0;
+  const t = x/beta;
+  // Wilson-Hilferty: (X/alpha)^(1/3) ~ N(1-1/(9*alpha), 1/(9*alpha))
+  const mu = 1 - 1/(9*alpha);
+  const sigma = Math.sqrt(1/(9*alpha));
+  const z = (Math.pow(t/alpha, 1/3) - mu) / sigma;
+  return Math.max(0, Math.min(1, normalCDF(z)));
+}
+
+// Inversione CDF normale — Acklam (2003), accuratezza ~5e-9
+function normalQuantile(p) {
+  p = Math.max(1e-10, Math.min(1-1e-10, p));
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,
+            1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,
+            6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,
+            -2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  const pL=0.02425, pH=1-pL;
+  let q;
+  if(p<pL){
+    const t=Math.sqrt(-2*Math.log(p));
+    q=(((((c[0]*t+c[1])*t+c[2])*t+c[3])*t+c[4])*t+c[5]) /
+      ((((d[0]*t+d[1])*t+d[2])*t+d[3])*t+1);
+  } else if(p<=pH){
+    const t=p-0.5, t2=t*t;
+    q=t*(((((a[0]*t2+a[1])*t2+a[2])*t2+a[3])*t2+a[4])*t2+a[5]) /
+       (((((b[0]*t2+b[1])*t2+b[2])*t2+b[3])*t2+b[4])*t2+1);
+  } else {
+    const t=Math.sqrt(-2*Math.log(1-p));
+    q=-(((((c[0]*t+c[1])*t+c[2])*t+c[3])*t+c[4])*t+c[5]) /
+       ((((d[0]*t+d[1])*t+d[2])*t+d[3])*t+1);
+  }
+  return q;
 }
 
 function computeSPI(ppYM, windowMonths, years) {
@@ -1967,12 +2007,9 @@ function computeSPI(ppYM, windowMonths, years) {
     const H=q0+(1-q0)*gammaCDF(pt.sum,alpha,beta);
     // Trasformazione in SPI (quantile normale)
     const pClip=Math.max(0.001,Math.min(0.999,H));
-    // Inversione CDF normale (approssimazione Abramowitz & Stegun)
-    const p=pClip<0.5?pClip:1-pClip;
-    const t=Math.sqrt(-2*Math.log(p));
-    const c=[2.515517,0.802853,0.010328],d=[1.432788,0.189269,0.001308];
-    const z=t-(c[0]+c[1]*t+c[2]*t**2)/(1+d[0]*t+d[1]*t**2+d[2]*t**3);
-    return{...pt,spi:Math.round((pClip<0.5?-z:z)*100)/100};
+    // Inversione CDF normale — Peter Acklam (2003), errore < 5e-9
+    const spiVal = normalQuantile(pClip);
+    return {...pt, spi: Math.round(spiVal*100)/100};
   });
 
   return spi;
