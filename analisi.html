@@ -666,9 +666,9 @@ function linearRegression(xs, ys) {
   const n=xs.length; if(n<2)return{m:0,b:0,r2:0};
   const mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
   let num=0, den=0, ss_tot=0;
-  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den += ((xs[i] - mx) ** 2);ss_tot+=(ys[i]-my)**2;}
+  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)**2;ss_tot+=(ys[i]-my)**2;}
   const m=den?num/den:0, b=my-m*mx;
-  const ss_res = ys.reduce((a, y, i) => a + ((y - (m * xs[i] + b)) ** 2), 0);
+  const ss_res=ys.reduce((a,y,i)=>a+(y-(m*xs[i]+b))**2,0);
   return{m,b,r2:ss_tot?1-ss_res/ss_tot:0};
 }
 
@@ -684,7 +684,7 @@ function pearsonR(xs, ys) {
   const n=xs.length; if(n<3)return null;
   const mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
   let num=0,dx=0,dy=0;
-  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);dx += ((xs[i] - mx) ** 2);dy += ((ys[i] - my) ** 2);}
+  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);dx+=(xs[i]-mx)**2;dy+=(ys[i]-my)**2;}
   return dx&&dy?num/Math.sqrt(dx*dy):null;
 }
 
@@ -1378,7 +1378,7 @@ function renderSincronia() {
     const vB=commonYrs.map(y=>ppB[y].reduce((s,v)=>s+v,0));
     const mA=vA.reduce((s,v)=>s+v)/vA.length, mB=vB.reduce((s,v)=>s+v)/vB.length;
     let num=0,dA=0,dB=0;
-    vA.forEach((v,i)=>{num+=(v-mA)*(vB[i]-mB);dA+=((v - mA) ** 2);dB+=(vB[i]-mB)**2;});
+    vA.forEach((v,i)=>{num+=(v-mA)*(vB[i]-mB);dA+=(v-mA)**2;dB+=(vB[i]-mB)**2;});
     const r=dA&&dB?num/Math.sqrt(dA*dB):0;
     corr_pairs.push({a:a.nome,b:b.nome,r:Math.round(r*100)/100,n:commonYrs.length});
   }
@@ -1701,7 +1701,7 @@ function renderPCI() {
     const pci=years.map(y=>{
       const months=d.ppYM[y]; const tot=months.reduce((a,b)=>a+b,0);
       if(!tot)return null;
-      const sumSq = months.reduce((a, m) => a + ((m / tot * 100) ** 2), 0);
+      const sumSq=months.reduce((a,m)=>a+(m/tot*100)**2,0);
       return Math.round(sumSq/100*10)/10;  // normalizzato 0-100
     });
     return{label:meta.nome,data:pci,labels:years,
@@ -1747,8 +1747,8 @@ function fitGEV(maxima) {
   sorted.forEach((x,i)=>{b0+=x;b1+=x*probs[i];b2+=x*probs[i]*probs[i];});
   b0/=n;b1/=n;b2/=n;
   const a0=2*b1-b0, a1=6*b2-6*b1+b0;
-  const k = 7.8590 * (a1 / a0) + ((a1 / a0) ** 2) * 2.9554;  // shape
-  const alpha = a0 * k / ((1 - (2 ** (-k))) * gamma(1 + k) || 1); // scale
+  const k=7.8590*(a1/a0)+(a1/a0)**2*2.9554;  // shape
+  const alpha=a0*k/((1-2**(-k))*gamma(1+k)||1); // scale
   const xi=b0-alpha*(1-gamma(1+k))/k;  // location
   return{k,alpha,xi,n,mean:L1};
 }
@@ -1764,7 +1764,7 @@ function gamma(x) {
   let a=c[0];
   for(let i=1;i<g+2;i++)a+=c[i]/(x+i);
   const t=x+g+0.5;
-  return Math.sqrt(2*Math.PI) * (t ** (x + 0.5)) * Math.exp(-t) * a;
+  return Math.sqrt(2*Math.PI)*t**(x+0.5)*Math.exp(-t)*a;
 }
 
 function gevQuantile(T, k, alpha, xi) {
@@ -1772,7 +1772,7 @@ function gevQuantile(T, k, alpha, xi) {
   const p=1-1/T;
   const y=-Math.log(-Math.log(p));
   if(Math.abs(k)<1e-6) return xi+alpha*y;  // Gumbel (k→0)
-  return xi + alpha * (1 - ((-y) ** k)) / k;;  // GEV generale  (correzione segno k)
+  return xi+alpha*(1-(-y)**k)/k;  // GEV generale  (correzione segno k)
 }
 
 function renderGEV() {
@@ -1813,7 +1813,7 @@ function renderGEV() {
   const gevP=sorted.map(x=>{
     if(Math.abs(k)<1e-6) return Math.exp(-Math.exp(-(x-xi)/alpha));
     const t=1-k*(x-xi)/alpha;
-    return t > 0 ? Math.exp(-(t ** (1 / k))) : 0;
+    return t>0?Math.exp(-t**(1/k)):0;
   });
 
   dc('cGEV');
@@ -1922,19 +1922,12 @@ function initGEVselect() {
 // ════════════════════════════════════════════
 function fitGamma(vals) {
   // Stima parametri gamma (metodo dei momenti)
-  const pos = vals.filter(v => v > 0);
-  if(!pos.length) return {alpha:1,beta:1};
-
-  const mean = pos.reduce((a,b)=>a+b,0) / pos.length;
-
-  const variance =
-    pos.reduce((a,b)=>a + ((b - mean) ** 2), 0) /
-    (pos.length - 1) || 0.1;
-
-  const alpha = mean ** 2 / variance;
-  const beta  = variance / mean;
-
-  return {alpha, beta};
+  const pos=vals.filter(v=>v>0);
+  if(!pos.length)return{alpha:1,beta:1};
+  const mean=pos.reduce((a,b)=>a+b)/pos.length;
+  const variance=pos.reduce((a,b)=>a+(b-mean)**2,0)/(pos.length-1)||0.1;
+  const alpha=mean**2/variance, beta=variance/mean;
+  return{alpha,beta};
 }
 
 function gammaCDF(x, alpha, beta) {
@@ -1978,8 +1971,7 @@ function computeSPI(ppYM, windowMonths, years) {
     const p=pClip<0.5?pClip:1-pClip;
     const t=Math.sqrt(-2*Math.log(p));
     const c=[2.515517,0.802853,0.010328],d=[1.432788,0.189269,0.001308];
-    const z = t - (c[0] + c[1] * t + c[2] * (t ** 2)) /
-              (1 + d[0] * t + d[1] * (t ** 2) + d[2] * (t ** 3));
+    const z=t-(c[0]+c[1]*t+c[2]*t**2)/(1+d[0]*t+d[1]*t**2+d[2]*t**3);
     return{...pt,spi:Math.round((pClip<0.5?-z:z)*100)/100};
   });
 
