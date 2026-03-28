@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analisi Ciclica — Val Brembana</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0a1628;--card:#111e35;--card2:#162340;--border:#1e3050;
+  --accent:#4fc3f7;--text:#e3eaf8;--muted:#7a94b8;
+  --green:#4caf82;--orange:#ffb347;--red:#ef5350;--purple:#b39ddb;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header h1{font-size:1.15rem;font-weight:700;color:var(--accent)}
+header p{font-size:11px;color:var(--muted);margin-top:2px}
+.btn{padding:6px 14px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-green{background:linear-gradient(135deg,#1b5e3b,#2e7d52);color:#fff}
+main{max-width:1280px;margin:0 auto;padding:18px}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:16px;flex-wrap:wrap}
+.tab{background:transparent;border:none;color:var(--muted);padding:9px 15px;cursor:pointer;font-size:12.5px;font-weight:600;border-bottom:3px solid transparent;transition:.2s}
+.tab:hover{color:var(--accent)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px}
+.card-sub{font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.card-sub em{color:var(--orange)}
+.card-sub b{color:var(--text)}
+.nota{display:block;margin-top:8px;padding:8px 10px;background:rgba(255,179,71,.07);border-left:3px solid var(--orange);border-radius:0 5px 5px 0;font-size:11px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.ch-wrap{position:relative;background:var(--card2);border-radius:8px;padding:8px}
+.ctrls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:var(--muted)}
+.ctrls label{font-weight:600}
+.ctrls select,.ctrls input{background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px}
+.insight{background:rgba(79,195,247,.07);border:1px solid rgba(79,195,247,.2);border-radius:8px;padding:12px;font-size:12px;line-height:1.6}
+.insight strong{color:var(--accent)}
+.insight em{color:var(--orange)}
+.warn{background:rgba(255,179,71,.1);border:1px solid rgba(255,179,71,.3);border-radius:6px;padding:10px;color:var(--orange);font-size:12px}
+.dtbl{width:100%;border-collapse:collapse;font-size:12px}
+.dtbl th{background:var(--card2);color:var(--muted);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:600}
+.dtbl td{padding:6px 10px;border-bottom:1px solid var(--border)}
+.dtbl tr:hover td{background:rgba(79,195,247,.04)}
+.tbl-wrap{overflow-x:auto;border-radius:7px;border:1px solid var(--border)}
+#loading{position:fixed;inset:0;background:rgba(10,22,40,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{color:var(--muted);font-size:13px}
+.heatmap-wrap{overflow-x:auto}
+.hm-grid{display:grid;font-size:10px;border-radius:6px;overflow:hidden}
+.hm-cell{padding:5px 2px;text-align:center;transition:filter .15s}
+.hm-cell:hover{filter:brightness(1.3)}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="loadMsg">Carico configurazione…</div>
+</div>
+
+<header>
+  <div>
+    <h1>🌀 Analisi Ciclica e Spettrale — Val Brembana</h1>
+    <p>Wavelet Transform · Spettro di potenza · Autocorrelazione · Change-point · Decomposizione STL</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-outline" id="langBtn" onclick="toggleLang()">🇬🇧 EN</button>
+    <a href="analisi.html" class="btn btn-outline">← Analisi Climatica</a>
+    <a href="index.html" class="btn btn-outline">← Mappa</a>
+  </div>
+</header>
+
+<main>
+  <!-- Selezione stazione e serie -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="ctrls">
+      <label id="lbl-st">Stazione:</label>
+      <select id="selSt"></select>
+      <label id="lbl-ser">Serie:</label>
+      <select id="selSer">
+        <option value="annual">Totale annuo</option>
+        <option value="spi12" selected>SPI-12 (mensile)</option>
+        <option value="spi6">SPI-6 (mensile)</option>
+        <option value="spi3">SPI-3 (mensile)</option>
+        <option value="max1">Max giornaliero annuale</option>
+        <option value="wetdays">Giorni piovosi/anno</option>
+      </select>
+      <button class="btn btn-green" onclick="runAllAnalyses()" id="btnRun">▶ Analizza</button>
+      <span id="serInfo" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-p="spettro">📊 Spettro di Potenza</button>
+    <button class="tab" data-p="wavelet">🌊 Wavelet (CWT)</button>
+    <button class="tab" data-p="acf">🔗 Autocorrelazione</button>
+    <button class="tab" data-p="decomp">📉 Decomposizione STL</button>
+    <button class="tab" data-p="changepoint">📍 Change-Point (SQMK)</button>
+    <button class="tab" data-p="confronto">⚖️ Confronto Stazioni</button>
+  </div>
+
+  <!-- SPETTRO DI POTENZA -->
+  <div class="panel on" id="p-spettro">
+    <div class="card">
+      <div class="card-title" id="t-spettro">📊 Spettro di Potenza (FFT) — Periodicità dominanti</div>
+      <div class="card-sub" id="d-spettro">
+        La <b>Trasformata di Fourier (FFT)</b> decompone la serie temporale nelle sue componenti di frequenza,
+        rivelando quali periodicità (in anni) contengono più energia.
+        Picchi netti nello spettro indicano cicli ricorrenti significativi.
+        <br>Per serie non stazionarie (con trend o varianza cambiante) la FFT può essere fuorviante —
+        in quel caso preferire la <em>Wavelet Transform</em> nel tab successivo.
+        <span class="nota">🔴 Linea rossa = soglia di significatività al 95% (rumore rosso AR1).
+        Picchi sopra la soglia indicano periodicità statisticamente significative.</span>
+      </div>
+      <div class="ch-wrap" style="height:360px"><canvas id="cSpettro"></canvas></div>
+      <div id="spettroPeaks" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="t-spettro2">📋 Tabella periodicità significative</div>
+      <div class="tbl-wrap" id="tblSpettro"></div>
+    </div>
+  </div>
+
+  <!-- WAVELET CWT -->
+  <div class="panel" id="p-wavelet">
+    <div class="card">
+      <div class="card-title" id="t-wavelet">🌊 Continuous Wavelet Transform (CWT) — Morlet</div>
+      <div class="card-sub" id="d-wavelet">
+        La <b>CWT con wavelet di Morlet</b> è il metodo standard in idrologia per rilevare periodicità
+        <em>non stazionarie</em>: cicli che appaiono, scompaiono o cambiano intensità nel tempo
+        (Torrence &amp; Compo, 1998 — oltre 20.000 citazioni).
+        <br>Il <em>scalogramma</em> (mappa tempo-scala) mostra dove nel tempo e a quale frequenza
+        si concentra l'energia del segnale.
+        <br>• <b>Asse X</b>: tempo · <b>Asse Y</b>: scala (periodicità in anni) · <b>Colore</b>: potenza
+        <span class="nota">📌 La <em>zona di influenza del cono</em> (COI) ai bordi della serie è meno affidabile
+        per effetti di bordo — interpretare con cautela i picchi nelle prime e ultime porzioni.</span>
+      </div>
+      <div class="ctrls">
+        <label id="lbl-wscale">Scala min (anni):</label>
+        <select id="wScaleMin"><option value="0.5">0.5</option><option value="1" selected>1</option><option value="2">2</option></select>
+        <label id="lbl-wscalemax">Scala max (anni):</label>
+        <select id="wScaleMax"><option value="8">8</option><option value="16" selected>16</option><option value="32">32</option></select>
+      </div>
+      <div class="heatmap-wrap" id="waveletHeatmap" style="min-height:300px">
+        <div class="warn" style="margin:20px">Clicca ▶ Analizza per calcolare il CWT.</div>
+      </div>
+      <div id="waveletGWS" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="t-gws">📊 Global Wavelet Spectrum (GWS)</div>
+      <div class="card-sub" id="d-gws">Media temporale del potere wavelet per ogni scala — equivale allo spettro di potenza ma più robusto su serie non stazionarie. Picchi = periodicità dominanti nell'intera serie.</div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cGWS"></canvas></div>
+    </div>
+  </div>
+
+  <!-- AUTOCORRELAZIONE -->
+  <div class="panel" id="p-acf">
+    <div class="card">
+      <div class="card-title" id="t-acf">🔗 Funzione di Autocorrelazione (ACF) e PACF</div>
+      <div class="card-sub" id="d-acf">
+        L'<b>ACF</b> misura la correlazione della serie con se stessa sfasata di k passi (lag).
+        Picchi significativi a lag multipli di N anni indicano un ciclo di N anni.
+        La <b>PACF</b> rimuove l'effetto dei lag intermedi, isolando le dipendenze dirette.
+        <br>Per serie annuali: lag=5 → correlazione con 5 anni prima, lag=10 → 10 anni fa, ecc.
+        <span class="nota">Bande blu = intervallo di confidenza al 95% (±1.96/√n). Barre che escono dalle bande sono statisticamente significative.</span>
+      </div>
+      <div class="grid2">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">ACF</div>
+          <div class="ch-wrap" style="height:280px"><canvas id="cACF"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">PACF</div>
+          <div class="ch-wrap" style="height:280px"><canvas id="cPACF"></canvas></div>
+        </div>
+      </div>
+      <div id="acfNote" class="insight" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- DECOMPOSIZIONE STL -->
+  <div class="panel" id="p-decomp">
+    <div class="card">
+      <div class="card-title" id="t-decomp">📉 Decomposizione della serie (STL / Loess)</div>
+      <div class="card-sub" id="d-decomp">
+        Separazione della serie in tre componenti additive:
+        <br>• <em style="color:var(--orange)">Trend</em> — variazione di lungo periodo (Loess smoothing)
+        <br>• <em style="color:var(--accent)">Stagionalità</em> — pattern annuale/ciclico ricorrente
+        <br>• <em style="color:var(--muted)">Residuo</em> — componente non spiegata (rumore + eventi estremi)
+        <span class="nota">Il residuo rivela anni anomali (outlier) e la stagionalità mostra se il ciclo cambia nel tempo.</span>
+      </div>
+      <div class="ctrls">
+        <label id="lbl-smooth">Smoothing trend (anni):</label>
+        <select id="smoothWin">
+          <option value="5">5</option><option value="9" selected>9</option>
+          <option value="15">15</option><option value="21">21</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:200px;margin-bottom:8px"><canvas id="cDecompOrig"></canvas></div>
+      <div class="ch-wrap" style="height:160px;margin-bottom:8px"><canvas id="cDecompTrend"></canvas></div>
+      <div class="ch-wrap" style="height:160px;margin-bottom:8px"><canvas id="cDecompSeas"></canvas></div>
+      <div class="ch-wrap" style="height:160px"><canvas id="cDecompRes"></canvas></div>
+      <div id="decompNote" class="insight" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- CHANGE POINT -->
+  <div class="panel" id="p-changepoint">
+    <div class="card">
+      <div class="card-title" id="t-cp">📍 Sequential Mann-Kendall (SQMK) — Rilevamento change-point</div>
+      <div class="card-sub" id="d-cp">
+        Il <b>test Mann-Kendall Sequenziale (SQMK)</b> rileva quando un trend statisticamente significativo
+        <em>inizia</em> nella serie — il cosiddetto <em>change-point</em> o punto di rottura climatica.
+        <br>Le curve U (forward) e U' (backward) si incrociano nel punto di cambiamento.
+        Quando l'incrocio avviene dentro le bande ±1.96 di significatività è un change-point rilevante.
+        <br>Applicato alle serie annuali di precipitazione e ai massimi giornalieri.
+        <span class="nota">📌 Utilizzato in numerosi studi lombardi per identificare break point negli anni '80-'90 correlati con l'oscillazione NAO e con cambiamenti nella circolazione atlantica.</span>
+      </div>
+      <div class="ch-wrap" style="height:340px"><canvas id="cSQMK"></canvas></div>
+      <div id="sqmkNote" class="insight" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="t-pettitt">📍 Test di Pettitt — Omogeneità della serie</div>
+      <div class="card-sub" id="d-pettitt">Il test non parametrico di Pettitt (1979) identifica il punto di cambiamento più probabile nell'andamento mediano della serie, stimando anche la sua significatività statistica.</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cPettitt"></canvas></div>
+      <div id="pettittNote" class="insight" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- CONFRONTO STAZIONI -->
+  <div class="panel" id="p-confronto">
+    <div class="card">
+      <div class="card-title" id="t-conf">⚖️ Confronto spettri tra stazioni</div>
+      <div class="card-sub" id="d-conf">
+        Sovrapposizione degli spettri di potenza di tutte le stazioni disponibili.
+        Picchi condivisi da più stazioni indicano ciclicità reale di scala regionale;
+        picchi presenti in una sola stazione possono essere artefatti locali o di misura.
+      </div>
+      <div class="ctrls">
+        <label id="lbl-cser">Serie:</label>
+        <select id="confSer">
+          <option value="annual" selected>Totale annuo</option>
+          <option value="spi12">SPI-12</option>
+          <option value="max1">Max giornaliero</option>
+        </select>
+        <button class="btn btn-green" onclick="renderConfronto()">▶ Confronta</button>
+      </div>
+      <div class="ch-wrap" style="height:380px"><canvas id="cConf"></canvas></div>
+      <div id="confNote" class="insight" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG & GITHUB
+// ═══════════════════════════════════════════
+const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+let STAZIONI_META = [];
+const stData = {};
+const charts = {};
+const CY = new Date().getFullYear();
+
+// ═══════════════════════════════════════════
+// LINGUA
+// ═══════════════════════════════════════════
+let LANG = 'it';
+const TR = {
+  'h1':        {it:'🌀 Analisi Ciclica e Spettrale — Val Brembana', en:'🌀 Cyclic & Spectral Analysis — Val Brembana'},
+  'lbl-st':    {it:'Stazione:', en:'Station:'},
+  'lbl-ser':   {it:'Serie:', en:'Series:'},
+  'lbl-smooth':{it:'Smoothing trend (anni):', en:'Trend smoothing (years):'},
+  'lbl-wscale':{it:'Scala min (anni):',  en:'Min scale (years):'},
+  'lbl-wscalemax':{it:'Scala max (anni):', en:'Max scale (years):'},
+  'lbl-cser':  {it:'Serie:', en:'Series:'},
+  't-spettro': {it:'📊 Spettro di Potenza (FFT) — Periodicità dominanti', en:'📊 Power Spectrum (FFT) — Dominant periodicities'},
+  't-spettro2':{it:'📋 Tabella periodicità significative', en:'📋 Significant periodicities table'},
+  't-wavelet': {it:'🌊 Continuous Wavelet Transform (CWT) — Morlet', en:'🌊 Continuous Wavelet Transform (CWT) — Morlet'},
+  't-gws':     {it:'📊 Global Wavelet Spectrum (GWS)', en:'📊 Global Wavelet Spectrum (GWS)'},
+  't-acf':     {it:'🔗 Funzione di Autocorrelazione (ACF) e PACF', en:'🔗 Autocorrelation Function (ACF) and PACF'},
+  't-decomp':  {it:'📉 Decomposizione della serie (STL / Loess)', en:'📉 Series Decomposition (STL / Loess)'},
+  't-cp':      {it:'📍 Sequential Mann-Kendall (SQMK) — Rilevamento change-point', en:'📍 Sequential Mann-Kendall (SQMK) — Change-point detection'},
+  't-pettitt': {it:'📍 Test di Pettitt — Omogeneità della serie', en:'📍 Pettitt Test — Series homogeneity'},
+  't-conf':    {it:'⚖️ Confronto spettri tra stazioni', en:'⚖️ Power spectrum comparison across stations'},
+  'tab-spettro':  {it:'📊 Spettro di Potenza', en:'📊 Power Spectrum'},
+  'tab-wavelet':  {it:'🌊 Wavelet (CWT)', en:'🌊 Wavelet (CWT)'},
+  'tab-acf':      {it:'🔗 Autocorrelazione', en:'🔗 Autocorrelation'},
+  'tab-decomp':   {it:'📉 Decomposizione STL', en:'📉 STL Decomposition'},
+  'tab-changepoint':{it:'📍 Change-Point (SQMK)', en:'📍 Change-Point (SQMK)'},
+  'tab-confronto':{it:'⚖️ Confronto Stazioni', en:'⚖️ Station Comparison'},
+};
+function toggleLang(){
+  LANG = LANG==='it'?'en':'it';
+  document.getElementById('langBtn').textContent = LANG==='it'?'🇬🇧 EN':'🇮🇹 IT';
+  for(const[id,tr] of Object.entries(TR)){
+    if(id.startsWith('tab-')){
+      const btn=document.querySelector(`[data-p="${id.replace('tab-','')}"]`);
+      if(btn) btn.textContent=tr[LANG];
+    } else {
+      const el=document.getElementById(id);
+      if(el) el.textContent=tr[LANG];
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// PARSING & CARICAMENTO (riuso da analisi)
+// ═══════════════════════════════════════════
+function normalizeDate(s){
+  s=(s||'').trim().split(' ')[0];
+  if(/^\d{4}[\/-]\d{2}[\/-]\d{2}$/.test(s))return s.replace(/\//g,'-');
+  if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){const[d,m,y]=s.split('/');return`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  if(/^\d{1,2}-\d{1,2}-\d{4}$/.test(s)){const[d,m,y]=s.split('-');return`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  return null;
+}
+function findCol(hdr,kws){for(const kw of kws){const i=hdr.findIndex(h=>h.includes(kw));if(i>=0)return i;}return -1;}
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length)return{ppByDate:{}};
+  const sep=lines[0].includes(';')?';':',';
+  const hdr=lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  const iD=findCol(hdr,['localdatetime','data-ora','data','date','time']);
+  const iV=findCol(hdr,['datavalue','precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iQC=findCol(hdr,['qualitycontrollevelcode','qualitycontrol','qclevel','qc']);
+  const NODATA=-999;
+  const ppByDate={},ppRaw={};
+  for(let i=1;i<lines.length;i++){
+    const c=lines[i].split(sep).map(x=>x.replace(/"/g,'').trim());
+    if(iQC>=0){const qc=parseInt(c[iQC]);if(!isNaN(qc)&&qc>=150)continue;}
+    const date=normalizeDate(iD>=0?c[iD]:c[0]);
+    if(!date)continue;
+    if(iV>=0){const v=parseFloat(c[iV].replace(',','.'));if(!isNaN(v)&&v>=0&&v!==NODATA){ppByDate[date]=Math.round(((ppByDate[date]||0)+v)*10)/10;if(!ppRaw[date])ppRaw[date]=[];ppRaw[date].push(v);}}
+  }
+  return{ppByDate};
+}
+
+function parseXLSXRows(rows){
+  if(!rows.length)return{ppByDate:{}};
+  const hdr=rows[0].map(h=>String(h||'').toLowerCase().trim());
+  const iD=findCol(hdr,['localdatetime','data-ora','data','date','time']);
+  const iV=findCol(hdr,['precipitazione cumulata giornaliera','precipitazione giornaliera','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iQC=findCol(hdr,['qualitycontrollevelcode','qualitycontrol','qclevel','qc']);
+  const ppByDate={};
+  for(let i=1;i<rows.length;i++){
+    const row=rows[i];
+    if(iQC>=0){const qc=parseInt(row[iQC]);if(!isNaN(qc)&&qc>=150)continue;}
+    let rawD=iD>=0?row[iD]:row[0];
+    if(!rawD&&rawD!==0)continue;
+    let date;
+    if(typeof rawD==='number'){const d=XLSX.SSF.parse_date_code(rawD);if(!d||!d.y)continue;date=`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;}
+    else{date=normalizeDate(String(rawD));}
+    if(!date)continue;
+    if(iV>=0){const v=parseFloat(String(row[iV]||0).replace(',','.'));if(!isNaN(v)&&v>=0)ppByDate[date]=Math.round(((ppByDate[date]||0)+v)*10)/10;}
+  }
+  return{ppByDate};
+}
+
+function buildPpYM(ppByDate, forceExclude=[]){
+  const raw={};
+  for(const[d,mm]of Object.entries(ppByDate)){const[y,m]=d.split('-').map(Number);if(!raw[y])raw[y]=new Array(12).fill(0);raw[y][m-1]+=mm;}
+  const excluded=new Set(forceExclude);
+  const ppYM={};
+  for(const[y,months]of Object.entries(raw)){
+    const yr=Number(y);
+    if(yr>=CY||excluded.has(yr))continue;
+    const total=months.reduce((a,b)=>a+b,0);if(!total)continue;
+    let consec=0,maxC=0;for(const v of months){if(v===0){consec++;maxC=Math.max(maxC,consec);}else consec=0;}
+    if(maxC>=5)continue;
+    ppYM[y]=months;
+  }
+  return ppYM;
+}
+
+async function loadStation(meta, indexData){
+  try{
+    const entry=(indexData.stazioni||[]).find(s=>s.id===meta.id);
+    if(!entry||!entry.file_dati?.length)return null;
+    let ppByDate={};
+    for(const fname of entry.file_dati){
+      const r=await fetch(GITHUB_BASE+encodeURIComponent(fname));
+      if(!r.ok)continue;
+      const fl=fname.toLowerCase();
+      let parsed;
+      if(fl.includes('suborario'))continue;
+      else if(fl.match(/\.xlsx?$/)){
+        const buf=await r.arrayBuffer();
+        const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const xlrows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
+        parsed=parseXLSXRows(xlrows);
+      } else parsed=parseCSV(await r.text());
+      for(const[d,v]of Object.entries(parsed.ppByDate||{})){if(ppByDate[d]===undefined)ppByDate[d]=v;}
+    }
+    const forceExclude=entry.forceExclude||[];
+    const ppYM=buildPpYM(ppByDate,forceExclude);
+    return{ppByDate,ppYM};
+  }catch(e){console.warn(`Errore ${meta.id}:`,e);return null;}
+}
+
+// ═══════════════════════════════════════════
+// COSTRUZIONE SERIE TEMPORALE
+// ═══════════════════════════════════════════
+function gamma(x){
+  if(x<0.5)return Math.PI/(Math.sin(Math.PI*x)*gamma(1-x));
+  x--;const c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  let a=c[0];for(let i=1;i<9;i++)a+=c[i]/(x+i);
+  return Math.sqrt(2*Math.PI)*Math.pow(x+7.5,x+0.5)*Math.exp(-(x+7.5))*a;
+}
+function normalCDF(x){
+  const a=[0.254829592,-0.284496736,1.421413741,-1.453152027,1.061405429];
+  const p=0.3275911,sign=x<0?-1:1;x=Math.abs(x)/Math.sqrt(2);
+  const t=1/(1+p*x);const y=1-(((((a[4]*t+a[3])*t)+a[2])*t+a[1])*t+a[0])*t*Math.exp(-x*x);
+  return 0.5*(1+sign*y);
+}
+function normalQuantile(p){
+  p=Math.max(1e-10,Math.min(1-1e-10,p));
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  const pL=0.02425,pH=1-pL;let q;
+  if(p<pL){const t=Math.sqrt(-2*Math.log(p));q=(((((c[0]*t+c[1])*t+c[2])*t+c[3])*t+c[4])*t+c[5])/((((d[0]*t+d[1])*t+d[2])*t+d[3])*t+1);}
+  else if(p<=pH){const t=p-0.5,t2=t*t;q=t*(((((a[0]*t2+a[1])*t2+a[2])*t2+a[3])*t2+a[4])*t2+a[5])/(((((b[0]*t2+b[1])*t2+b[2])*t2+b[3])*t2+b[4])*t2+1);}
+  else{const t=Math.sqrt(-2*Math.log(1-p));q=-(((((c[0]*t+c[1])*t+c[2])*t+c[3])*t+c[4])*t+c[5])/((((d[0]*t+d[1])*t+d[2])*t+d[3])*t+1);}
+  return q;
+}
+function fitGamma(vals){
+  const pos=vals.filter(v=>v>0);if(!pos.length)return{alpha:1,beta:1};
+  const mean=pos.reduce((a,b)=>a+b)/pos.length;
+  const variance=pos.reduce((a,b)=>a+(b-mean)**2,0)/(pos.length-1)||0.1;
+  return{alpha:mean**2/variance,beta:variance/mean};
+}
+function gammaCDF(x,alpha,beta){
+  if(x<=0||!isFinite(x)||alpha<=0||beta<=0)return 0;
+  const mu=1-1/(9*alpha),sigma=Math.sqrt(1/(9*alpha));
+  const z=(Math.pow(x/beta/alpha,1/3)-mu)/sigma;
+  return Math.max(0,Math.min(1,normalCDF(z)));
+}
+
+function buildSeries(meta){
+  const d=stData[meta.id]; if(!d) return null;
+  const ser=document.getElementById('selSer').value;
+  const CY=new Date().getFullYear();
+  if(ser.startsWith('spi')){
+    const win=Number(ser.replace('spi',''));
+    const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+    const monthly=[];
+    years.forEach(y=>{for(let m=0;m<12;m++)monthly.push({y,m,v:d.ppYM[y]?.[m]||0});});
+    const cumul=monthly.map((_,i)=>{
+      if(i<win-1)return null;
+      const s=monthly.slice(i-win+1,i+1).reduce((a,x)=>a+x.v,0);
+      return{...monthly[i],sum:s};
+    }).filter(Boolean);
+    const spi=cumul.map(pt=>{
+      const allSums=cumul.filter(x=>x.m===pt.m).map(x=>x.sum);
+      const{alpha,beta}=fitGamma(allSums);
+      const q0=allSums.filter(v=>v===0).length/allSums.length;
+      const H=q0+(1-q0)*gammaCDF(pt.sum,alpha,beta);
+      return{...pt,val:Math.round(normalQuantile(Math.max(0.001,Math.min(0.999,H)))*100)/100};
+    });
+    return{
+      values: spi.map(p=>p.val),
+      labels: spi.map(p=>`${p.y}-${String(p.m+1).padStart(2,'0')}`),
+      unit:   `SPI-${win}`,
+      dt:     1/12, // passo temporale in anni
+    };
+  }
+  const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+  let values, unit;
+  if(ser==='annual'){
+    values=years.map(y=>d.ppYM[y].reduce((a,b)=>a+b,0)); unit='mm/anno';
+  } else if(ser==='max1'){
+    values=years.map(y=>Math.max(0,...Object.entries(d.ppByDate).filter(([dd])=>dd.startsWith(y)).map(([,v])=>v)));
+    unit='mm max/anno';
+  } else if(ser==='wetdays'){
+    values=years.map(y=>Object.entries(d.ppByDate).filter(([dd,v])=>dd.startsWith(y)&&v>=1).length);
+    unit='giorni/anno';
+  }
+  return{values,labels:years.map(String),unit,dt:1};
+}
+
+// ═══════════════════════════════════════════
+// HELPER: distruggi grafico
+// ═══════════════════════════════════════════
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+// ═══════════════════════════════════════════
+// 1. SPETTRO DI POTENZA (FFT)
+// ═══════════════════════════════════════════
+function fft(re, im) {
+  // Cooley-Tukey radix-2 DIT FFT (in-place)
+  const n=re.length;
+  if(n<=1) return;
+  // Bit-reverse permutation
+  let j=0;
+  for(let i=1;i<n;i++){
+    let bit=n>>1;
+    for(;j&bit;bit>>=1)j^=bit;
+    j^=bit;
+    if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]];}
+  }
+  // FFT
+  for(let len=2;len<=n;len<<=1){
+    const ang=2*Math.PI/len;
+    const wRe=Math.cos(ang), wIm=-Math.sin(ang);
+    for(let i=0;i<n;i+=len){
+      let curRe=1,curIm=0;
+      for(let k=0;k<len/2;k++){
+        const uRe=re[i+k],uIm=im[i+k];
+        const vRe=curRe*re[i+k+len/2]-curIm*im[i+k+len/2];
+        const vIm=curRe*im[i+k+len/2]+curIm*re[i+k+len/2];
+        re[i+k]=uRe+vRe; im[i+k]=uIm+vIm;
+        re[i+k+len/2]=uRe-vRe; im[i+k+len/2]=uIm-vIm;
+        const newRe=curRe*wRe-curIm*wIm;
+        curIm=curRe*wIm+curIm*wRe; curRe=newRe;
+      }
+    }
+  }
+}
+
+function nextPow2(n){let p=1;while(p<n)p<<=1;return p;}
+
+function applyHann(arr){
+  const n=arr.length;
+  return arr.map((v,i)=>v*(0.5-0.5*Math.cos(2*Math.PI*i/(n-1))));
+}
+
+function computePowerSpectrum(values, dt){
+  // Detrending lineare + finestra di Hann
+  const n=values.length;
+  const mean=values.reduce((a,b)=>a+b)/n;
+  // Rimuovi trend lineare (OLS)
+  const xs=Array.from({length:n},(_,i)=>i);
+  const xm=xs.reduce((a,b)=>a+b)/n;
+  let num=0,den=0;
+  values.forEach((v,i)=>{num+=(i-xm)*(v-mean);den+=(i-xm)**2;});
+  const slope=den?num/den:0;
+  const detrended=values.map((v,i)=>v-mean-slope*(i-xm));
+  const windowed=applyHann(detrended);
+  // Zero-padding al prossimo pow2
+  const N=nextPow2(n);
+  const re=[...windowed,...new Array(N-n).fill(0)];
+  const im=new Array(N).fill(0);
+  fft(re,im);
+  // Spettro unilaterale (solo frequenze positive)
+  const half=N/2+1;
+  const power=Array.from({length:half},(_,k)=>(re[k]**2+im[k]**2)/(N**2)*(k>0&&k<half-1?2:1));
+  const freqs=Array.from({length:half},(_,k)=>k/(N*dt));
+  const periods=freqs.map(f=>f>0?1/f:Infinity);
+  // Normalizza
+  const totalPower=power.reduce((a,b)=>a+b)||1;
+  const normPower=power.map(p=>p/totalPower);
+  // Significatività: soglia 95% basata su chi-squared(2) con AR1 background
+  const ar1=computeAR1(detrended);
+  const bgSpectrum=periods.map((_,k)=>{
+    const freq=k/(N*dt);
+    return(1-ar1**2)/(1+ar1**2-2*ar1*Math.cos(2*Math.PI*freq*dt));
+  });
+  const bgMean=bgSpectrum.reduce((a,b)=>a+b)/bgSpectrum.length||1;
+  const chi95=5.991; // chi2(2, p=0.95)
+  const sig95=bgSpectrum.map(bg=>normPower[0]*bg/bgMean*chi95/2);
+  return{freqs,periods,power:normPower,sig95,ar1,n,N};
+}
+
+function computeAR1(arr){
+  const n=arr.length;
+  const mean=arr.reduce((a,b)=>a+b)/n;
+  let num=0,den=0;
+  for(let i=0;i<n-1;i++){num+=(arr[i]-mean)*(arr[i+1]-mean);den+=(arr[i]-mean)**2;}
+  return den?Math.max(-0.99,Math.min(0.99,num/den)):0;
+}
+
+function renderSpettro(){
+  const stId=document.getElementById('selSt').value;
+  const meta=STAZIONI_META.find(m=>m.id===stId); if(!meta)return;
+  const ser=buildSeries(meta); if(!ser||ser.values.length<8)return;
+  const{freqs,periods,power,sig95,ar1}=computePowerSpectrum(ser.values,ser.dt);
+
+  // Filtra frequenze significative (escludi DC e alias)
+  const minP=1.5*ser.dt, maxP=ser.values.length*ser.dt/2;
+  const validIdx=periods.map((_,i)=>i).filter(i=>periods[i]>minP&&periods[i]<maxP&&isFinite(periods[i]));
+  const vPeriods=validIdx.map(i=>periods[i]);
+  const vPower=validIdx.map(i=>power[i]);
+  const vSig=validIdx.map(i=>sig95[i]);
+
+  dc('cSpettro');
+  charts['cSpettro']=new Chart(document.getElementById('cSpettro'),{
+    type:'line',
+    data:{labels:vPeriods.map(p=>p.toFixed(2)),datasets:[
+      {label:'Spettro di potenza',data:vPower,borderColor:meta.colore||'#4fc3f7',
+       borderWidth:2,fill:true,backgroundColor:(meta.colore||'#4fc3f7')+'22',pointRadius:0,tension:.3},
+      {label:'Soglia 95% (AR1)',data:vSig,borderColor:'rgba(239,83,80,.7)',
+       borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{title:{display:true,text:'Periodicità (anni)',color:'#7a94b8'},grid:{color:'#1e3050'},
+           ticks:{maxTicksLimit:15,callback:(v,i)=>vPeriods[i]?vPeriods[i].toFixed(1):''}},
+        y:{title:{display:true,text:'Potenza normalizzata',color:'#7a94b8'},grid:{color:'#1e3050'},beginAtZero:true}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+               tooltip:{callbacks:{title:items=>`Periodicità: ${Number(items[0].label).toFixed(2)} anni`,
+                                   label:i=>` ${i.dataset.label}: ${i.raw.toFixed(4)}`}}}
+    }
+  });
+
+  // Trova picchi sopra la soglia
+  const peaks=[];
+  for(let i=1;i<vPower.length-1;i++){
+    if(vPower[i]>vPower[i-1]&&vPower[i]>vPower[i+1]&&vPower[i]>vSig[i])
+      peaks.push({period:vPeriods[i],power:vPower[i],ratio:vPower[i]/(vSig[i]||1)});
+  }
+  peaks.sort((a,b)=>b.power-a.power);
+
+  const topPeaks=peaks.slice(0,6);
+  if(topPeaks.length){
+    document.getElementById('spettroPeaks').innerHTML=`<div class="insight">
+      <strong>Periodicità significative rilevate (sopra soglia 95%):</strong><br>
+      ${topPeaks.map((p,i)=>`<span class="badge" style="background:${['rgba(239,83,80,.7)','rgba(255,179,71,.7)','rgba(79,195,247,.7)','rgba(76,175,130,.7)','rgba(179,157,219,.7)','rgba(122,148,184,.5)'][i]};color:#fff;margin:3px">${p.period.toFixed(1)} anni (×${p.ratio.toFixed(1)} soglia)</span>`).join('')}
+      <br><span style="font-size:10px;color:var(--muted)">AR1 = ${ar1.toFixed(3)} · n=${ser.values.length} · serie: ${ser.unit}</span>
+    </div>`;
+    // Tabella
+    let h=`<table class="dtbl"><thead><tr><th>#</th><th>Periodicità (anni)</th><th>Potenza</th><th>Ratio / soglia</th><th>Interpretazione</th></tr></thead><tbody>`;
+    topPeaks.forEach((p,i)=>{
+      const interp=p.period<2?'Annuale/semi-annuale':p.period<4?'2-4 anni (ENSO-like)':
+                   p.period<7?'4-7 anni (AMO breve)':p.period<12?'7-12 anni (NAO/AMO)':'> 12 anni (ciclo lungo)';
+      h+=`<tr><td>${i+1}</td><td style="font-weight:700;color:var(--accent)">${p.period.toFixed(2)}</td>
+          <td>${p.power.toFixed(4)}</td><td style="color:var(--orange)">${p.ratio.toFixed(1)}×</td>
+          <td style="color:var(--muted)">${interp}</td></tr>`;
+    });
+    document.getElementById('tblSpettro').innerHTML=h+'</tbody></table>';
+  } else {
+    document.getElementById('spettroPeaks').innerHTML=`<div class="warn">Nessuna periodicità significativa sopra la soglia del 95% (AR1 = ${ar1.toFixed(3)}). La serie potrebbe essere prevalentemente stocastica o troppo corta per rilevare cicli significativi.</div>`;
+    document.getElementById('tblSpettro').innerHTML='';
+  }
+}
+
+// ═══════════════════════════════════════════
+// 2. CONTINUOUS WAVELET TRANSFORM (CWT)
+// Morlet wavelet — Torrence & Compo (1998)
+// ═══════════════════════════════════════════
+function morletWavelet(n, scale, dt){
+  // Morlet: psi(eta) = pi^-1/4 * e^(i*omega0*eta) * e^(-eta^2/2)
+  // omega0 = 6 (valore standard)
+  const omega0=6;
+  const re=new Array(n).fill(0), im=new Array(n).fill(0);
+  const norm=Math.pow(Math.PI,-0.25)*Math.sqrt(dt/scale);
+  for(let t=0;t<n;t++){
+    const eta=(t-n/2)*dt/scale;
+    const env=Math.exp(-(eta*eta)/2);
+    re[t]=norm*env*Math.cos(omega0*eta);
+    im[t]=norm*env*Math.sin(omega0*eta);
+  }
+  return{re,im};
+}
+
+function computeCWT(values, dt, scales){
+  // CWT via convoluzione nel dominio delle frequenze (Torrence & Compo 1998)
+  const n=values.length;
+  const N=nextPow2(n);
+  const mean=values.reduce((a,b)=>a+b)/n;
+  const anomaly=values.map(v=>v-mean);
+  // FFT della serie
+  const xRe=[...anomaly,...new Array(N-n).fill(0)];
+  const xIm=new Array(N).fill(0);
+  fft(xRe,xIm);
+
+  const power=[];
+  const freqsFFT=Array.from({length:N},(_,k)=>k<N/2?k/(N*dt):-(N-k)/(N*dt));
+
+  for(const scale of scales){
+    // Wavelet di Morlet nel dominio delle frequenze
+    const omega0=6;
+    const norm=Math.sqrt(2*Math.PI*scale/dt);
+    const psiRe=freqsFFT.map(f=>{
+      const w=2*Math.PI*f*scale;
+      return w>0?norm*Math.pow(Math.PI,-0.25)*Math.exp(-((w-omega0)**2)/2):0;
+    });
+    // Convoluzione = moltiplicazione nel dominio F
+    const convRe=xRe.map((x,k)=>x*psiRe[k]);
+    const convIm=xIm.map((x,k)=>x*psiRe[k]);
+    // IFFT
+    // Inverti: conjuga, FFT, conjuga, dividi per N
+    const conjRe=convRe.map((v,k)=>convRe[k]);
+    const conjIm=convIm.map((v,k)=>-convIm[k]);
+    fft(conjRe,conjIm);
+    const iRe=conjRe.map((v,k)=>conjRe[k]/N);
+    const iIm=conjIm.map((v,k)=>-conjIm[k]/N);
+    // Potenza = |W|^2
+    const rowPower=Array.from({length:n},(_,t)=>iRe[t]**2+iIm[t]**2);
+    power.push(rowPower);
+  }
+  return power; // scales x time
+}
+
+function renderWavelet(){
+  const stId=document.getElementById('selSt').value;
+  const meta=STAZIONI_META.find(m=>m.id===stId); if(!meta)return;
+  const ser=buildSeries(meta); if(!ser||ser.values.length<16)return;
+
+  const sMin=Number(document.getElementById('wScaleMin').value);
+  const sMax=Number(document.getElementById('wScaleMax').value);
+  const nScales=24;
+  const scales=Array.from({length:nScales},(_,i)=>sMin*Math.pow(sMax/sMin,i/(nScales-1)));
+
+  document.getElementById('waveletHeatmap').innerHTML='<div style="padding:20px;color:var(--muted)">⏳ Calcolo CWT in corso…</div>';
+
+  // Usa setTimeout per non bloccare UI
+  setTimeout(()=>{
+    const power=computeCWT(ser.values,ser.dt,scales);
+    const n=ser.values.length;
+
+    // Global Wavelet Spectrum
+    const gws=scales.map((_,si)=>power[si].reduce((a,b)=>a+b)/n);
+
+    // Heatmap colorata
+    const maxPow=Math.max(...power.flat());
+    const colors=['#0a1628','#0d2040','#0a3060','#0a4070','#0a5080',
+                  '#087090','#0090a0','#00aaa0','#20c090','#60d060',
+                  '#a0d030','#d0b010','#e08000','#e04000','#d01010','#a00000'];
+    function powerToColor(p){
+      const idx=Math.min(colors.length-1,Math.floor(p/maxPow*(colors.length-0.01)));
+      return colors[idx];
+    }
+
+    // Rendering canvas
+    const canvas=document.createElement('canvas');
+    const cellW=Math.max(2,Math.floor(800/n));
+    const cellH=Math.max(10,Math.floor(240/nScales));
+    canvas.width=cellW*n+80; canvas.height=cellH*nScales+40;
+    canvas.style.maxWidth='100%';
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#111e35'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    for(let si=0;si<nScales;si++){
+      for(let t=0;t<n;t++){
+        ctx.fillStyle=powerToColor(power[si][t]);
+        ctx.fillRect(80+t*cellW,(nScales-1-si)*cellH,cellW,cellH);
+      }
+    }
+    // Asse Y (scale/periodi)
+    ctx.fillStyle='#7a94b8'; ctx.font='10px sans-serif'; ctx.textAlign='right';
+    [0.5,1,2,4,8,16,32].filter(s=>s>=sMin&&s<=sMax).forEach(s=>{
+      const si=scales.findIndex(sc=>sc>=s);
+      if(si<0)return;
+      const y=(nScales-1-si)*cellH+cellH/2;
+      ctx.fillText(s+'a',76,y+4);
+      ctx.strokeStyle='rgba(255,255,255,.1)';ctx.beginPath();ctx.moveTo(80,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+    });
+    // Asse X (anni/mesi)
+    ctx.textAlign='center';
+    const step=Math.max(1,Math.floor(n/10));
+    for(let t=0;t<n;t+=step){
+      ctx.fillStyle='#7a94b8';
+      ctx.fillText(ser.labels[t]?.slice(0,4)||'',80+t*cellW+cellW/2,cellH*nScales+14);
+    }
+    // Label
+    ctx.textAlign='center';ctx.fillStyle='#e3eaf8';ctx.font='11px sans-serif';
+    ctx.save();ctx.translate(12,cellH*nScales/2);ctx.rotate(-Math.PI/2);
+    ctx.fillText('Periodicità (anni)',0,0);ctx.restore();
+
+    // Cono di influenza (COI)
+    ctx.strokeStyle='rgba(255,255,255,.3)';ctx.setLineDash([4,4]);ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(let t=0;t<n;t++){
+      const coiScale=Math.sqrt(2)*ser.dt*Math.min(t+1,n-t);
+      const si=scales.findIndex(sc=>sc>=coiScale);
+      if(si>=0){const y=(nScales-1-si)*cellH;if(t===0)ctx.moveTo(80+t*cellW,y);else ctx.lineTo(80+t*cellW,y);}
+    }
+    ctx.stroke();ctx.setLineDash([]);
+
+    document.getElementById('waveletHeatmap').innerHTML='';
+    document.getElementById('waveletHeatmap').appendChild(canvas);
+    document.getElementById('waveletHeatmap').insertAdjacentHTML('afterbegin',
+      '<div style="font-size:10px;color:var(--muted);padding:4px 0">Scalogramma CWT — Morlet (ω₀=6) · Linea tratteggiata = cono di influenza (COI)</div>');
+
+    // GWS chart
+    dc('cGWS');
+    charts['cGWS']=new Chart(document.getElementById('cGWS'),{
+      type:'line',
+      data:{labels:scales.map(s=>s.toFixed(2)),datasets:[{
+        label:'Global Wavelet Spectrum',
+        data:gws,borderColor:meta.colore||'#4fc3f7',borderWidth:2.5,
+        fill:true,backgroundColor:(meta.colore||'#4fc3f7')+'22',pointRadius:3,tension:.3
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{x:{title:{display:true,text:'Scala / Periodicità (anni)',color:'#7a94b8'},grid:{color:'#1e3050'},
+                   ticks:{maxTicksLimit:12}},
+                y:{title:{display:true,text:'Potenza media',color:'#7a94b8'},grid:{color:'#1e3050'},beginAtZero:true}},
+        plugins:{legend:{labels:{color:'#e3eaf8'}}}}
+    });
+
+    // Trova picco GWS
+    const maxGWS=Math.max(...gws);
+    const peakIdx=gws.indexOf(maxGWS);
+    document.getElementById('waveletGWS').innerHTML=`<div class="insight">
+      <strong>Picco GWS a ${scales[peakIdx].toFixed(1)} anni</strong> — massima energia wavelet nell'intera serie.
+      Lo scalogramma mostra se questa periodicità è <em>stazionaria</em> (barra orizzontale uniforme)
+      o <em>intermittente</em> (patch isolati), rivelando la natura del ciclo.
+    </div>`;
+  }, 50);
+}
+
+// ═══════════════════════════════════════════
+// 3. AUTOCORRELAZIONE
+// ═══════════════════════════════════════════
+function computeACF(values, maxLag){
+  const n=values.length;
+  const mean=values.reduce((a,b)=>a+b)/n;
+  const variance=values.reduce((a,b)=>a+(b-mean)**2,0)/n;
+  if(!variance)return{acf:new Array(maxLag+1).fill(0),se:0};
+  const acf=Array.from({length:maxLag+1},(_,k)=>{
+    let sum=0;
+    for(let i=0;i<n-k;i++)sum+=(values[i]-mean)*(values[i+k]-mean);
+    return sum/(n*variance);
+  });
+  const se=1/Math.sqrt(n);
+  return{acf,se};
+}
+
+function computePACF(acf, maxLag){
+  // Algoritmo Durbin-Levinson
+  const pacf=[0]; // pacf[0]=1 ma non plottiamo lag 0
+  const n=acf.length;
+  let phi=[[acf[1]]];
+  pacf.push(acf[1]);
+  for(let k=2;k<n;k++){
+    const prevPhi=phi[phi.length-1];
+    const num=acf[k]-prevPhi.reduce((s,v,j)=>s+v*acf[k-1-j],0);
+    const den=1-prevPhi.reduce((s,v,j)=>s+v*acf[j+1],0);
+    const pk=den?num/den:0;
+    const newPhi=[pk,...prevPhi.map((v,j)=>v-pk*prevPhi[prevPhi.length-1-j])];
+    phi.push(newPhi);
+    pacf.push(pk);
+  }
+  return pacf.slice(1); // rimuovi lag 0
+}
+
+function renderACF(){
+  const stId=document.getElementById('selSt').value;
+  const meta=STAZIONI_META.find(m=>m.id===stId); if(!meta)return;
+  const ser=buildSeries(meta); if(!ser||ser.values.length<8)return;
+  const n=ser.values.length;
+  const maxLag=Math.min(Math.floor(n/3),30);
+  const{acf,se}=computeACF(ser.values,maxLag);
+  const pacf=computePACF(acf,maxLag);
+  const lags=Array.from({length:maxLag},(_,i)=>i+1);
+  const ci95=1.96*se;
+
+  const chartOpts=(title,data,ci)=>({
+    type:'bar',
+    data:{labels:lags,datasets:[
+      {label:title,data:data.slice(1),
+       backgroundColor:data.slice(1).map(v=>Math.abs(v)>ci?
+         (v>0?'rgba(79,195,247,.7)':'rgba(239,83,80,.7)'):'rgba(122,148,184,.4)'),
+       borderRadius:2},
+      {label:'+95%',data:new Array(maxLag).fill(ci),type:'line',
+       borderColor:'rgba(255,179,71,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0},
+      {label:'-95%',data:new Array(maxLag).fill(-ci),type:'line',
+       borderColor:'rgba(255,179,71,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{title:{display:true,text:'Lag (anni)',color:'#7a94b8'},grid:{color:'#1e3050'}},
+              y:{min:-1,max:1,grid:{color:'#1e3050'},ticks:{callback:v=>v.toFixed(1)}}},
+      plugins:{legend:{display:false},
+               tooltip:{callbacks:{label:i=>` ${i.dataset.label}: ${i.raw?.toFixed(3)}`}}}}
+  });
+
+  dc('cACF'); charts['cACF']=new Chart(document.getElementById('cACF'),chartOpts('ACF',acf,ci95));
+  dc('cPACF'); charts['cPACF']=new Chart(document.getElementById('cPACF'),chartOpts('PACF',pacf,ci95));
+
+  // Nota interpretativa
+  const sigLags=lags.filter((_,i)=>Math.abs(acf[i+1])>ci95);
+  const sigPacf=lags.filter((_,i)=>Math.abs(pacf[i])>ci95);
+  document.getElementById('acfNote').innerHTML=`
+    <strong>Lag ACF significativi:</strong> ${sigLags.length?sigLags.join(', ')+' anni':'nessuno'}<br>
+    <strong>Lag PACF significativi:</strong> ${sigPacf.length?sigPacf.join(', ')+' anni':'nessuno'}<br>
+    ${sigLags.length?`La correlazione con ${sigLags[0]} anno/i fa è statisticamente significativa.
+    ${sigLags.length>1?`Picchi multipli a ${sigLags.slice(0,4).join(', ')} anni suggeriscono un pattern ricorrente.`:''}`:
+    'Nessuna struttura di autocorrelazione significativa — la serie è prevalentemente stocastica (rumore bianco o AR1).'}`;
+}
+
+// ═══════════════════════════════════════════
+// 4. DECOMPOSIZIONE (STL semplificata)
+// ═══════════════════════════════════════════
+function loess(x, y, bandwidth){
+  // Loess smoother (locally weighted polynomial regression, degree 1)
+  const n=x.length;
+  const out=new Array(n);
+  const h=bandwidth*n;
+  for(let i=0;i<n;i++){
+    const dists=x.map((_,j)=>Math.abs(j-i));
+    const maxDist=Math.max(1,h);
+    const weights=dists.map(d=>d<maxDist?Math.pow(1-(d/maxDist)**3,3):0);
+    const w=weights;
+    const sw=w.reduce((a,b)=>a+b)||1;
+    const swx=x.reduce((a,b,j)=>a+b*w[j],0)/sw;
+    const swy=y.reduce((a,b,j)=>a+b*w[j],0)/sw;
+    const swxx=x.reduce((a,b,j)=>a+b*b*w[j],0)/sw;
+    const swxy=x.map((b,j)=>b*y[j]*w[j]).reduce((a,b)=>a+b,0)/sw;
+    const den=swxx-swx*swx;
+    const beta=den?((swxy-swx*swy)/den):0;
+    const alpha=swy-beta*swx;
+    out[i]=alpha+beta*x[i];
+  }
+  return out;
+}
+
+function renderDecomp(){
+  const stId=document.getElementById('selSt').value;
+  const meta=STAZIONI_META.find(m=>m.id===stId); if(!meta)return;
+  const ser=buildSeries(meta); if(!ser||ser.values.length<6)return;
+  const bw=Number(document.getElementById('smoothWin').value)/ser.values.length;
+  const xs=Array.from({length:ser.values.length},(_,i)=>i);
+  const trend=loess(xs,ser.values,bw);
+  const detrended=ser.values.map((v,i)=>v-trend[i]);
+  const mean=ser.values.reduce((a,b)=>a+b)/ser.values.length;
+  const colors={orig:meta.colore||'#4fc3f7',trend:'#ffb347',seas:'#4fc3f7',res:'#7a94b8'};
+
+  const mkChart=(id,label,data,col,fill)=>{
+    dc(id);
+    charts[id]=new Chart(document.getElementById(id),{
+      type:'line',
+      data:{labels:ser.labels,datasets:[{
+        label,data,borderColor:col,borderWidth:2,fill:fill?{target:'origin',above:col+'44',below:col+'22'}:false,
+        pointRadius:0,tension:.2
+      },...(id==='cDecompTrend'?[{
+        label:'Media storica',data:new Array(data.length).fill(mean),
+        borderColor:'rgba(122,148,184,.4)',borderWidth:1,borderDash:[4,4],pointRadius:0
+      }]:[])
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{x:{grid:{color:'#1e3050'},ticks:{maxTicksLimit:12,font:{size:9}}},
+                y:{grid:{color:'#1e3050'}}},
+        plugins:{legend:{labels:{color:'#e3eaf8',font:{size:10},usePointStyle:true}},
+                 tooltip:{mode:'index',intersect:false}}}
+    });
+  };
+  mkChart('cDecompOrig','Serie originale',ser.values,colors.orig,false);
+  mkChart('cDecompTrend','Trend (Loess)',trend,colors.trend,false);
+  mkChart('cDecompSeas','Deviazione dal trend',detrended,colors.seas,true);
+  mkChart('cDecompRes','Residuo (deviaz. dalla media)',ser.values.map(v=>v-mean),colors.res,true);
+
+  // Nota: varianza spiegata dal trend
+  const varOrig=ser.values.reduce((a,v)=>a+(v-mean)**2,0);
+  const varRes=detrended.reduce((a,v)=>a+v**2,0);
+  const r2=varOrig?1-varRes/varOrig:0;
+  document.getElementById('decompNote').innerHTML=`
+    <strong>Varianza spiegata dal trend Loess (bandwidth=${Math.round(bw*ser.values.length)} anni):</strong> ${(r2*100).toFixed(1)}%
+    ${r2>0.3?'— il trend di lungo periodo è significativo e spiega una frazione rilevante della variabilità.':
+      r2>0.1?'— il trend contribuisce moderatamente.':'— la variabilità è dominata da fluttuazioni inter-annuali, il trend di lungo periodo è debole.'}`;
+}
+
+// ═══════════════════════════════════════════
+// 5. SEQUENTIAL MANN-KENDALL (SQMK) + PETTITT
+// ═══════════════════════════════════════════
+function computeSQMK(values){
+  const n=values.length;
+  const u=[], ub=[];
+  // Forward
+  let s=0;
+  for(let i=1;i<n;i++){
+    let cnt=0;
+    for(let j=0;j<i;j++)if(values[j]<values[i])cnt++;
+    s+=cnt;
+    const E=i*(i+1)/4;
+    const V=i*(i+1)*(2*i+5)/72;
+    u.push(V>0?(s-E)/Math.sqrt(V):0);
+  }
+  // Backward (serie invertita)
+  const rev=[...values].reverse(); s=0;
+  for(let i=1;i<n;i++){
+    let cnt=0;
+    for(let j=0;j<i;j++)if(rev[j]<rev[i])cnt++;
+    s+=cnt;
+    const E=i*(i+1)/4;
+    const V=i*(i+1)*(2*i+5)/72;
+    ub.push(V>0?(s-E)/Math.sqrt(V):0);
+  }
+  return{u,ub:ub.reverse()};
+}
+
+function computePettitt(values){
+  // Test di Pettitt (1979) — statistico K
+  const n=values.length;
+  const K=new Array(n).fill(0);
+  for(let t=0;t<n;t++){
+    for(let i=0;i<=t;i++)for(let j=t+1;j<n;j++)K[t]+=Math.sign(values[i]-values[j]);
+    K[t]=Math.abs(K[t]);
+  }
+  const Kmax=Math.max(...K);
+  const tChange=K.indexOf(Kmax);
+  const p=2*Math.exp(-6*Kmax**2/(n**3+n**2));
+  return{K,Kmax,tChange,p:Math.min(1,p)};
+}
+
+function renderSQMK(){
+  const stId=document.getElementById('selSt').value;
+  const meta=STAZIONI_META.find(m=>m.id===stId); if(!meta)return;
+  const ser=buildSeries(meta); if(!ser||ser.values.length<10)return;
+  const{u,ub}=computeSQMK(ser.values);
+  const years=ser.labels.slice(1);
+
+  // Trova incroci dentro ±1.96
+  const crossings=[];
+  for(let i=0;i<u.length-1;i++){
+    if(Math.sign(u[i]-ub[i])!==Math.sign(u[i+1]-ub[i+1])){
+      if(Math.abs(u[i])<1.96&&Math.abs(ub[i])<1.96)
+        crossings.push({year:years[i],uVal:u[i],ubVal:ub[i]});
+    }
+  }
+
+  dc('cSQMK');
+  charts['cSQMK']=new Chart(document.getElementById('cSQMK'),{
+    type:'line',
+    data:{labels:years,datasets:[
+      {label:'U (forward)',data:u,borderColor:meta.colore||'#4fc3f7',borderWidth:2.5,pointRadius:0,fill:false},
+      {label:"U' (backward)",data:ub,borderColor:'#ffb347',borderWidth:2.5,borderDash:[6,3],pointRadius:0,fill:false},
+      {label:'+1.96',data:new Array(u.length).fill(1.96),borderColor:'rgba(239,83,80,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false},
+      {label:'-1.96',data:new Array(u.length).fill(-1.96),borderColor:'rgba(239,83,80,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{maxTicksLimit:15}},
+              y:{grid:{color:'#1e3050'},title:{display:true,text:'Statistica SQMK',color:'#7a94b8'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},tooltip:{mode:'index',intersect:false}}}
+  });
+
+  document.getElementById('sqmkNote').innerHTML=crossings.length?`
+    <strong>Change-point rilevati (incrocio U/U' dentro ±1.96):</strong>
+    ${crossings.map(c=>`<em>${c.year}</em>`).join(', ')}
+    <br>In questi anni è avvenuta con maggiore probabilità una variazione strutturale nel regime pluviometrico.
+    <br><span style="font-size:10px;color:var(--muted)">Interpretare con cautela se la serie è corta (&lt;30 anni).</span>`:
+    `<strong>Nessun change-point significativo</strong> rilevato nella serie — il trend è uniforme nel tempo, senza variazioni strutturali chiare.`;
+
+  // Pettitt
+  const pett=computePettitt(ser.values);
+  dc('cPettitt');
+  charts['cPettitt']=new Chart(document.getElementById('cPettitt'),{
+    type:'bar',
+    data:{labels:ser.labels,datasets:[{
+      label:'Statistica Pettitt K(t)',data:pett.K,
+      backgroundColor:pett.K.map((_,i)=>i===pett.tChange?'rgba(239,83,80,.9)':'rgba(79,195,247,.4)'),
+      borderRadius:2
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{maxTicksLimit:15}},
+              y:{beginAtZero:true,grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}}}}
+  });
+  document.getElementById('pettittNote').innerHTML=`
+    <strong>Change-point più probabile (Pettitt):</strong> <em>${ser.labels[pett.tChange]}</em>
+    — K=${pett.Kmax}, p-value=${pett.p.toFixed(3)}
+    ${pett.p<0.05?'<span class="badge" style="background:rgba(239,83,80,.7);color:#fff;margin-left:5px">Significativo al 95%</span>':
+      pett.p<0.1?'<span class="badge" style="background:rgba(255,179,71,.7);color:#fff;margin-left:5px">Significativo al 90%</span>':
+      '<span class="badge" style="background:rgba(122,148,184,.5);color:#fff;margin-left:5px">Non significativo</span>'}
+    <br>${pett.p<0.05?`La serie mostra un cambiamento significativo nella mediana intorno al <em>${ser.labels[pett.tChange]}</em>.`:
+    'Il test non rileva un singolo punto di cambiamento dominante.'}`;
+}
+
+// ═══════════════════════════════════════════
+// 6. CONFRONTO SPETTRI
+// ═══════════════════════════════════════════
+function renderConfronto(){
+  const serType=document.getElementById('confSer').value;
+  const prevSer=document.getElementById('selSer').value;
+  document.getElementById('selSer').value=serType;
+  const avail=STAZIONI_META.filter(m=>stData[m.id]&&Object.keys(stData[m.id].ppYM).length>=10);
+  const datasets=avail.map(meta=>{
+    const ser=buildSeries(meta); if(!ser||ser.values.length<8)return null;
+    const{freqs,periods,power,sig95}=computePowerSpectrum(ser.values,ser.dt);
+    const dt=ser.dt;
+    const minP=1.5*dt, maxP=ser.values.length*dt/2;
+    const validIdx=periods.map((_,i)=>i).filter(i=>periods[i]>minP&&periods[i]<maxP&&isFinite(periods[i]));
+    return{label:meta.nome+' ('+meta.quota+'m)',
+           data:validIdx.map(i=>({x:periods[i].toFixed(2),y:power[i]})),
+           borderColor:meta.colore,backgroundColor:'transparent',
+           borderWidth:2,pointRadius:0,tension:.3,parsing:false};
+  }).filter(Boolean);
+  document.getElementById('selSer').value=prevSer;
+
+  dc('cConf');
+  charts['cConf']=new Chart(document.getElementById('cConf'),{
+    type:'scatter',
+    data:{datasets:datasets.map(d=>({...d,showLine:true}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:'linear',title:{display:true,text:'Periodicità (anni)',color:'#7a94b8'},grid:{color:'#1e3050'}},
+        y:{title:{display:true,text:'Potenza normalizzata',color:'#7a94b8'},grid:{color:'#1e3050'},beginAtZero:true}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:10}}},
+               tooltip:{mode:'nearest',intersect:false,callbacks:{title:i=>`Periodicità: ${Number(i[0]?.raw?.x).toFixed(2)} anni`}}}}
+  });
+  document.getElementById('confNote').innerHTML=`<strong>Picchi condivisi tra più stazioni</strong> indicano
+    ciclicità di scala regionale (forzante climatico comune come NAO, AMO, ENSO).
+    Picchi presenti in una sola stazione possono essere artefatti locali, errori di misura o microclimatologia locale.`;
+}
+
+// ═══════════════════════════════════════════
+// ANALISI COMPLETA
+// ═══════════════════════════════════════════
+function runAllAnalyses(){
+  const stId=document.getElementById('selSt').value;
+  const meta=STAZIONI_META.find(m=>m.id===stId); if(!meta)return;
+  const ser=buildSeries(meta);
+  if(!ser){document.getElementById('serInfo').textContent='⚠ Dati non disponibili';return;}
+  document.getElementById('serInfo').textContent=`n=${ser.values.length} · ${ser.labels[0]}–${ser.labels[ser.labels.length-1]} · ${ser.unit}`;
+  renderSpettro();
+  renderWavelet();
+  renderACF();
+  renderDecomp();
+  renderSQMK();
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+async function init(){
+  const msg=document.getElementById('loadMsg');
+  msg.textContent='Carico configurazione stazioni…';
+  let indexData=null;
+  try{
+    const r=await fetch(GITHUB_BASE+'index.json');
+    if(r.ok)indexData=await r.json();
+  }catch(e){}
+
+  const COLORI={cornalita:'#4fc3f7',brembilla:'#4caf82',taleggio:'#81c784',
+    piazzacava:'#ffb347',pracastello:'#f06292',vettarola:'#b39ddb',
+    valtorta:'#4dd0e1',sangiovannibianco_storico:'#ce93d8',zogno:'#ffcc02',dossena_st1:'#80deea'};
+
+  if(indexData?.stazioni){
+    STAZIONI_META=indexData.stazioni
+      .filter(s=>s.file_dati?.length)
+      .map(s=>({id:s.id,nome:s.nome||s.id,quota:s.quota||0,
+                colore:s.colore||COLORI[s.id]||'#7a94b8',lat:s.lat||0,lon:s.lon||0}));
+  }
+
+  const sel=document.getElementById('selSt');
+  for(const meta of STAZIONI_META){
+    msg.textContent=`Carico ${meta.nome}…`;
+    const d=await loadStation(meta,indexData);
+    if(d&&Object.keys(d.ppByDate).length>0){
+      stData[meta.id]=d;
+      const o=document.createElement('option');
+      o.value=meta.id;
+      o.textContent=`${meta.nome} (${meta.quota}m · ${Object.keys(d.ppYM).length} anni)`;
+      if(meta.id==='cornalita')o.selected=true;
+      sel.appendChild(o);
+    }
+  }
+
+  document.getElementById('loading').style.display='none';
+  // Prima analisi automatica
+  if(sel.options.length>0) runAllAnalyses();
+}
+
+// Tab navigation
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById('p-'+t.dataset.p).classList.add('on');
+  });
+});
+
+document.getElementById('smoothWin').addEventListener('change',renderDecomp);
+document.getElementById('selSt').addEventListener('change',runAllAnalyses);
+document.getElementById('selSer').addEventListener('change',runAllAnalyses);
+
+init();
+</script>
+</body>
+</html>
