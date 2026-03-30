@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sorgente Boione</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+
+:root{--bg:#0a1628;--card:#111e35;--border:#1e3050;--acc:#4caf82;--blue:#4fc3f7;
+  --orange:#ffb347;--purple:#b39ddb;--red:#ef5350;--muted:#7a94b8;--text:#e3eaf8;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif;font-size:13px}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+header{background:var(--card);border-bottom:2px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  position:sticky;top:0;z-index:500}
+.hdr-left h1{font-size:.95rem;font-weight:800;color:var(--acc)}
+.hdr-left p{font-size:9.5px;color:var(--muted);margin-top:2px}
+.nav{display:flex;gap:5px;flex-wrap:wrap}
+.btn{padding:4px 10px;border-radius:5px;border:1.5px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;text-decoration:none;
+  white-space:nowrap;display:inline-block}
+.btn:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.card h3{font-size:11px;font-weight:700;color:var(--acc);margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.kpi-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.kpi{background:#162340;border-radius:6px;padding:8px 12px;text-align:center;min-width:90px;flex:1}
+.kpi .v{display:block;font-size:1.4rem;font-weight:800;line-height:1.2}
+.kpi .l{font-size:9px;color:var(--muted);margin-top:2px}
+.chart-wrap{position:relative;height:180px;margin:8px 0}
+.insight{background:#0d1a2e;border-left:3px solid var(--acc);border-radius:0 6px 6px 0;
+  padding:8px 10px;margin:6px 0;font-size:10.5px;line-height:1.6;color:var(--muted)}
+.insight strong{color:var(--text)}.insight em{color:var(--orange);font-style:normal;font-weight:600}
+.dtbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.dtbl th{background:#162340;color:var(--blue);font-weight:700;padding:5px 8px;
+  text-align:left;border-bottom:2px solid var(--border)}
+.dtbl td{padding:4px 8px;border-bottom:1px solid var(--border)}
+.dtbl tr:hover td{background:#162340}
+main{max-width:1100px;margin:0 auto;padding:14px 16px}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-left">
+    <h1>💧 Sorgente Boione</h1>
+    <p>Rio Borlezza · San Pellegrino Terme (BG) · 639m s.l.m.</p>
+  </div>
+  <nav class="nav">
+    <a href="index.html" class="btn">🗺️ Home</a>
+    <a href="boione_monitor.html" class="btn">📡 Monitor</a>
+    <a href="boione_analisi.html" class="btn">📊 Analisi</a>
+    <a href="boione_idrogeo.html" class="btn">⚖️ Idrogeologia</a>
+    <a href="boione_mappa.html" class="btn">🗺️ Mappa</a>
+  </nav>
+</header>
+<main>
+
+<!-- KPI principali -->
+<div class="kpi-row">
+  <div class="kpi"><span class="v" style="color:var(--acc)">639m</span><span class="l">Quota sorgente</span></div>
+  <div class="kpi"><span class="v" style="color:var(--blue)" id="kQ">—</span><span class="l">Q media captata (l/s)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--orange)" id="kNTU">—</span><span class="l">% giorni torbidi</span></div>
+  <div class="kpi"><span class="v" style="color:var(--purple)">~9 km²</span><span class="l">Bacino idrogeologico stimato</span></div>
+  <div class="kpi"><span class="v" style="color:var(--acc)">343</span><span class="l">CeS basale (μS/cm)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--blue)">Ca-Mg<br>HCO₃</span><span class="l">Tipo chimico</span></div>
+</div>
+
+<div class="grid2">
+  <!-- Scheda geologica -->
+  <div class="card">
+    <h3>🪨 Geologia e inquadramento</h3>
+    <table class="dtbl">
+      <tr><td style="color:var(--muted);width:40%">Acquifero</td><td>Dolomia Principale (Norico)</td></tr>
+      <tr><td style="color:var(--muted)">Acquiclude</td><td>Argilliti di Riva di Solto</td></tr>
+      <tr><td style="color:var(--muted)">Tipo carsismo</td><td>Carsismo in roccia dolomitica</td></tr>
+      <tr><td style="color:var(--muted)">Quota sorgente</td><td>639m s.l.m.</td></tr>
+      <tr><td style="color:var(--muted)">Coordinate</td><td>45.842486°N · 9.645517°E</td></tr>
+      <tr><td style="color:var(--muted)">Bacino superficiale</td><td>Borlezza 4.5 km² · Alino 1.8 km²</td></tr>
+      <tr><td style="color:var(--muted)">Bacino idrogeologico</td><td>~9 km² (stima bilancio inverso)</td></tr>
+      <tr><td style="color:var(--muted)">Proprietà</td><td>Uniacque SpA (captazione)</td></tr>
+    </table>
+  </div>
+
+  <!-- Scheda chimica -->
+  <div class="card">
+    <h3>🧪 Caratteristiche chimico-fisiche</h3>
+    <table class="dtbl">
+      <tr><td style="color:var(--muted);width:40%">Tipo idrochimica</td><td>Ca-Mg-HCO₃ (oligominerale)</td></tr>
+      <tr><td style="color:var(--muted)">CeS basale</td><td>343 μS/cm (Uniacque, magra)</td></tr>
+      <tr><td style="color:var(--muted)">CeS media SCADA BO-2</td><td>~371 μS/cm</td></tr>
+      <tr><td style="color:var(--muted)">Temperatura</td><td>8–10°C (costante, tipica carsismo)</td></tr>
+      <tr><td style="color:var(--muted)">Torbidità basale</td><td>&lt;0.5 NTU</td></tr>
+      <tr><td style="color:var(--muted)">Torbidità max registrata</td><td>&gt;400 NTU (eventi estremi)</td></tr>
+      <tr><td style="color:var(--muted)">pH</td><td>7.2–7.8 (tipico Ca-Mg-HCO₃)</td></tr>
+      <tr><td style="color:var(--muted)">Classificazione</td><td>Oligominerale · Bicarbonato-calcica</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Portata captata mini chart -->
+<div class="card">
+  <h3>📈 Portata captata Uniacque 2015–2022</h3>
+  <div class="chart-wrap"><canvas id="cPortate"></canvas></div>
+  <div style="display:flex;gap:16px;font-size:9.5px;color:var(--muted);margin-top:4px;flex-wrap:wrap">
+    <span>Fonte: Uniacque SpA · <span id="portLbl">—</span></span>
+    <span id="portStats">—</span>
+  </div>
+</div>
+
+<!-- SCADA mini chart -->
+<div class="card">
+  <h3>📡 Conducibilità SCADA 2025–2026 (punti Borlezza)</h3>
+  <div class="chart-wrap"><canvas id="cCeS"></canvas></div>
+  <div class="insight">
+    <strong>BO-2 (623m)</strong> è il primo punto post-Boione e il più rappresentativo della sorgente. 
+    <em>CeS più alta in magra</em> (acqua carsica); <em>CeS si abbassa nelle piene</em> per diluizione da acque meteoriche superficiali.
+  </div>
+</div>
+
+<div class="grid3">
+  <div class="card">
+    <h3>🔗 Dashboard monitoraggio</h3>
+    <p style="color:var(--muted);font-size:10.5px;margin-bottom:8px">SCADA 2025, Diver Idrogea 2023, portate Uniacque, campagne test salini</p>
+    <a href="boione_monitor.html" class="btn" style="display:block;text-align:center;padding:8px">→ Apri Monitor</a>
+  </div>
+  <div class="card">
+    <h3>📊 Analisi dati</h3>
+    <p style="color:var(--muted);font-size:10.5px;margin-bottom:8px">Portate totali, giorni intorbiditi, correlazione piogge–torbidità</p>
+    <a href="boione_analisi.html" class="btn" style="display:block;text-align:center;padding:8px">→ Apri Analisi</a>
+  </div>
+  <div class="card">
+    <h3>⚖️ Analisi idrogeologica</h3>
+    <p style="color:var(--muted);font-size:10.5px;margin-bottom:8px">Bilancio idrico, bacino idrogeologico, recession analysis</p>
+    <a href="boione_idrogeo.html" class="btn" style="display:block;text-align:center;padding:8px">→ Apri Idrogeologia</a>
+  </div>
+</div>
+
+<script>
+const GITHUB = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+
+async function fetchJ(name) {
+  const ctrl=new AbortController();
+  const tid=setTimeout(()=>ctrl.abort(),12000);
+  try {
+    const r=await fetch(GITHUB+name,{signal:ctrl.signal});
+    clearTimeout(tid);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  } catch(e){clearTimeout(tid);throw e;}
+}
+
+async function init() {
+  try {
+    const [portate, scada] = await Promise.all([
+      fetchJ('boione_portate.json'),
+      fetchJ('boione_scada.json')
+    ]);
+
+    // KPI portate
+    const Qvals = portate.map(d=>d.Q).filter(v=>v!=null);
+    const torbGG = portate.filter(d=>d.torb>0).length;
+    document.getElementById('kQ').textContent = Math.round(Qvals.reduce((a,b)=>a+b)/Qvals.length*10)/10+' l/s';
+    document.getElementById('kNTU').textContent = Math.round(torbGG/portate.length*100)+'%';
+    document.getElementById('portLbl').textContent =
+      portate[0].t + ' → ' + portate[portate.length-1].t;
+    document.getElementById('portStats').textContent =
+      'Q min: '+Math.round(Math.min(...Qvals)*10)/10+' · Q max: '+Math.round(Math.max(...Qvals)*10)/10+' l/s';
+
+    // Grafico portate
+    new Chart(document.getElementById('cPortate'),{type:'line',data:{
+      labels: portate.map(d=>d.t),
+      datasets:[{
+        label:'Q captata Uniacque (l/s)',
+        data: portate.map(d=>d.Q),
+        borderColor:'#4caf82',backgroundColor:'rgba(76,175,130,.1)',
+        borderWidth:1.5,pointRadius:0,fill:true
+      },{
+        label:'NTU',
+        data: portate.map(d=>d.ntu),
+        borderColor:'rgba(239,83,80,.6)',borderWidth:1,pointRadius:0,fill:false,yAxisID:'y2'
+      }]
+    },options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:'time',time:{unit:'year',displayFormats:{year:'yyyy'}},
+           grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+           title:{display:true,text:'l/s',color:'#7a94b8',font:{size:9}}},
+        y2:{position:'right',grid:{display:false},
+            ticks:{color:'rgba(239,83,80,.7)',font:{size:9}},
+            title:{display:true,text:'NTU',color:'rgba(239,83,80,.7)',font:{size:9}}}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',font:{size:9.5}}},tooltip:{mode:'index',intersect:false}}
+    }});
+
+    // Grafico CeS SCADA
+    const cols={'BO-0':'#ff8c42','BO-2':'#ffb347','BO-5':'#ffd080','AL-100':'#b39ddb'};
+    new Chart(document.getElementById('cCeS'),{type:'line',data:{datasets:
+      Object.entries(cols).map(([s,c])=>({
+        label:s,
+        data:(scada[s]||[]).filter(d=>d.CeS!=null).map(d=>({x:d.t,y:d.CeS})),
+        borderColor:c,borderWidth:2,pointRadius:0,fill:false,tension:.2
+      }))
+    },options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},
+           grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+           title:{display:true,text:'μS/cm',color:'#7a94b8',font:{size:9}}}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',font:{size:9.5}}},tooltip:{mode:'index',intersect:false}}
+    }});
+
+  } catch(e) {
+    console.error('Errore caricamento dati:', e);
+  }
+}
+
+init();
+</script>
+</main>
+</body>
+</html>

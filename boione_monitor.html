@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monitor Boione — Rio Borlezza</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+
+:root{--bg:#0a1628;--card:#111e35;--border:#1e3050;--acc:#4caf82;--blue:#4fc3f7;
+  --orange:#ffb347;--purple:#b39ddb;--red:#ef5350;--muted:#7a94b8;--text:#e3eaf8;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif;
+  font-size:13px;height:100%;display:flex;flex-direction:column;overflow:hidden}
+a{color:var(--acc);text-decoration:none}
+header{background:var(--card);border-bottom:2px solid var(--border);padding:9px 14px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;
+  z-index:500;flex-shrink:0}
+.hdr-left h1{font-size:.9rem;font-weight:800;color:var(--acc)}
+.hdr-left p{font-size:9px;color:var(--muted)}
+.nav{display:flex;gap:4px;flex-wrap:wrap}
+.btn{padding:3px 9px;border-radius:5px;border:1.5px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
+.tab-bar{display:flex;background:var(--card);border-bottom:2px solid var(--border);
+  padding:0 12px;overflow-x:auto;flex-shrink:0}
+.stab{padding:9px 13px;font-size:10.5px;font-weight:700;color:var(--muted);cursor:pointer;
+  border-bottom:3px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s}
+.stab:hover{color:var(--text)}.stab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.pane{display:none;padding:12px 14px;overflow-y:auto;flex:1;animation:fadein .2s}
+.pane.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.body-flex{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:11px 13px;margin-bottom:9px}
+.card h3{font-size:11px;font-weight:700;color:var(--acc);margin-bottom:7px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.kpi-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+.kpi{background:#162340;border-radius:6px;padding:7px 11px;text-align:center;min-width:80px;flex:1}
+.kpi .v{display:block;font-size:1.3rem;font-weight:800;line-height:1.2}
+.kpi .l{font-size:8.5px;color:var(--muted);margin-top:2px}
+.ch-wrap{position:relative;height:200px;margin:6px 0}
+.ch-wrap.tall{height:250px}.ch-wrap.short{height:140px}
+.insight{background:#0d1a2e;border-left:3px solid var(--acc);border-radius:0 6px 6px 0;
+  padding:7px 9px;margin:5px 0;font-size:10px;line-height:1.6;color:var(--muted)}
+.insight strong{color:var(--text)}.insight em{color:var(--orange);font-style:normal;font-weight:600}
+.dtbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.dtbl th{background:#162340;color:var(--blue);font-weight:700;padding:4px 7px;
+  text-align:left;border-bottom:2px solid var(--border)}
+.dtbl td{padding:3px 7px;border-bottom:1px solid var(--border)}
+.dtbl tr:hover td{background:#162340}
+.pbar{padding:3px 9px;border-radius:12px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:9.5px;cursor:pointer;margin-right:4px}
+.pbar.on{background:var(--acc);color:#000;border-color:var(--acc);font-weight:700}
+select{background:#162340;color:var(--text);border:1px solid var(--border);
+  border-radius:4px;padding:3px 7px;font-size:10px}
+#loading{position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.spinner{width:40px;height:40px;border:4px solid var(--border);
+  border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{color:var(--muted);font-size:12px;font-family:monospace}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px}
+.dot.ok{background:var(--acc)}.dot.warn{background:var(--orange)}.dot.err{background:var(--red)}
+
+</style>
+</head>
+<body>
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="loadMsg">Carico dati Boione…</div>
+</div>
+
+<header>
+  <div class="hdr-left">
+    <h1>📡 Monitor Boione — Rio Borlezza</h1>
+    <p>SCADA 2025-2026 · Diver Idrogea 2023 · Portate Uniacque 2015-2022</p>
+  </div>
+  <nav class="nav">
+    <a href="index.html" class="btn">🗺️ Home</a>
+    <a href="boione.html" class="btn">💧 Boione</a>
+    <a href="boione_analisi.html" class="btn">📊 Analisi</a>
+    <a href="boione_idrogeo.html" class="btn">⚖️ Idrogeo</a>
+    <a href="boione_mappa.html" class="btn">🗺️ Mappa</a>
+  </nav>
+</header>
+
+<div class="body-flex">
+<div class="tab-bar">
+  <div class="stab on" data-t="overview">📊 Overview</div>
+  <div class="stab" data-t="scada">📡 SCADA 2025</div>
+  <div class="stab" data-t="portate">💧 Portate</div>
+  <div class="stab" data-t="torbidita">🌊 Torbidità</div>
+  <div class="stab" data-t="idrogea">🔬 Idrogea 2023</div>
+  <div class="stab" data-t="campagne">🧪 Campagne</div>
+  <div class="stab" data-t="piano">📋 Piano B/B</div>
+</div>
+
+<!-- ═══ OVERVIEW ═══ -->
+<div class="pane on" id="t-overview">
+  <div class="kpi-row">
+    <div class="kpi"><span class="v" style="color:var(--acc)" id="kQmed">—</span><span class="l">Q media Uniacque (l/s)</span></div>
+    <div class="kpi"><span class="v" style="color:var(--orange)" id="kTorb">—</span><span class="l">% giorni torbidi 2015-22</span></div>
+    <div class="kpi"><span class="v" style="color:var(--blue)" id="kCeS">—</span><span class="l">CeS media BO-2 (μS/cm)</span></div>
+    <div class="kpi"><span class="v" style="color:var(--purple)" id="kBoilone">5</span><span class="l">Campagne test salino</span></div>
+    <div class="kpi"><span class="v" style="color:var(--acc)">639m</span><span class="l">Quota sorgente</span></div>
+    <div class="kpi"><span class="v" style="color:var(--text)">~9 km²</span><span class="l">Bacino idrogeo. stimato</span></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>💧 Portata captata Uniacque (2015–2022)</h3>
+      <div class="ch-wrap"><canvas id="cOvPort"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>📡 CeS Borlezza — SCADA 2025-2026</h3>
+      <div class="ch-wrap"><canvas id="cOvScada"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>🌊 Torbidità NTU — Boione (2015–2022)</h3>
+    <div class="ch-wrap short"><canvas id="cOvTurb"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>ℹ️ Stato dati</h3>
+    <div id="statusDiv" style="font-size:10px;color:var(--muted);line-height:2"></div>
+  </div>
+</div>
+
+<!-- ═══ SCADA 2025 ═══ -->
+<div class="pane" id="t-scada">
+  <div style="margin-bottom:8px">
+    <label style="font-size:10px;color:var(--muted)">Grandezza: </label>
+    <select id="scadaMetric">
+      <option value="CeS">Conducibilità elettrica (μS/cm)</option>
+      <option value="H">Livello (m)</option>
+      <option value="T">Temperatura (°C)</option>
+    </select>
+    <span style="margin-left:10px;font-size:9.5px;color:var(--muted)">Periodo: </span>
+    <span id="scadaPers">
+      <button class="pbar on" data-p="all">Tutto</button>
+      <button class="pbar" data-p="2025">2025</button>
+      <button class="pbar" data-p="2026">2026</button>
+    </span>
+  </div>
+  <div class="card">
+    <h3>📡 Borlezza — BO-0/BO-2/BO-5/BO-8</h3>
+    <div class="ch-wrap tall"><canvas id="cScadaBorl"></canvas></div>
+    <div class="insight" style="margin-top:8px">
+      <strong>BO-0 (648m):</strong> A MONTE del Boione — runoff + sorgentelle, NON rappresentativo della sorgente.<br>
+      <strong>BO-2 (623m):</strong> Primo punto post-Boione. <em>CeS ~371 μS/cm</em> — acqua carsica dolomitica.<br>
+      <strong>BO-5/BO-8:</strong> Tratto medio e finale del Borlezza verso il Brembo.
+    </div>
+  </div>
+  <div class="card">
+    <h3>📡 T. Alino — AL-100 (bacino separato → Brembo)</h3>
+    <div class="ch-wrap"><canvas id="cScadaAlino"></canvas></div>
+    <div class="insight">
+      <strong>AL-100 (368m):</strong> Sul Torrente Alino che confluisce <em>direttamente nel Brembo</em>,
+      non nel Borlezza. Bacini idraulicamente separati (confinanti allo spartiacque).
+      <em>CeS sistematicamente più alta (~418 μS/cm)</em>: litologia di ricarica diversa.
+    </div>
+  </div>
+  <div class="card">
+    <h3>📊 Statistiche SCADA</h3>
+    <table class="dtbl">
+      <thead><tr><th>Punto</th><th>Quota</th><th>Periodo</th><th>H med (m)</th><th>T med (°C)</th><th>CeS med (μS/cm)</th><th>Giorni</th></tr></thead>
+      <tbody id="scadaStatsTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PORTATE ═══ -->
+<div class="pane" id="t-portate">
+  <div style="margin-bottom:8px">
+    <span style="font-size:9.5px;color:var(--muted)">Anno: </span>
+    <span id="portPers">
+      <button class="pbar on" data-p="all">Tutti</button>
+      <button class="pbar" data-p="2015">2015</button>
+      <button class="pbar" data-p="2016">2016</button>
+      <button class="pbar" data-p="2017">2017</button>
+      <button class="pbar" data-p="2018">2018</button>
+      <button class="pbar" data-p="2019">2019</button>
+      <button class="pbar" data-p="2020">2020</button>
+      <button class="pbar" data-p="2021">2021</button>
+      <button class="pbar" data-p="2022">2022</button>
+    </span>
+  </div>
+  <div class="card">
+    <h3>💧 Portata giornaliera captata Boione — Uniacque</h3>
+    <div class="ch-wrap tall"><canvas id="cPort"></canvas></div>
+    <div class="insight">
+      Fonte: Uniacque SpA 2015-2022. <em>Media 2015-2022: ~25 l/s.</em>
+      Nota: questo è solo il dato di <em>captazione</em> — la portata totale della sorgente
+      (captazione + overflow in alveo) è stimata in 60-160 l/s dalle campagne Idrogea.
+    </div>
+  </div>
+  <div class="card">
+    <h3>📊 Portata media annua</h3>
+    <div class="ch-wrap short"><canvas id="cPortAnn"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>📊 Statistiche portate Uniacque per anno</h3>
+    <table class="dtbl">
+      <thead><tr><th>Anno</th><th>Q med (l/s)</th><th>Q min</th><th>Q max</th><th>Giorni dato</th></tr></thead>
+      <tbody id="portStatsTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ TORBIDITÀ ═══ -->
+<div class="pane" id="t-torbidita">
+  <div class="kpi-row" id="turbKpi"></div>
+  <div class="grid2">
+    <div class="card">
+      <h3>🌊 Giorni con NTU &gt; 1 per anno</h3>
+      <div class="ch-wrap"><canvas id="cTurbGG"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>📦 Volume torbido annuo stimato (m³)</h3>
+      <div class="ch-wrap"><canvas id="cTurbVol"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📈 NTU giornaliero — anno selezionato</h3>
+    <div style="margin-bottom:6px">
+      <select id="ntuYear">
+        <option>2015</option><option>2016</option><option>2017</option><option>2018</option>
+        <option>2019</option><option>2020</option><option>2021</option><option selected>2022</option>
+      </select>
+    </div>
+    <div class="ch-wrap"><canvas id="cNTU"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>📊 Tabella episodi torbidità per anno</h3>
+    <table class="dtbl">
+      <thead><tr><th>Anno</th><th>Giorni &gt;1NTU</th><th>Episodi</th><th>Durata med (gg)</th><th>Max durata (gg)</th><th>Vol. torbido (m³)</th><th>Q med (l/s)</th><th>NTU max</th></tr></thead>
+      <tbody id="turbTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ IDROGEA 2023 ═══ -->
+<div class="pane" id="t-idrogea">
+  <div style="margin-bottom:8px">
+    <label style="font-size:10px;color:var(--muted)">Grandezza: </label>
+    <select id="diverMetric">
+      <option value="H">Livello (cm)</option>
+      <option value="T">Temperatura (°C)</option>
+    </select>
+  </div>
+  <div class="card">
+    <h3>🔬 Livelli Diver — Pz2, Pz6, Pz9 (gen–nov 2023)</h3>
+    <div class="ch-wrap tall"><canvas id="cDiver"></canvas></div>
+    <div class="insight">
+      Fonte: Idrogea Servizi — Monitoraggio Rio Borlezza 2023 (22-199).
+      <strong>Pz2</strong> = monte (equivalente BO-2 area), <strong>Pz6</strong> = medio,
+      <strong>Pz9</strong> = valle. <em>289 giorni continui</em> di misura ogni ora.
+    </div>
+  </div>
+  <div class="card">
+    <h3>🌧️ Precipitazioni orarie (stazione Idrogea)</h3>
+    <div class="ch-wrap short"><canvas id="cPrec"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══ CAMPAGNE SALINO ═══ -->
+<div class="pane" id="t-campagne">
+  <div class="card">
+    <h3>🧪 Campagne test salino — portate misurate (l/s)</h3>
+    <div class="ch-wrap"><canvas id="cCamp"></canvas></div>
+    <div class="insight">
+      Test salino con NaCl. Ordine colonne: <strong>Pt.2</strong> (sez. monte Borlezza, Q in alveo),
+      <strong>Pt.5</strong> (sezione intermedia, include overflow Boione + Q in alveo),
+      <strong>Pt.8</strong> (tratto finale, zona artificiale+idrovori).
+      <em>Portata totale Boione = Pt.5 + captazione Uniacque.</em>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📊 Portate + CeS campagne</h3>
+    <table class="dtbl">
+      <thead><tr><th>Campagna</th><th>Q Pt.2 (l/s)</th><th>Q Pt.5</th><th>Q Pt.8</th>
+        <th>Q Uniacque</th><th>Q totale Boione</th><th>CeS med (μS/cm)</th><th>T med (°C)</th></tr></thead>
+      <tbody id="campTbody"></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>📈 CeS nei punti di misura per campagna</h3>
+    <div class="ch-wrap"><canvas id="cCesCamp"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══ PIANO B/B ═══ -->
+<div class="pane" id="t-piano">
+  <div class="card" style="border-color:var(--acc)">
+    <h3>📋 Piano Borlezza/Boione — Priorità di ricerca e monitoraggio</h3>
+    <p style="color:var(--muted);font-size:10.5px;line-height:1.6">
+      Sulla base di tutti i dati raccolti (ARPA 2013-2025, Idrogea 2022-2023, SCADA 2025-2026,
+      Uniacque 2015-2022), queste sono le lacune conoscitive principali e le azioni prioritarie.
+    </p>
+  </div>
+  <div class="card" style="border-left:3px solid var(--red)">
+    <h3 style="color:var(--red)">🔴 PRIORITÀ ALTA</h3>
+    <div class="insight"><strong>1. Portata overflow Boione in continuo (BO-1A/B/C/D)</strong><br>
+      Sensori installati ma non in acquisizione. Senza questo dato il bilancio idrico è incompleto.
+      <em>La captazione Uniacque (~25 l/s) rappresenta solo ~15-20% del flusso totale stimato.</em></div>
+    <div class="insight"><strong>2. CeS all'emergenza Boione (quota 639m)</strong><br>
+      BO-0 è a monte (648m, runoff), BO-2 è già miscelato. Serve sonda CTD direttamente alla sorgente.
+      <em>La CeS è il tracer naturale più potente per separare quickflow da baseflow.</em></div>
+    <div class="insight"><strong>3. Dati Uniacque 2023–oggi</strong><br>
+      Il dataset si ferma a dic.2022. Per le campagne Idrogea 2023 abbiamo usato medie storiche.
+      <em>Richiedere a Uniacque export dati 2023-oggi (stesso formato Excel).</em></div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--orange)">
+    <h3 style="color:var(--orange)">🟡 PRIORITÀ MEDIA</h3>
+    <div class="insight"><strong>4. Coordinate GPS Pt.1-9 Idrogea</strong><br>
+      Le campagne test salini hanno punti solo da planimetria PDF. Senza coordinate precise
+      non si possono sovrapporre a SCADA né costruire rating curve H→Q per sezione.</div>
+    <div class="insight"><strong>5. Rating curve H→Q a BO-5 e BO-8</strong><br>
+      SCADA misura livello H ma non Q. Le 5 campagne Idrogea danno 5 coppie (H,Q).
+      <em>Servono 3-4 campagne aggiuntive</em> in condizioni idrologiche diverse per curva affidabile.</div>
+    <div class="insight"><strong>6. Attivare AL-5 (T. Alino tratto medio)</strong><br>
+      Installato ma non in acquisizione. Insieme ad AL-100 caratterizzerebbe completamente il bacino Alino.</div>
+    <div class="insight"><strong>7. Stazione pluviometrica interna al bacino Borlezza</strong><br>
+      Cornalita (622m) e Vettarola (993m) sono periferiche. Nessuna stazione è dentro il bacino.
+      <em>Integrare Vettarola nell'analisi di bilancio idrico.</em></div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--acc)">
+    <h3 style="color:var(--acc)">🟢 PRIORITÀ BASSA</h3>
+    <div class="insight"><strong>8. Tracing test (coloranti) per bacino idrogeologico</strong><br>
+      Il bilancio inverso stima ~9 km² di bacino sotterraneo vs 4.5 km² superficiale.
+      Solo un tracing test con uranina può delimitare il bacino reale.</div>
+    <div class="insight"><strong>9. Recession analysis da dati SCADA continui</strong><br>
+      Con BO-2/5 in continuo dal apr.2025 si possono ora calcolare le costanti di esaurimento
+      dell'acquifero (α₁ flusso rapido, α₂ flusso lento) per stima riserve in siccità.</div>
+    <div class="insight"><strong>10. Campagna chimica completa (idrologia isotopica)</strong><br>
+      Analisi ¹⁸O/²H per distinguere sorgenti di ricarica (neve vs pioggia, epicarso vs profondo)
+      e quota di infiltrazione media.</div>
+    <div class="insight"><strong>11. Modello concettuale idrogeologico quantitativo</strong><br>
+      Integrare tutti i dataset in un modello che descriva flussi stagionali, tempi di transito,
+      vulnerabilità a eventi estremi — base per autorizzazione derivazione.</div>
+  </div>
+  <div class="card">
+    <h3>📊 Riepilogo stato dati</h3>
+    <table class="dtbl">
+      <thead><tr><th>Aspetto</th><th>Stato</th><th>Qualità</th><th>Azione</th></tr></thead>
+      <tbody>
+        <tr><td>Portata Borlezza H continuo</td><td>BO-2/5/8 dal apr.2025</td>
+          <td style="color:var(--orange)">⚠️ Solo livello</td><td>Rating curve</td></tr>
+        <tr><td>Portata sorgente totale</td><td>Solo Uniacque (15% tot.)</td>
+          <td style="color:var(--red)">❌ Incompleto</td><td>Attivare BO-1A</td></tr>
+        <tr><td>CeS Borlezza continuo</td><td>BO-0/2/5/8/AL-100 dal 2025</td>
+          <td style="color:var(--acc)">✅ Buono</td><td>Continuare</td></tr>
+        <tr><td>Livelli Diver 2023</td><td>Pz2/6/9 gen-nov 2023</td>
+          <td style="color:var(--acc)">✅ Buono</td><td>Continuare SCADA</td></tr>
+        <tr><td>Precipitazioni bacino</td><td>Cornalita, Vettarola, Piazzacava</td>
+          <td style="color:var(--orange)">⚠️ Periferiche</td><td>Integrare Vettarola</td></tr>
+        <tr><td>Torbidità Boione</td><td>Uniacque 2015-2022</td>
+          <td style="color:var(--acc)">✅ Storico buono</td><td>Aggiornare 2023+</td></tr>
+        <tr><td>Campagne portata</td><td>5 campagne 2022-2023</td>
+          <td style="color:var(--acc)">✅ Buone</td><td>3-4 campagne aggiuntive</td></tr>
+        <tr><td>Dati Uniacque</td><td>2015-2022</td>
+          <td style="color:var(--orange)">⚠️ Mancano 2023+</td><td>Richiedere update</td></tr>
+        <tr><td>Bacino idrogeologico</td><td>Stima ~9 km²</td>
+          <td style="color:var(--orange)">⚠️ Solo stima</td><td>Tracing test</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div><!-- end body-flex -->
+
+<script>
+const GITHUB = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+
+async function fetchJ(name) {
+  const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),12000);
+  try {
+    const r=await fetch(GITHUB+name,{signal:ctrl.signal});
+    clearTimeout(tid);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  } catch(e) { clearTimeout(tid); throw e; }
+}
+
+// Shared data
+let SCADA={}, PORTATE=[], TURB=[], DIVER={}, CAMPAGNE=[];
+const charts={};
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}};
+function avg(arr){const v=arr.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b)/v.length:null;}
+function filt(data,period,key='t'){
+  if(period==='all') return data;
+  return data.filter(d=>d[key].startsWith(period));
+}
+function stdScales(yLabel=''){return{
+  x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},
+     grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9},maxTicksLimit:10}},
+  y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+     title:{display:!!yLabel,text:yLabel,color:'#7a94b8',font:{size:9}}}
+};}
+function stdPlugins(){return{
+  legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:9.5}}},
+  tooltip:{mode:'index',intersect:false}
+};}
+
+// ── OVERVIEW ────────────────────────────────────────────────────
+function renderOverview(){
+  const Qv=PORTATE.map(d=>d.Q).filter(v=>v!=null);
+  const torb=PORTATE.filter(d=>d.torb>0).length;
+  const cesv=(SCADA['BO-2']||[]).map(d=>d.CeS).filter(v=>v!=null);
+  document.getElementById('kQmed').textContent=Qv.length?Math.round(avg(Qv)*10)/10+'':'—';
+  document.getElementById('kTorb').textContent=PORTATE.length?Math.round(torb/PORTATE.length*100)+'%':'—';
+  document.getElementById('kCeS').textContent=cesv.length?Math.round(avg(cesv)):'—';
+
+  // Portate chart
+  dc('cOvPort');
+  const ctxP=document.getElementById('cOvPort');
+  if(ctxP) charts['cOvPort']=new Chart(ctxP,{type:'line',data:{
+    labels:PORTATE.map(d=>d.t),
+    datasets:[
+      {label:'Q (l/s)',data:PORTATE.map(d=>d.Q),borderColor:'#4caf82',
+        backgroundColor:PORTATE.map(d=>d.torb>0?'rgba(239,83,80,.1)':'rgba(76,175,130,.08)'),
+        borderWidth:1.5,pointRadius:0,fill:true},
+    ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:{...stdScales('l/s'),x:{...stdScales().x,time:{unit:'year',displayFormats:{year:'yyyy'}}}},
+    plugins:stdPlugins()}});
+
+  // SCADA CeS chart
+  dc('cOvScada');
+  const ctxS=document.getElementById('cOvScada');
+  const cols={'BO-0':'#ff8c42','BO-2':'#ffb347','BO-5':'#ffd080'};
+  if(ctxS) charts['cOvScada']=new Chart(ctxS,{type:'line',data:{datasets:
+    Object.entries(cols).map(([s,c])=>{
+      const d=(SCADA[s]||[]).filter(x=>x.CeS!=null);
+      return{label:s,data:d.map(x=>{return{x:x.t,y:x.CeS}}).slice(-200),
+             borderColor:c,borderWidth:1.5,pointRadius:0,fill:false};
+    })},options:{responsive:true,maintainAspectRatio:false,
+    scales:stdScales('μS/cm'),plugins:stdPlugins()}});
+
+  // Turb bar
+  dc('cOvTurb');
+  const ctxT=document.getElementById('cOvTurb');
+  if(ctxT) charts['cOvTurb']=new Chart(ctxT,{type:'bar',data:{
+    labels:TURB.map(d=>d.y),
+    datasets:[{label:'Giorni >1 NTU',data:TURB.map(d=>d.gg),
+      backgroundColor:TURB.map(d=>d.gg>150?'rgba(239,83,80,.7)':d.gg>80?'rgba(255,179,71,.7)':'rgba(76,175,130,.7)'),
+      borderRadius:3}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}}
+    ,plugins:stdPlugins()}});
+
+  // Status
+  const st=document.getElementById('statusDiv');
+  if(st) st.innerHTML=`
+    <span class="dot ok"></span>SCADA: ${Object.keys(SCADA).join(', ')} · 
+    ${Math.max(...Object.values(SCADA).map(v=>v.length))} giorni (ultimo punto)<br>
+    <span class="dot ok"></span>Portate Uniacque: ${PORTATE.length} giorni 
+    (${PORTATE[0]?.t} → ${PORTATE[PORTATE.length-1]?.t})<br>
+    <span class="dot ok"></span>Torbidità Uniacque: ${TURB.length} anni<br>
+    <span class="dot ok"></span>Diver Idrogea 2023: ${DIVER.pz2?.length||0} giorni<br>
+    <span class="dot ok"></span>Campagne test salini: ${CAMPAGNE.length}
+  `;
+}
+
+// ── SCADA ────────────────────────────────────────────────────────
+let scadaPer='all';
+function renderScada(){
+  const m=document.getElementById('scadaMetric')?.value||'CeS';
+  const yL={H:'Livello (m)',T:'Temperatura (°C)',CeS:'μS/cm'};
+  const src=['BO-0','BO-2','BO-5','BO-8'];
+  const c=['#ff8c42','#ffb347','#ffd080','#e06020'];
+
+  dc('cScadaBorl');
+  const ctx=document.getElementById('cScadaBorl');
+  if(ctx) charts['cScadaBorl']=new Chart(ctx,{type:'line',data:{datasets:
+    src.map((s,i)=>{
+      const d=filt(SCADA[s]||[],scadaPer).filter(x=>x[m]!=null);
+      return{label:s,data:d.map(x=>{return{x:x.t,y:x[m]}})  ,
+             borderColor:c[i],borderWidth:2,pointRadius:0,fill:false,tension:.2};
+    })},options:{responsive:true,maintainAspectRatio:false,
+    scales:stdScales(yL[m]),plugins:stdPlugins()}});
+
+  dc('cScadaAlino');
+  const ctx2=document.getElementById('cScadaAlino');
+  if(ctx2) charts['cScadaAlino']=new Chart(ctx2,{type:'line',data:{datasets:[
+    {label:'AL-100 '+m,data:filt(SCADA['AL-100']||[],scadaPer).filter(x=>x[m]!=null).map(x=>{return{x:x.t,y:x[m]}})  ,
+     borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
+    {label:'BO-5 '+m,data:filt(SCADA['BO-5']||[],scadaPer).filter(x=>x[m]!=null).map(x=>{return{x:x.t,y:x[m]}})  ,
+     borderColor:'#ffd080',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,3]},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:stdScales(yL[m]),plugins:stdPlugins()}});
+
+  // Stats table
+  const tb=document.getElementById('scadaStatsTbody');
+  if(tb){
+    const meta={'BO-0':'648m','BO-2':'623m','BO-5':'521m','BO-8':'366m','AL-100':'368m (Alino)'};
+    tb.innerHTML=['BO-0','BO-2','BO-5','BO-8','AL-100'].map(n=>{
+      const d=SCADA[n]||[];
+      const a=k=>{const v=d.map(x=>x[k]).filter(x=>x!=null);return v.length?Math.round(avg(v)*100)/100:'—';};
+      const col=n.startsWith('AL')?'var(--purple)':'var(--orange)';
+      return`<tr>
+        <td style="font-weight:700;color:${col}">${n}</td>
+        <td>${meta[n]||'—'}</td>
+        <td style="font-size:9.5px">${d.length?d[0].t+' → '+d[d.length-1].t:'—'}</td>
+        <td>${a('H')}</td><td>${a('T')}</td><td>${a('CeS')}</td><td>${d.length}</td></tr>`;
+    }).join('');
+  }
+}
+
+// ── PORTATE ──────────────────────────────────────────────────────
+let portPer='all';
+function renderPortate(){
+  const data=filt(PORTATE,portPer);
+  dc('cPort');
+  const ctx=document.getElementById('cPort');
+  if(ctx) charts['cPort']=new Chart(ctx,{type:'line',data:{
+    labels:data.map(d=>d.t),
+    datasets:[{label:'Q captata (l/s)',data:data.map(d=>d.Q),
+      borderColor:'#4caf82',backgroundColor:data.map(d=>d.torb>0?'rgba(239,83,80,.12)':'rgba(76,175,130,.08)'),
+      borderWidth:1.5,pointRadius:0,fill:true}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{...stdScales('l/s'),x:{...stdScales().x,
+      time:{unit:portPer==='all'?'year':'month',displayFormats:{year:'yyyy',month:"MMM 'yy"}}}},
+    plugins:stdPlugins()}});
+
+  dc('cPortAnn');
+  const ctx2=document.getElementById('cPortAnn');
+  if(ctx2){
+    const byY={};
+    PORTATE.forEach(d=>{const y=d.t.slice(0,4);if(!byY[y])byY[y]=[];if(d.Q!=null)byY[y].push(d.Q);});
+    const yrs=Object.keys(byY).sort();
+    charts['cPortAnn']=new Chart(ctx2,{type:'bar',data:{labels:yrs,
+      datasets:[{label:'Q media annua (l/s)',
+        data:yrs.map(y=>{const q=byY[y];return q.length?Math.round(avg(q)*10)/10:null;}),
+        backgroundColor:yrs.map(y=>{const q=byY[y],v=avg(q);return v<20?'rgba(239,83,80,.7)':v<30?'rgba(255,179,71,.7)':'rgba(76,175,130,.7)';})  ,
+        borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+      plugins:stdPlugins()}});
+  }
+
+  // Stats table
+  const tb=document.getElementById('portStatsTbody');
+  if(tb){
+    const byY={};
+    PORTATE.forEach(d=>{const y=d.t.slice(0,4);if(!byY[y])byY[y]=[];byY[y].push(d);});
+    tb.innerHTML=Object.keys(byY).sort().map(y=>{
+      const d=byY[y], Qv=d.map(x=>x.Q).filter(v=>v!=null);
+      return`<tr>
+        <td style="font-weight:700">${y}</td>
+        <td>${Qv.length?Math.round(avg(Qv)*10)/10:'—'}</td>
+        <td>${Qv.length?Math.round(Math.min(...Qv)*10)/10:'—'}</td>
+        <td>${Qv.length?Math.round(Math.max(...Qv)*10)/10:'—'}</td>
+        <td>${d.length}</td></tr>`;
+    }).join('');
+  }
+}
+
+// ── TORBIDITÀ ────────────────────────────────────────────────────
+function renderTurb(){
+  const kpis=[
+    {v:TURB.reduce((a,b)=>a+b.gg,0),l:'Giorni totali >1 NTU',c:'var(--red)'},
+    {v:Math.max(...TURB.map(t=>t.gg)),l:'Max giorni/anno (2015-22)',c:'var(--orange)'},
+    {v:Math.round(TURB.reduce((a,b)=>a+b.gg,0)/TURB.length),l:'Media giorni/anno',c:'var(--text)'},
+    {v:Math.max(...TURB.map(t=>t.max_dur)),l:'Episodio max (giorni)',c:'var(--orange)'},
+  ];
+  const kr=document.getElementById('turbKpi');
+  if(kr) kr.innerHTML=kpis.map(k=>`<div class="kpi">
+    <span class="v" style="color:${k.c}">${k.v}</span><span class="l">${k.l}</span></div>`).join('');
+
+  dc('cTurbGG');
+  const c1=document.getElementById('cTurbGG');
+  if(c1) charts['cTurbGG']=new Chart(c1,{type:'bar',data:{
+    labels:TURB.map(t=>t.y),
+    datasets:[{label:'Giorni >1 NTU',data:TURB.map(t=>t.gg),
+      backgroundColor:TURB.map(t=>t.gg>150?'rgba(239,83,80,.7)':t.gg>80?'rgba(255,179,71,.7)':'rgba(76,175,130,.7)'),
+      borderRadius:3}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+    plugins:stdPlugins()}});
+
+  dc('cTurbVol');
+  const c2=document.getElementById('cTurbVol');
+  if(c2) charts['cTurbVol']=new Chart(c2,{type:'bar',data:{
+    labels:TURB.map(t=>t.y),
+    datasets:[{label:'Volume torbido stimato (m³)',data:TURB.map(t=>t.mc),
+      backgroundColor:'rgba(239,83,80,.5)',borderRadius:3}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+    plugins:stdPlugins()}});
+
+  // NTU
+  renderNTU();
+
+  // Table
+  const tb=document.getElementById('turbTbody');
+  if(tb) tb.innerHTML=TURB.map(t=>`<tr>
+    <td style="font-weight:700">${t.y}</td>
+    <td style="color:${t.gg>150?'var(--red)':t.gg>80?'var(--orange)':'var(--acc)'}">${t.gg}</td>
+    <td>${t.ep}</td><td>${t.med_dur}</td><td>${t.max_dur}</td>
+    <td>${Math.round(t.mc/1000)}k</td><td>${t.Q_med}</td><td>${t.ntu_max}</td></tr>`).join('');
+}
+
+function renderNTU(){
+  const yr=document.getElementById('ntuYear')?.value||'2022';
+  const data=PORTATE.filter(d=>d.t.startsWith(yr));
+  dc('cNTU');
+  const ctx=document.getElementById('cNTU');
+  if(!ctx) return;
+  charts['cNTU']=new Chart(ctx,{type:'bar',data:{
+    labels:data.map(d=>d.t),
+    datasets:[{label:'NTU',data:data.map(d=>d.ntu),
+      backgroundColor:data.map(d=>d.ntu>10?'rgba(239,83,80,.8)':d.ntu>1?'rgba(255,179,71,.7)':'rgba(79,195,247,.4)'),
+      borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{type:'time',time:{unit:'month',displayFormats:{month:'MMM'}},
+      grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+    plugins:stdPlugins()}});
+}
+
+// ── IDROGEA ──────────────────────────────────────────────────────
+function renderIdrogea(){
+  const m=document.getElementById('diverMetric')?.value||'H';
+  const k=m==='H'?'H':'T', yL={H:'Livello (cm)',T:'Temperatura (°C)'};
+  dc('cDiver');
+  const ctx=document.getElementById('cDiver');
+  if(ctx) charts['cDiver']=new Chart(ctx,{type:'line',data:{datasets:[
+    {label:'Pz2 (monte)',data:(DIVER.pz2||[]).filter(d=>d[k]!=null).map(d=>{return{x:d.t,y:d[k]}})  ,borderColor:'#4fc3f7',borderWidth:2,pointRadius:0,fill:false},
+    {label:'Pz6 (medio)',data:(DIVER.pz6||[]).filter(d=>d[k]!=null).map(d=>{return{x:d.t,y:d[k]}})  ,borderColor:'#4caf82',borderWidth:2,pointRadius:0,fill:false},
+    {label:'Pz9 (valle)',data:(DIVER.pz9||[]).filter(d=>d[k]!=null).map(d=>{return{x:d.t,y:d[k]}})  ,borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:stdScales(yL[m]),plugins:stdPlugins()}});
+
+  dc('cPrec');
+  const ctx2=document.getElementById('cPrec');
+  if(ctx2) charts['cPrec']=new Chart(ctx2,{type:'bar',data:{
+    labels:(DIVER.prec||[]).map(d=>d.t),
+    datasets:[{label:'Precipitazione (mm)',data:(DIVER.prec||[]).map(d=>d.mm),
+      backgroundColor:'rgba(79,195,247,.5)',borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},
+      grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+    plugins:stdPlugins()}});
+}
+
+// ── CAMPAGNE ─────────────────────────────────────────────────────
+function renderCampagne(){
+  dc('cCamp');
+  const ctx=document.getElementById('cCamp');
+  if(ctx) charts['cCamp']=new Chart(ctx,{type:'bar',data:{
+    labels:CAMPAGNE.map(c=>c.d),
+    datasets:[
+      {label:'Pt.2',data:CAMPAGNE.map(c=>c.p2),backgroundColor:'rgba(79,195,247,.6)',borderRadius:3},
+      {label:'Pt.5',data:CAMPAGNE.map(c=>c.p5),backgroundColor:'rgba(76,175,130,.6)',borderRadius:3},
+      {label:'Pt.8',data:CAMPAGNE.map(c=>c.p8),backgroundColor:'rgba(255,179,71,.6)',borderRadius:3},
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+         title:{display:true,text:'Portata (l/s)',color:'#7a94b8',font:{size:9}}}},
+    plugins:stdPlugins()}});
+
+  dc('cCesCamp');
+  const ctx2=document.getElementById('cCesCamp');
+  if(ctx2) charts['cCesCamp']=new Chart(ctx2,{type:'line',data:{
+    labels:CAMPAGNE.map(c=>c.d),
+    datasets:[
+      {label:'CeS P2',data:CAMPAGNE.map(c=>c.ces?.P2),borderColor:'#4fc3f7',borderWidth:2,pointRadius:5,fill:false},
+      {label:'CeS P5',data:CAMPAGNE.map(c=>c.ces?.P5),borderColor:'#4caf82',borderWidth:2,pointRadius:5,fill:false},
+      {label:'CeS P8',data:CAMPAGNE.map(c=>c.ces?.P8),borderColor:'#ffb347',borderWidth:2,pointRadius:5,fill:false},
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+         title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
+    plugins:stdPlugins()}});
+
+  const tb=document.getElementById('campTbody');
+  if(tb) tb.innerHTML=CAMPAGNE.map(c=>`<tr>
+    <td style="font-weight:700">${c.d}</td>
+    <td>${c.p2}</td><td style="font-weight:700;color:var(--acc)">${c.p5}</td>
+    <td>${c.p8}</td><td style="color:var(--blue)">${c.uniacque}</td>
+    <td style="font-weight:700;color:var(--orange)">${c.Q_tot}</td>
+    <td style="color:var(--blue)">${c.CeS_med}</td><td>${c.T_med}</td></tr>`).join('');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────
+const renderMap={
+  overview: renderOverview, scada: renderScada,
+  portate: renderPortate, torbidita: renderTurb,
+  idrogea: renderIdrogea, campagne: renderCampagne,
+  piano: ()=>{}
+};
+
+document.querySelectorAll('.stab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.stab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    const p=document.getElementById('t-'+t.dataset.t);
+    if(p) p.classList.add('on');
+    renderMap[t.dataset.t]?.();
+  });
+});
+
+// Period buttons
+document.querySelectorAll('#scadaPers .pbar').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#scadaPers .pbar').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); scadaPer=b.dataset.p; renderScada();
+  });
+});
+document.querySelectorAll('#portPers .pbar').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#portPers .pbar').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); portPer=b.dataset.p; renderPortate();
+  });
+});
+document.getElementById('scadaMetric')?.addEventListener('change', renderScada);
+document.getElementById('diverMetric')?.addEventListener('change', renderIdrogea);
+document.getElementById('ntuYear')?.addEventListener('change', renderNTU);
+
+// ── INIT ──────────────────────────────────────────────────────────
+async function init(){
+  const msg=document.getElementById('loadMsg');
+  try{
+    msg.textContent='Carico portate Uniacque…';
+    [PORTATE, SCADA, TURB, DIVER, CAMPAGNE] = await Promise.all([
+      fetchJ('boione_portate.json'),
+      fetchJ('boione_scada.json'),
+      fetchJ('boione_turb.json'),
+      fetchJ('boione_diver.json'),
+      fetchJ('boione_campagne.json'),
+    ]);
+    msg.textContent='Rendering…';
+    renderOverview();
+  } catch(e){
+    msg.textContent='Errore: '+e.message;
+    console.error(e);
+  }
+  document.getElementById('loading').style.display='none';
+}
+init();
+</script>
+</body>
+</html>

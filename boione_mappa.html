@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mappa Boione — Bacini e Rete SCADA</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--bg:#0a1628;--card:#111e35;--border:#1e3050;--acc:#4caf82;--blue:#4fc3f7;
+  --orange:#ffb347;--purple:#b39ddb;--red:#ef5350;--muted:#7a94b8;--text:#e3eaf8;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif;
+  font-size:13px;height:100%;display:flex;flex-direction:column}
+a{color:var(--acc);text-decoration:none}
+header{background:var(--card);border-bottom:2px solid var(--border);padding:9px 14px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;flex-shrink:0;z-index:600}
+.hdr-left h1{font-size:.9rem;font-weight:800;color:var(--acc)}
+.hdr-left p{font-size:9px;color:var(--muted)}
+.nav{display:flex;gap:4px;flex-wrap:wrap}
+.btn{padding:3px 9px;border-radius:5px;border:1.5px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
+#mapWrap{flex:1;position:relative;min-height:0}
+#map{width:100%;height:100%}
+.map-legend{position:absolute;bottom:28px;left:10px;z-index:500;
+  background:rgba(17,30,53,.93);border:1px solid var(--border);border-radius:7px;
+  padding:8px 10px;font-size:9.5px;min-width:170px;backdrop-filter:blur(4px)}
+.leg-title{font-size:9px;font-weight:700;color:var(--acc);margin-bottom:5px}
+.leg-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;color:var(--muted)}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.leg-line{width:20px;height:3px;border-radius:2px;flex-shrink:0}
+.leg-poly{width:16px;height:10px;border-radius:2px;flex-shrink:0;opacity:.7}
+.map-info{position:absolute;top:10px;right:10px;z-index:500;
+  background:rgba(17,30,53,.93);border:1px solid var(--border);border-radius:7px;
+  padding:8px 10px;font-size:9.5px;max-width:200px;backdrop-filter:blur(4px)}
+.leaflet-popup-content-wrapper{background:var(--card);color:var(--text);
+  border:1px solid var(--border);border-radius:7px}
+.leaflet-popup-tip{background:var(--card)}
+.leaflet-popup-content{font-size:11px;margin:8px 12px;line-height:1.6}
+.leaflet-popup-content b{color:var(--acc)}
+.leaflet-container{background:#0d1a2e}
+#loading{position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--acc);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{color:var(--muted);font-size:12px;font-family:monospace}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(76,175,130,.7)}50%{box-shadow:0 0 0 9px rgba(76,175,130,0)}}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><div id="loadMsg">Carico dati geografici…</div></div>
+
+<header>
+  <div class="hdr-left">
+    <h1>🗺️ Mappa Boione — Bacini, SCADA e Rete Idrografica</h1>
+    <p>GeoPackage QGIS · RIRU Regione Lombardia · 26 punti SCADA · Sorgente Boione 639m</p>
+  </div>
+  <nav class="nav">
+    <a href="index.html" class="btn">🏠 Home</a>
+    <a href="boione.html" class="btn">💧 Boione</a>
+    <a href="boione_monitor.html" class="btn">📡 Monitor</a>
+    <a href="boione_analisi.html" class="btn">📊 Analisi</a>
+    <a href="boione_idrogeo.html" class="btn">⚖️ Idrogeo</a>
+  </nav>
+</header>
+
+<div id="mapWrap">
+  <div id="map"></div>
+
+  <div class="map-legend">
+    <div class="leg-title">LEGENDA</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#4caf82;animation:pulse 2s infinite"></div>Sorgente Boione (639m)</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ffb347"></div>SCADA attivo (Borlezza)</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#b39ddb"></div>SCADA attivo (Alino)</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#7a94b8;opacity:.6"></div>SCADA pianificato</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#4fc3f7;opacity:.6"></div>Piezometro / Meteo</div>
+    <div class="leg-row"><div class="leg-line" style="background:#4caf82;height:3px"></div>Rio Borlezza</div>
+    <div class="leg-row"><div class="leg-line" style="background:#b39ddb;height:2px"></div>T. Alino → Brembo</div>
+    <div class="leg-row"><div class="leg-line" style="background:#4fc3f7;height:4px"></div>F. Brembo</div>
+    <div class="leg-row"><div class="leg-line" style="background:#80cbc4;height:2px"></div>T. Brembilla (RIRU)</div>
+    <div class="leg-row"><div class="leg-line" style="background:#a5d6a7;height:2px"></div>T. Enna / Val Taleggio</div>
+    <div class="leg-row"><div class="leg-poly" style="background:#ffb347;border:2px solid #ffb347"></div>Bacino Borlezza 4.5 km²</div>
+    <div class="leg-row"><div class="leg-poly" style="background:#b39ddb;border:2px solid #b39ddb"></div>Bacino Alino 1.8 km²</div>
+  </div>
+
+  <div class="map-info">
+    <div style="font-size:9px;font-weight:700;color:var(--acc);margin-bottom:4px">INFO</div>
+    <div style="color:var(--muted);line-height:1.6">
+      Clicca su qualsiasi elemento per i dettagli.<br>
+      Usa i layer controls in basso a destra per cambiare sfondo.
+    </div>
+  </div>
+</div>
+
+<script>
+const GITHUB = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+
+async function fetchJ(n) {
+  const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000);
+  try {
+    const r=await fetch(GITHUB+n,{signal:ctrl.signal});
+    clearTimeout(tid);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+  } catch(e){clearTimeout(tid);throw e;}
+}
+
+async function init() {
+  const msg = document.getElementById('loadMsg');
+  try {
+    msg.textContent = 'Carico dati geografici…';
+    const [geo, riru, scada] = await Promise.all([
+      fetchJ('boione_geo.json'),
+      fetchJ('boione_riru.json'),
+      fetchJ('boione_scada.json'),
+    ]);
+
+    msg.textContent = 'Inizializzo mappa…';
+
+    // Init map
+    const map = L.map('map', {center:[45.848,9.650],zoom:13});
+
+    // Tile layers
+    const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      {attribution:'© OpenTopoMap',maxZoom:17});
+    const osm  = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {attribution:'© OpenStreetMap',maxZoom:19});
+    const sat  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {attribution:'© Esri',maxZoom:19});
+    topo.addTo(map);
+
+    // ── RIRU Fiumi ──
+    const riverStyle = {
+      'Fiume Brembo':           {color:'#4fc3f7',weight:5,opacity:.85},
+      'T. Brembilla':           {color:'#80cbc4',weight:2.5,opacity:.8},
+      'T. Enna (Val Taleggio)': {color:'#a5d6a7',weight:2.5,opacity:.8},
+      'Rio Borlezza':           {color:'#4caf82',weight:3.5,opacity:.9},
+      'T. Alino':               {color:'#b39ddb',weight:2.5,opacity:.85},
+      'T. Serina/Ambria':       {color:'#7a94b8',weight:1.5,opacity:.5},
+      'T. Imagna':              {color:'#7a94b8',weight:1.5,opacity:.45},
+    };
+    const riuLayer = L.geoJSON(riru, {
+      style: f => riverStyle[f.properties?.NOME] || {color:'#5a7a9a',weight:1,opacity:.35},
+      onEachFeature: (f,l) => {
+        if(f.properties?.NOME) l.bindTooltip(f.properties.NOME, {sticky:true});
+      }
+    }).addTo(map);
+
+    // ── Bacini e tracciati GeoPackage ──
+    const bacinoStyle = {
+      'Bacino Borlezza': {color:'#ffb347',weight:2.5,fillColor:'#ffb347',fillOpacity:.12},
+      'Alino Watershed': {color:'#b39ddb',weight:2,fillColor:'#b39ddb',fillOpacity:.12},
+    };
+    const streamStyle = {
+      'Borlezza Stream': {color:'#4caf82',weight:4,opacity:.9},
+      'Fiume Brembo':    {color:'#4fc3f7',weight:5,opacity:.85},
+      'Alino Stream':    {color:'#b39ddb',weight:3,opacity:.9},
+    };
+
+    const baciniLayer = L.layerGroup();
+    const streamsLayer = L.layerGroup();
+    const scadaLayer = L.layerGroup();
+    const boioneLayer = L.layerGroup();
+
+    geo.features.forEach(f => {
+      const p = f.properties || {};
+      if (p.layer === 'bacino') {
+        L.geoJSON(f, {
+          style: bacinoStyle[p.name] || {color:'#7a94b8',weight:1.5,fillOpacity:.06},
+          onEachFeature: (ft,l) => l.bindPopup(
+            `<b>${p.name}</b><br>Area: ${p.area_km2} km²`)
+        }).addTo(baciniLayer);
+      } else if (p.layer === 'stream') {
+        L.geoJSON(f, {
+          style: streamStyle[p.name] || {color:'#7a94b8',weight:1.5,opacity:.5},
+          onEachFeature: (ft,l) => l.bindTooltip(p.name+(p.length_km?' ('+p.length_km+' km)':''), {sticky:true})
+        }).addTo(streamsLayer);
+      } else if (p.layer === 'scada') {
+        // Colore per tipo
+        const tipo = p['Tipologia'] || p['tipo'] || '';
+        const nome = p['Nome'] || p['nome'] || '';
+        const active = ['BO-0','BO-2','BO-5','BO-8','AL-100'].includes(nome);
+        const col = tipo.includes('Alino') ? '#b39ddb'
+                  : tipo.includes('Borlezza') ? '#ffb347'
+                  : tipo.includes('pieno') ? '#4caf82'
+                  : tipo.includes('Piezo') ? '#4fc3f7'
+                  : tipo.includes('Meteo') ? '#4fc3f7'
+                  : '#7a94b8';
+        const sz = active ? 11 : 7;
+        const ic = L.divIcon({
+          html:`<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${col};
+            border:2px solid rgba(255,255,255,.8);box-shadow:0 0 4px rgba(0,0,0,.5);
+            opacity:${active?1:.55}"></div>`,
+          className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]
+        });
+
+        // Ultimi valori SCADA se disponibili
+        let scadaInfo = '';
+        if (active) {
+          const d = scada[nome] || [];
+          if (d.length) {
+            const last = d[d.length-1];
+            const good = d.filter(x=>x.CeS!=null);
+            const avg = good.length ? Math.round(good.reduce((a,b)=>a+b.CeS,0)/good.length) : '—';
+            scadaInfo = `<br><span style="color:#7a94b8;font-size:9px">
+              Ultimo dato: ${last.t}<br>
+              H: ${last.H??'—'} m · T: ${last.T??'—'}°C · CeS: ${last.CeS??'—'} μS/cm<br>
+              CeS media: ${avg} μS/cm (${good.length} giorni)</span>`;
+          }
+        }
+
+        const lat = f.geometry.coordinates[1];
+        const lon = f.geometry.coordinates[0];
+        L.marker([lat,lon],{icon:ic})
+          .bindPopup(`<b>${nome}</b><br>${tipo}<br>Quota: ${Math.round(p['Quota m slm']||p.quota||0)}m${scadaInfo}`)
+          .addTo(scadaLayer);
+      } else if (p.layer === 'boione') {
+        const boioneIcon = L.divIcon({
+          html:`<div style="width:16px;height:16px;border-radius:50%;background:#4caf82;
+            border:3px solid #fff;box-shadow:0 0 0 0 rgba(76,175,130,.7);
+            animation:pulse 2s infinite"></div>`,
+          className:'',iconSize:[16,16],iconAnchor:[8,8]
+        });
+        L.marker([p.lat||45.842486, p.lon||9.645517],{icon:boioneIcon,zIndexOffset:1000})
+          .bindPopup(`<b>💧 ${p.name}</b><br>Quota: ${p.quota}m s.l.m.<br>
+            Acquifero: ${p.acquifero}<br>Tipo: ${p.tipo}<br>
+            Lat: 45.842486°N · Lon: 9.645517°E<br>
+            <a href="boione_monitor.html">→ Dashboard monitoraggio</a>`)
+          .addTo(boioneLayer);
+      }
+    });
+
+    baciniLayer.addTo(map);
+    streamsLayer.addTo(map);
+    riuLayer.addTo(map);
+    scadaLayer.addTo(map);
+    boioneLayer.addTo(map);
+
+    // Layer controls
+    L.control.layers(
+      {'🏔️ OpenTopoMap':topo,'🗺️ OpenStreetMap':osm,'🛰️ Satellite (Esri)':sat},
+      {'Bacini (GeoPackage)':baciniLayer,'Tracciati Borlezza/Alino':streamsLayer,
+        'Rete RIRU (Lombardia)':riuLayer,'Punti SCADA':scadaLayer,'Sorgente Boione':boioneLayer},
+      {collapsed:false,position:'bottomright'}
+    ).addTo(map);
+
+    L.control.scale({imperial:false}).addTo(map);
+
+  } catch(e) {
+    document.getElementById('loadMsg').textContent = 'Errore: ' + e.message;
+    console.error(e);
+  }
+  document.getElementById('loading').style.display = 'none';
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analisi Boione — Portate e Torbidità</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+:root{--bg:#0a1628;--card:#111e35;--border:#1e3050;--acc:#4caf82;--blue:#4fc3f7;
+  --orange:#ffb347;--purple:#b39ddb;--red:#ef5350;--muted:#7a94b8;--text:#e3eaf8;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif;font-size:13px}
+a{color:var(--acc);text-decoration:none}
+header{background:var(--card);border-bottom:2px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  position:sticky;top:0;z-index:500}
+.hdr-left h1{font-size:.95rem;font-weight:800;color:var(--acc)}
+.hdr-left p{font-size:9.5px;color:var(--muted);margin-top:2px}
+.nav{display:flex;gap:5px;flex-wrap:wrap}
+.btn{padding:4px 10px;border-radius:5px;border:1.5px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
+main{max-width:1100px;margin:0 auto;padding:14px 16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.card h3{font-size:11px;font-weight:700;color:var(--acc);margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.ch-wrap{position:relative;height:240px;margin:8px 0}
+.ch-wrap.tall{height:300px}.ch-wrap.short{height:160px}
+.insight{background:#0d1a2e;border-left:3px solid var(--acc);border-radius:0 6px 6px 0;
+  padding:8px 10px;margin:6px 0;font-size:10.5px;line-height:1.6;color:var(--muted)}
+.insight strong{color:var(--text)}.insight em{color:var(--orange);font-style:normal;font-weight:600}
+.dtbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.dtbl th{background:#162340;color:var(--blue);font-weight:700;padding:5px 8px;
+  text-align:left;border-bottom:2px solid var(--border)}
+.dtbl td{padding:4px 8px;border-bottom:1px solid var(--border)}
+.kpi-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.kpi{background:#162340;border-radius:6px;padding:8px 12px;text-align:center;min-width:90px;flex:1}
+.kpi .v{display:block;font-size:1.4rem;font-weight:800;line-height:1.2}
+.kpi .l{font-size:9px;color:var(--muted);margin-top:2px}
+section{margin-bottom:20px;border-top:2px solid var(--border);padding-top:14px}
+section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
+#loading{position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--acc);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{color:var(--muted);font-size:12px;font-family:monospace}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><div id="loadMsg">Carico dati analisi…</div></div>
+
+<header>
+  <div class="hdr-left">
+    <h1>📊 Analisi Boione — Portate, Torbidità e Piogge</h1>
+    <p>Portate totali · Giorni intorbiditi · Relazione piogge–torbidità · Dataset Uniacque 2015-2022 + Idrogea 2023</p>
+  </div>
+  <nav class="nav">
+    <a href="index.html" class="btn">🗺️ Home</a>
+    <a href="boione.html" class="btn">💧 Boione</a>
+    <a href="boione_monitor.html" class="btn">📡 Monitor</a>
+    <a href="boione_idrogeo.html" class="btn">⚖️ Idrogeo</a>
+    <a href="boione_mappa.html" class="btn">🗺️ Mappa</a>
+  </nav>
+</header>
+<main>
+
+<!-- KPI -->
+<div class="kpi-row">
+  <div class="kpi"><span class="v" style="color:var(--acc)" id="kQtot">—</span><span class="l">Q tot. media campagne (l/s)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--blue)" id="kQcap">—</span><span class="l">Q captata media Uniacque (l/s)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--orange)" id="kOverflow">—</span><span class="l">Overflow stim. in alveo (l/s)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--red)" id="kTorbPerc">—</span><span class="l">% giorni torbidi 2015-22</span></div>
+  <div class="kpi"><span class="v" style="color:var(--purple)" id="kTorbMax">—</span><span class="l">Max giorni torbidi in un anno</span></div>
+</div>
+
+<!-- Sezione 1: Portate totali -->
+<section>
+<h2>💧 1. Portata totale sorgente Boione (captazione + overflow)</h2>
+<div class="insight">
+  <strong>Come si calcola la portata totale:</strong> La portata misurata da Uniacque è solo la
+  <em>frazione captata</em> dalla presa (media ~25 l/s). La portata totale si stima come:
+  <strong>Q_tot = Pt.5 Idrogea + Q_Uniacque</strong> — dove Pt.5 misura il flusso in alveo
+  nel tratto immediatamente a valle della sorgente.
+</div>
+<div class="card">
+  <h3>🧪 Portata totale Boione — 5 campagne Idrogea 2022-2023</h3>
+  <div class="ch-wrap"><canvas id="cQtot"></canvas></div>
+  <table class="dtbl" style="margin-top:8px">
+    <thead><tr><th>Campagna</th><th>Q Pt.5 (l/s)</th><th>Q Uniacque</th>
+      <th style="color:var(--acc)">Q totale Boione</th><th>% Uniacque/tot</th>
+      <th>CeS med (μS/cm)</th><th>T med (°C)</th></tr></thead>
+    <tbody id="qtotTbody"></tbody>
+  </table>
+</div>
+<div class="card">
+  <h3>📊 Stagionalità portata Uniacque (media mensile 2015-2022)</h3>
+  <div class="ch-wrap short"><canvas id="cQmens"></canvas></div>
+  <div class="insight">
+    La portata captata mostra un picco in <em>primavera (mag-giu)</em> per la fusione nivale
+    e i massimi di pioggia primaverili. I minimi si osservano in <em>agosto-settembre</em>.
+    La variabilità inter-annuale è alta (CV ~30%).
+  </div>
+</div>
+</section>
+
+<!-- Sezione 2: Torbidità -->
+<section>
+<h2>🌊 2. Giorni intorbiditi — analisi storica 2015-2022</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>📅 Giorni >1 NTU per anno</h3>
+    <div class="ch-wrap"><canvas id="cTurbAnn"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>🗓️ Distribuzione stagionale episodi torbidità</h3>
+    <div class="ch-wrap"><canvas id="cTurbSeas"></canvas></div>
+  </div>
+</div>
+<div class="card">
+  <h3>📈 Serie storica NTU giornaliero (2015-2022)</h3>
+  <div class="ch-wrap tall"><canvas id="cNTUserie"></canvas></div>
+</div>
+<div class="insight">
+  <strong>Anno critico 2018:</strong> 263 giorni con NTU >1, incluso un episodio continuo di 239 giorni.
+  <em>Volume torbido stimato ~584.000 m³</em> — il più alto del periodo.
+  <strong>Anni migliori:</strong> 2015 (33 gg) e 2020 (21 gg).
+  La torbidità è fortemente correlata con gli eventi di piena del Borlezza.
+</div>
+</section>
+
+<!-- Sezione 3: Correlazione piogge-torbidità -->
+<section>
+<h2>🌧️ 3. Relazione piogge–torbidità</h2>
+<div class="insight">
+  <strong>Approccio:</strong> Le precipitazioni di Brembilla (stazione più vicina al bacino)
+  vengono messe a confronto con la torbidità Uniacque con lag 0-3 giorni.
+  <em>Nota:</em> i dati pioggia in questa sezione richiedono il file brembilla_precip.csv
+  già presente in GitHub (dati/).
+</div>
+<div class="card">
+  <h3>📊 Piogge mensili Brembilla vs NTU mensile Boione (2015-2022)</h3>
+  <div class="ch-wrap tall"><canvas id="cCorrMens"></canvas></div>
+</div>
+<div class="card">
+  <h3>⚡ Risposta torbidità agli eventi di pioggia (lag 0-3 giorni)</h3>
+  <div class="ch-wrap"><canvas id="cLag"></canvas></div>
+  <div class="insight">
+    Il sistema carsico Boione mostra una risposta <em>rapida</em> agli eventi di pioggia intensa
+    (lag 0-1 giorno), indicativa di alta connettività tra epicarso e sorgente.
+    Questo spiega perché la torbidità può persistere per settimane dopo un evento singolo.
+  </div>
+</div>
+<div class="card">
+  <h3>📊 Torbidità media mensile per stagione (2015-2022)</h3>
+  <div class="ch-wrap short"><canvas id="cTurbMensile"></canvas></div>
+</div>
+</section>
+
+<!-- Sezione 4: CeS come tracer -->
+<section>
+<h2>🧪 4. CeS come tracer naturale — analisi SCADA 2025-2026</h2>
+<div class="insight">
+  La conducibilità elettrica specifica (CeS) è il tracer naturale principale nel sistema Boione.
+  <strong>In magra:</strong> CeS alta (~370 μS/cm) = acqua carsica profonda (Dolomia Principale).
+  <strong>In piena:</strong> CeS si abbassa per diluizione da acque meteoriche superficiali (epicarso).
+  <em>La dinamica della CeS permette di stimare il rapporto quickflow/baseflow.</em>
+</div>
+<div class="card">
+  <h3>📡 CeS nei punti Borlezza — confronto stagionale 2025</h3>
+  <div class="ch-wrap tall"><canvas id="cCesSCADA"></canvas></div>
+</div>
+<div class="grid2">
+  <div class="card">
+    <h3>🔄 CeS vs Livello H (BO-2) — diagramma di isteresi</h3>
+    <div class="ch-wrap"><canvas id="cIster"></canvas></div>
+    <div class="insight" style="font-size:9.5px">
+      Il diagramma CeS vs H mostra il comportamento idrologico: in ascesa della piena
+      la CeS cala prima del picco di portata (risposta rapida epicarso),
+      poi risale durante la decrescita (contributo da baseflow carsico profondo).
+    </div>
+  </div>
+  <div class="card">
+    <h3>🆚 Confronto CeS: Borlezza vs Alino</h3>
+    <div class="ch-wrap"><canvas id="cCesConf"></canvas></div>
+    <div class="insight" style="font-size:9.5px">
+      <strong>AL-100 (Alino):</strong> CeS sistematicamente ~418 μS/cm — bacino con litologia diversa.
+      <strong>BO-2/BO-5 (Borlezza):</strong> ~371-376 μS/cm — impronta dolomitica più pura.
+      I due bacini sono idraulicamente indipendenti (entrambi → Brembo).
+    </div>
+  </div>
+</div>
+</section>
+
+</main>
+
+<script>
+const GITHUB = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+async function fetchJ(n){
+  const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),12000);
+  try{const r=await fetch(GITHUB+n,{signal:ctrl.signal});clearTimeout(tid);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+  catch(e){clearTimeout(tid);throw e;}
+}
+const C={};function dc(id){if(C[id]){C[id].destroy();delete C[id];}};
+function avg(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b)/v.length:null;}
+function mkScales(yL='',opts={}){return{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:!!yL,text:yL,color:'#7a94b8',font:{size:9}},...opts}};}
+function pl(){return{legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:9.5}}},tooltip:{mode:'index',intersect:false}};}
+
+async function init(){
+  const msg=document.getElementById('loadMsg');
+  try{
+    msg.textContent='Carico dati portate…';
+    const [portate,scada,campagne,turb,ppData] = await Promise.all([
+      fetchJ('boione_portate.json'),
+      fetchJ('boione_scada.json'),
+      fetchJ('boione_campagne.json'),
+      fetchJ('boione_turb.json'),
+      fetch(GITHUB+'brembilla_precip.csv').then(r=>r.text()).catch(()=>'')
+    ]);
+
+    // KPI
+    const Qcap=portate.map(d=>d.Q).filter(v=>v!=null);
+    const Qtot=campagne.map(c=>c.Q_tot);
+    const torbGG=portate.filter(d=>d.torb>0).length;
+    document.getElementById('kQtot').textContent=Math.round(avg(Qtot))+'';
+    document.getElementById('kQcap').textContent=Math.round(avg(Qcap)*10)/10+'';
+    document.getElementById('kOverflow').textContent=Math.round(avg(Qtot)-avg(Qcap))+'';
+    document.getElementById('kTorbPerc').textContent=Math.round(torbGG/portate.length*100)+'%';
+    document.getElementById('kTorbMax').textContent=Math.max(...turb.map(t=>t.gg))+' gg';
+
+    // ── 1. Portate totali ────────────────────────────────
+    dc('cQtot');
+    new Chart(document.getElementById('cQtot'),{type:'bar',data:{
+      labels:campagne.map(c=>c.d),
+      datasets:[
+        {label:'Q overflow in alveo (Pt.5)',data:campagne.map(c=>c.p5),backgroundColor:'rgba(76,175,130,.7)',borderRadius:3},
+        {label:'Q captata Uniacque',data:campagne.map(c=>c.uniacque),backgroundColor:'rgba(79,195,247,.6)',borderRadius:3},
+      ]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{...mkScales('l/s'),x:{...mkScales().x,stacked:false}},
+      plugins:{...pl(),annotation:{annotations:{}}}}});
+
+    // Tabella Q totale
+    document.getElementById('qtotTbody').innerHTML=campagne.map(c=>`<tr>
+      <td style="font-weight:700">${c.d}</td><td>${c.p5}</td>
+      <td>${c.uniacque}</td>
+      <td style="font-weight:700;color:var(--acc)">${c.Q_tot}</td>
+      <td style="color:var(--muted)">${Math.round(c.uniacque/c.Q_tot*100)}%</td>
+      <td style="color:var(--blue)">${c.CeS_med}</td><td>${c.T_med}</td></tr>`).join('');
+
+    // Media mensile portate
+    dc('cQmens');
+    const byM={};
+    portate.forEach(d=>{
+      const m=parseInt(d.t.slice(5,7));
+      if(!byM[m])byM[m]=[];if(d.Q!=null)byM[m].push(d.Q);
+    });
+    const mesi=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+    new Chart(document.getElementById('cQmens'),{type:'bar',data:{
+      labels:mesi,
+      datasets:[{label:'Q media mensile (l/s)',
+        data:Array.from({length:12},(_,i)=>{const v=byM[i+1];return v?.length?Math.round(avg(v)*10)/10:null;}),
+        backgroundColor:'rgba(76,175,130,.6)',borderRadius:4
+      }]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{...mkScales('l/s'),x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // ── 2. Torbidità ─────────────────────────────────────
+    dc('cTurbAnn');
+    new Chart(document.getElementById('cTurbAnn'),{type:'bar',data:{
+      labels:turb.map(t=>t.y),
+      datasets:[{label:'Giorni >1 NTU',data:turb.map(t=>t.gg),
+        backgroundColor:turb.map(t=>t.gg>150?'rgba(239,83,80,.7)':t.gg>80?'rgba(255,179,71,.7)':'rgba(76,175,130,.7)'),
+        borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // Distribuzione stagionale
+    dc('cTurbSeas');
+    const bySeas={P:0,E:0,A:0,I:0};
+    portate.forEach(d=>{
+      if(!d.torb) return;
+      const m=parseInt(d.t.slice(5,7));
+      if(m>=3&&m<=5)bySeas.P++;else if(m>=6&&m<=8)bySeas.E++;
+      else if(m>=9&&m<=11)bySeas.A++;else bySeas.I++;
+    });
+    new Chart(document.getElementById('cTurbSeas'),{type:'doughnut',data:{
+      labels:['Primavera (M-A-M)','Estate (G-L-A)','Autunno (S-O-N)','Inverno (D-G-F)'],
+      datasets:[{data:[bySeas.P,bySeas.E,bySeas.A,bySeas.I],
+        backgroundColor:['rgba(76,175,130,.7)','rgba(255,179,71,.7)','rgba(239,83,80,.7)','rgba(79,195,247,.7)'],
+        borderColor:'#111e35',borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#e3eaf8',font:{size:9}}}}}});
+
+    // Serie NTU completa
+    dc('cNTUserie');
+    new Chart(document.getElementById('cNTUserie'),{type:'bar',data:{
+      labels:portate.map(d=>d.t),
+      datasets:[{label:'NTU giornaliero',data:portate.map(d=>d.ntu),
+        backgroundColor:portate.map(d=>d.ntu>10?'rgba(239,83,80,.8)':d.ntu>1?'rgba(255,179,71,.6)':'rgba(79,195,247,.3)'),
+        borderRadius:1}]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9},maxTicksLimit:20}},
+        y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},max:50}},
+      plugins:pl()}});
+
+    // ── 3. Correlazione piogge-torbidità ─────────────────
+    // Mensile piogge (da CSV se disponibile)
+    const ppMonthly={};
+    if(ppData){
+      const lines=ppData.trim().split('\n').slice(1);
+      lines.forEach(l=>{
+        const p=l.split(',');
+        if(p.length<3)return;
+        const dt=p[1]?.trim().replace(/["']/g,'');
+        const v=parseFloat(p[2]);
+        if(!dt||isNaN(v)||v<0)return;
+        const parts=dt.split(/[\/\s]/);
+        const key=parts[0]?.slice(0,7); // YYYY/MM → YYYY-MM
+        if(key){
+          if(!ppMonthly[key])ppMonthly[key]=0;
+          ppMonthly[key]+=v;
+        }
+      });
+    }
+    
+    // NTU mensile da portate
+    const ntuM={}, portM={};
+    portate.forEach(d=>{
+      const k=d.t.slice(0,7);
+      if(!ntuM[k])ntuM[k]=[];ntuM[k].push(d.ntu||0);
+      if(!portM[k])portM[k]=[];if(d.Q!=null)portM[k].push(d.Q);
+    });
+    
+    const mKeys=Object.keys(ntuM).sort();
+    const ntuAvg=mKeys.map(k=>{const v=ntuM[k];return v.length?Math.round(avg(v)*10)/10:null;});
+    const ppArr=mKeys.map(k=>ppMonthly[k]||null);
+    
+    dc('cCorrMens');
+    new Chart(document.getElementById('cCorrMens'),{type:'line',data:{
+      labels:mKeys,
+      datasets:[
+        {label:'Pioggia mensile Brembilla (mm)',data:ppArr,
+          borderColor:'#4fc3f7',backgroundColor:'rgba(79,195,247,.08)',
+          borderWidth:1.5,pointRadius:0,fill:true,yAxisID:'y2'},
+        {label:'NTU medio mensile Boione',data:ntuAvg,
+          borderColor:'#ef5350',backgroundColor:'rgba(239,83,80,.12)',
+          borderWidth:2,pointRadius:0,fill:true},
+      ]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9},maxTicksLimit:20}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'NTU',color:'#ef5350',font:{size:9}}},
+        y2:{position:'right',grid:{display:false},ticks:{color:'#4fc3f7',font:{size:9}},title:{display:true,text:'mm/mese',color:'#4fc3f7',font:{size:9}}}},
+      plugins:pl()}});
+
+    // Lag analysis - scatter NTU vs PP con 3 lag
+    const lag0=[],lag1=[],lag2=[];
+    mKeys.forEach((k,i)=>{
+      const n=ntuAvg[i];
+      if(n==null)return;
+      if(ppArr[i]!=null)lag0.push({x:ppArr[i],y:n});
+      if(i>0&&ppArr[i-1]!=null)lag1.push({x:ppArr[i-1],y:n});
+      if(i>1&&ppArr[i-2]!=null)lag2.push({x:ppArr[i-2],y:n});
+    });
+    
+    dc('cLag');
+    new Chart(document.getElementById('cLag'),{type:'scatter',data:{datasets:[
+      {label:'Lag 0 (stesso mese)',data:lag0,backgroundColor:'rgba(239,83,80,.5)',pointRadius:4},
+      {label:'Lag 1 (mese prec.)',data:lag1,backgroundColor:'rgba(255,179,71,.5)',pointRadius:4},
+      {label:'Lag 2 (2 mesi prec.)',data:lag2,backgroundColor:'rgba(76,175,130,.5)',pointRadius:4},
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'Pioggia (mm)',color:'#7a94b8',font:{size:9}}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'NTU medio',color:'#7a94b8',font:{size:9}}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',font:{size:9.5}}}}}});
+
+    // NTU mensile
+    dc('cTurbMensile');
+    const ntuByM={};
+    portate.forEach(d=>{const m=parseInt(d.t.slice(5,7));if(!ntuByM[m])ntuByM[m]=[];ntuByM[m].push(d.ntu||0);});
+    new Chart(document.getElementById('cTurbMensile'),{type:'bar',data:{
+      labels:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],
+      datasets:[{label:'NTU medio mensile 2015-2022',
+        data:Array.from({length:12},(_,i)=>{const v=ntuByM[i+1];return v?.length?Math.round(avg(v)*100)/100:null;}),
+        backgroundColor:'rgba(239,83,80,.6)',borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},plugins:pl()}});
+
+    // ── 4. CeS SCADA ─────────────────────────────────────
+    dc('cCesSCADA');
+    const cs={'BO-0':'#ff8c42','BO-2':'#ffb347','BO-5':'#ffd080','BO-8':'#e06020'};
+    new Chart(document.getElementById('cCesSCADA'),{type:'line',data:{datasets:
+      Object.entries(cs).map(([s,c])=>{
+        const d=(scada[s]||[]).filter(x=>x.CeS!=null);
+        return{label:s+' (CeS)',data:d.map(x=>{return{x:x.t,y:x.CeS}}),borderColor:c,borderWidth:2,pointRadius:0,fill:false};
+      })},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9},maxTicksLimit:12}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'μS/cm',color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // Isteresi CeS vs H (BO-2)
+    dc('cIster');
+    const bo2=(scada['BO-2']||[]).filter(d=>d.H!=null&&d.CeS!=null);
+    new Chart(document.getElementById('cIster'),{type:'scatter',data:{datasets:[
+      {label:'CeS vs H (BO-2)',data:bo2.map(d=>{return{x:d.H,y:d.CeS}}),
+        backgroundColor:'rgba(255,179,71,.5)',pointRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'H (m)',color:'#7a94b8',font:{size:9}}},
+          y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
+        plugins:{legend:{labels:{color:'#e3eaf8',font:{size:9.5}}}}}});
+
+    // Borlezza vs Alino CeS
+    dc('cCesConf');
+    new Chart(document.getElementById('cCesConf'),{type:'line',data:{datasets:[
+      {label:'BO-2 (Borlezza)',data:(scada['BO-2']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+      {label:'AL-100 (Alino)',data:(scada['AL-100']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'μS/cm',color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+  } catch(e){
+    document.getElementById('loadMsg').textContent='Errore: '+e.message;
+    console.error(e);
+  }
+  document.getElementById('loading').style.display='none';
+}
+init();
+</script>
+</main>
+</body>
+</html>

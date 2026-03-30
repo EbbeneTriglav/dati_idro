@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Idrogeologia Boione — Bilancio e Bacino</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+:root{--bg:#0a1628;--card:#111e35;--border:#1e3050;--acc:#4caf82;--blue:#4fc3f7;
+  --orange:#ffb347;--purple:#b39ddb;--red:#ef5350;--muted:#7a94b8;--text:#e3eaf8;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif;font-size:13px}
+a{color:var(--acc);text-decoration:none}
+header{background:var(--card);border-bottom:2px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  position:sticky;top:0;z-index:500}
+.hdr-left h1{font-size:.95rem;font-weight:800;color:var(--acc)}
+.hdr-left p{font-size:9.5px;color:var(--muted);margin-top:2px}
+.nav{display:flex;gap:5px;flex-wrap:wrap}
+.btn{padding:4px 10px;border-radius:5px;border:1.5px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
+main{max-width:1100px;margin:0 auto;padding:14px 16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.card h3{font-size:11px;font-weight:700;color:var(--acc);margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.ch-wrap{position:relative;height:240px;margin:8px 0}
+.ch-wrap.tall{height:300px}.ch-wrap.short{height:160px}
+.insight{background:#0d1a2e;border-left:3px solid var(--acc);border-radius:0 6px 6px 0;
+  padding:8px 10px;margin:6px 0;font-size:10.5px;line-height:1.6;color:var(--muted)}
+.insight strong{color:var(--text)}.insight em{color:var(--orange);font-style:normal;font-weight:600}
+.dtbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.dtbl th{background:#162340;color:var(--blue);font-weight:700;padding:5px 8px;
+  text-align:left;border-bottom:2px solid var(--border)}
+.dtbl td{padding:4px 8px;border-bottom:1px solid var(--border)}
+.kpi-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.kpi{background:#162340;border-radius:6px;padding:8px 12px;text-align:center;min-width:90px;flex:1}
+.kpi .v{display:block;font-size:1.4rem;font-weight:800;line-height:1.2}
+.kpi .l{font-size:9px;color:var(--muted);margin-top:2px}
+section{margin-bottom:20px;border-top:2px solid var(--border);padding-top:14px}
+section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
+#loading{position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--acc);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{color:var(--muted);font-size:12px;font-family:monospace}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><div id="loadMsg">Carico dati idrogeologici…</div></div>
+<header>
+  <div class="hdr-left">
+    <h1>⚖️ Idrogeologia Boione — Bilancio Idrico e Bacino</h1>
+    <p>Bilancio idrogeologico · Bacino di ricarica · Recession analysis · Schema concettuale</p>
+  </div>
+  <nav class="nav">
+    <a href="index.html" class="btn">🗺️ Home</a>
+    <a href="boione.html" class="btn">💧 Boione</a>
+    <a href="boione_monitor.html" class="btn">📡 Monitor</a>
+    <a href="boione_analisi.html" class="btn">📊 Analisi</a>
+    <a href="boione_mappa.html" class="btn">🗺️ Mappa</a>
+  </nav>
+</header>
+<main>
+
+<!-- KPI bilancio -->
+<div class="kpi-row">
+  <div class="kpi"><span class="v" style="color:var(--blue)">1750</span><span class="l">Precipit. media zona ricarica (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--orange)">745</span><span class="l">Evapotraspirazione (HS, mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--acc)">1005</span><span class="l">Surplus idrico (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--text)">0.62</span><span class="l">Coefficiente infiltrazione (Ic)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--acc)">~9 km²</span><span class="l">Bacino idrogeo. stimato</span></div>
+  <div class="kpi"><span class="v" style="color:var(--purple)">4.5 km²</span><span class="l">Bacino superficiale Borlezza</span></div>
+</div>
+
+<!-- Schema concettuale -->
+<div class="card" style="border-color:var(--acc)">
+  <h3>🪨 Schema idrogeologico concettuale — Sorgente Boione</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div>
+      <table class="dtbl">
+        <tr><td style="color:var(--muted)">Litologia acquifero</td><td><strong>Dolomia Principale (Norico)</strong></td></tr>
+        <tr><td style="color:var(--muted)">Litologia acquiclude</td><td><strong>Argilliti di Riva di Solto</strong></td></tr>
+        <tr><td style="color:var(--muted)">Tipo sistema</td><td>Carsismo in roccia dolomitica</td></tr>
+        <tr><td style="color:var(--muted)">Quota emergenza</td><td>639m s.l.m.</td></tr>
+        <tr><td style="color:var(--muted)">Quota zona ricarica</td><td>~850-1200m (Mt. Aralalta, Cancervo)</td></tr>
+        <tr><td style="color:var(--muted)">Tipo emergenza</td><td>Sorgente di contatto (Dolomia/Argilliti)</td></tr>
+        <tr><td style="color:var(--muted)">Captazione</td><td>Uniacque SpA — acquedotto San Pellegrino T.</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="insight">
+        <strong>Flusso rapido (quickflow):</strong> Dall'epicarso attraverso fratture e condotti → risposta in 0-2 giorni agli eventi di pioggia.
+        <em>Segnale: abbassamento CeS e aumento NTU.</em>
+      </div>
+      <div class="insight">
+        <strong>Flusso lento (baseflow):</strong> Dall'acquifero dolomitico profondo → alimentazione continua della sorgente anche in siccità.
+        <em>Segnale: CeS alta e stabile (~343-360 μS/cm), T costante (~8-9°C).</em>
+      </div>
+      <div class="insight">
+        <strong>Bacino idrogeologico &gt; bacino superficiale:</strong> Il bilancio inverso stima ~9 km² vs 4.5 km² superficiali.
+        <em>I ~4.5 km² "nascosti" provengono probabilmente da bacini adiacenti via condotti carsici.</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sezione 1: Bilancio idrico -->
+<section>
+<h2>💧 1. Bilancio idrico — stima bacino di ricarica</h2>
+<div class="card">
+  <h3>📊 Area bacino idrogeologico in funzione della portata media annua</h3>
+  <div class="ch-wrap"><canvas id="cBilancio"></canvas></div>
+  <div class="insight">
+    <strong>Formula:</strong> A = Q_media × 31.557×10⁶ / (S × Ic) — dove S = surplus idrico (1005 mm/a), Ic = coefficiente di infiltrazione (0.622 per acquifero carsico dolomitico).
+    <br>Per Q = 100 l/s (stima portata totale media): <em>A ≈ 5.1 km²</em>.
+    Per Q = 160 l/s (max campagne): <em>A ≈ 8.2 km²</em>. 
+    Per Q = 200 l/s (stima conservativa): <em>A ≈ ~9 km²</em>.
+  </div>
+</div>
+<div class="card">
+  <h3>📊 Parametri bilancio idrico — riepilogo</h3>
+  <table class="dtbl">
+    <thead><tr><th>Parametro</th><th>Valore</th><th>Fonte/Metodo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>Precipitazione zona ricarica (~900m)</td><td><strong>1750 mm/a</strong></td><td>ARPA Lombardia (Cornalita, Vettarola)</td><td>Media pesata quota</td></tr>
+      <tr><td>Evapotraspirazione reale (ETP)</td><td><strong>745 mm/a</strong></td><td>Hargreaves-Samani corretto per quota</td><td>T media zona ~8-9°C</td></tr>
+      <tr><td>Surplus idrico (P-ETP)</td><td><strong>1005 mm/a</strong></td><td>Calcolato</td><td>56% della precipitazione</td></tr>
+      <tr><td>Coeff. infiltrazione Ic</td><td><strong>0.622</strong></td><td>85% del surplus (carsismo)</td><td>15% = deflusso superficiale</td></tr>
+      <tr><td>Q totale Boione — minima (magra)</td><td>~60 l/s</td><td>Campagna ott.2022</td><td>Q_tot = Pt.5 + Uniacque</td></tr>
+      <tr><td>Q totale Boione — massima (piena)</td><td>~156 l/s</td><td>Campagna mag.2023</td><td>Q_tot = Pt.5 + Uniacque</td></tr>
+      <tr><td>Q totale Boione — media stimata</td><td>~100-120 l/s</td><td>Media campagne</td><td>Incertezza ±30%</td></tr>
+      <tr><td>Area bacino idrogeologico stimata</td><td><strong>~9 km²</strong></td><td>Bilancio inverso (Q=200 l/s)</td><td>vs 4.5 km² superficiale</td></tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- Sezione 2: Recession analysis -->
+<section>
+<h2>📉 2. Recession analysis — dati SCADA 2025-2026</h2>
+<div class="insight">
+  La curva di esaurimento descrive come la portata diminuisce durante i periodi senza pioggia.
+  Per sorgenti carsiche: <strong>Q(t) = Q₀ × e^(-α×t)</strong>.
+  Con i dati SCADA di livello H (proxy della portata), si possono identificare i periodi di recessione
+  e stimare le costanti α₁ (flusso rapido, epicarso) e α₂ (flusso lento, acquifero profondo).
+</div>
+<div class="card">
+  <h3>📈 Livello H — BO-2 e BO-5 (2025-2026)</h3>
+  <div class="ch-wrap tall"><canvas id="cRecH"></canvas></div>
+</div>
+<div class="grid2">
+  <div class="card">
+    <h3>📉 Periodi di recessione identificati (BO-5)</h3>
+    <div class="ch-wrap"><canvas id="cRecPer"></canvas></div>
+    <div class="insight" style="font-size:9.5px">
+      I periodi di recessione sono identificati come sequenze di H decrescente per >3 giorni consecutivi.
+      Ogni recessione ha una propria costante α che descrive la velocità di svuotamento dell'acquifero.
+    </div>
+  </div>
+  <div class="card">
+    <h3>🧮 Curva di esaurimento teorica</h3>
+    <div class="ch-wrap"><canvas id="cRecTeo"></canvas></div>
+    <div class="insight" style="font-size:9.5px">
+      Curva teorica per il sistema Boione con due componenti:
+      <strong>α₁ ~ 0.05/d</strong> (flusso rapido, t½ ~14 gg) +
+      <strong>α₂ ~ 0.008/d</strong> (flusso lento, t½ ~87 gg).
+      Valori da calibrare sui periodi di recessione SCADA.
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Sezione 3: CeS idrogeologica -->
+<section>
+<h2>🧪 3. Interpretazione idrogeologica della CeS — SCADA 2025-2026</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>📊 CeS media mensile — tutti i punti</h3>
+    <div class="ch-wrap"><canvas id="cCesMens"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>📊 Gradiente CeS lungo il Borlezza</h3>
+    <div class="ch-wrap"><canvas id="cCesGrad"></canvas></div>
+    <div class="insight" style="font-size:9.5px">
+      Il gradiente CeS da BO-0 (648m) a BO-8 (366m) mostra l'apporto di acque sotterranee
+      nel tratto Borlezza. Il leggero aumento BO-2 → BO-5 indica contributi laterali di falda
+      con impronta dolomitica simile al Boione.
+    </div>
+  </div>
+</div>
+<div class="card">
+  <h3>🌡️ Temperatura — indicatore termico sorgente carsica</h3>
+  <div class="ch-wrap"><canvas id="cTemp"></canvas></div>
+  <div class="insight">
+    La temperatura di BO-2 (primo punto post-Boione) mostra variazioni stagionali <em>smorzate rispetto all'aria</em>
+    (tipico carsismo dolomitico): ~6°C in inverno, ~10°C in estate.
+    L'escursione termica ridotta è un indicatore di tempi di transito nell'acquifero di <em>1-3 mesi</em>.
+  </div>
+</div>
+</section>
+
+<!-- Sezione 4: Confronto bacini -->
+<section>
+<h2>🔀 4. Confronto Borlezza vs Alino — due bacini confinanti</h2>
+<div class="insight">
+  I due bacini (Borlezza 4.5 km², Alino 1.8 km²) condividono lo spartiacque topografico
+  ma sono <em>idraulicamente indipendenti</em> — entrambi confluiscono nel Brembo separatamente.
+  Il confronto delle caratteristiche idrogeologiche permette di inferire differenze di litologia e ricarica.
+</div>
+<div class="grid2">
+  <div class="card">
+    <h3>📊 CeS comparativa Borlezza vs Alino</h3>
+    <div class="ch-wrap"><canvas id="cCesComp"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>🌡️ Temperatura comparativa</h3>
+    <div class="ch-wrap"><canvas id="cTempComp"></canvas></div>
+  </div>
+</div>
+<table class="dtbl" style="margin-top:10px">
+  <thead><tr><th>Parametro</th><th>Rio Borlezza (BO-2/5/8)</th><th>T. Alino (AL-100)</th><th>Interpretazione</th></tr></thead>
+  <tbody>
+    <tr><td>CeS media</td><td style="color:var(--orange)">~371-376 μS/cm</td><td style="color:var(--purple)">~418 μS/cm</td><td>Litologia di ricarica diversa — Alino più mineralizzato</td></tr>
+    <tr><td>CeS variabilità</td><td>Alta (320-400 μS/cm)</td><td>Media (370-450 μS/cm)</td><td>Borlezza più reattivo (carsismo puro)</td></tr>
+    <tr><td>T media</td><td style="color:var(--orange)">~8.7°C (BO-2)</td><td style="color:var(--purple)">~11.1°C (AL-100)</td><td>Alino ha quota sorgente più bassa</td></tr>
+    <tr><td>Bacino superficie</td><td>4.5 km²</td><td>1.8 km²</td><td>Da GeoPackage QGIS</td></tr>
+    <tr><td>Recapito finale</td><td>→ F. Brembo (via San Pellegrino T.)</td><td>→ F. Brembo (direttamente)</td><td>Bacini paralleli, non in serie</td></tr>
+  </tbody>
+</table>
+</section>
+
+</main>
+
+<script>
+const GITHUB='https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+async function fetchJ(n){
+  const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),12000);
+  try{const r=await fetch(GITHUB+n,{signal:ctrl.signal});clearTimeout(tid);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+  catch(e){clearTimeout(tid);throw e;}
+}
+const C={};function dc(id){if(C[id]){C[id].destroy();delete C[id];}};
+function avg(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b)/v.length:null;}
+function pl(){return{legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:9.5}}},tooltip:{mode:'index',intersect:false}};}
+function sc(yL=''){return{x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9},maxTicksLimit:12}},y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:!!yL,text:yL,color:'#7a94b8',font:{size:9}}}};}
+
+async function init(){
+  try{
+    const [scada,campagne]=await Promise.all([fetchJ('boione_scada.json'),fetchJ('boione_campagne.json')]);
+
+    // Bilancio idrico
+    dc('cBilancio');
+    const Qs=[40,60,80,100,120,140,160,200,250];
+    const S=1005/1000,Ic=0.622,T=365.25*86400;
+    const areas=Qs.map(q=>Math.round(q/1000*T/(S*Ic)/1e6*100)/100);
+    new Chart(document.getElementById('cBilancio'),{type:'line',data:{
+      labels:Qs.map(q=>q+' l/s'),
+      datasets:[
+        {label:'Area bacino idrogeologico (km²)',data:areas,borderColor:'#4caf82',
+          backgroundColor:'rgba(76,175,130,.1)',borderWidth:2.5,pointRadius:5,fill:true},
+        {label:'Bacino superficiale Borlezza (4.5 km²)',data:Qs.map(()=>4.5),
+          borderColor:'rgba(255,179,71,.6)',borderWidth:1.5,borderDash:[5,5],pointRadius:0},
+        {label:'Borlezza+Alino (6.3 km²)',data:Qs.map(()=>6.3),
+          borderColor:'rgba(179,157,219,.6)',borderWidth:1.5,borderDash:[3,3],pointRadius:0},
+      ]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{min:2,max:14,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+           title:{display:true,text:'Area km²',color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // Livello H recessione
+    dc('cRecH');
+    const bo2h=(scada['BO-2']||[]).filter(d=>d.H!=null);
+    const bo5h=(scada['BO-5']||[]).filter(d=>d.H!=null);
+    new Chart(document.getElementById('cRecH'),{type:'line',data:{datasets:[
+      {label:'BO-2 (623m) — H',data:bo2h.map(d=>{return{x:d.t,y:d.H}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+      {label:'BO-5 (521m) — H',data:bo5h.map(d=>{return{x:d.t,y:d.H}}),borderColor:'#ffd080',borderWidth:2,pointRadius:0,fill:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('Livello (m)'),plugins:pl()}});
+
+    // Periodi recessione (BO-5)
+    dc('cRecPer');
+    const rec=[];let start=null,min=null;
+    bo5h.forEach((d,i)=>{
+      if(i===0)return;
+      const prev=bo5h[i-1];
+      if(d.H<prev.H){if(!start){start=prev.t;min=prev.H;}if(d.H<min)min=d.H;}
+      else if(start){rec.push({s:start,e:prev.t,dH:Math.round((bo5h.find(x=>x.t===start)?.H||0)-min)*1000/1000});start=null;min=null;}
+    });
+    const top5=rec.sort((a,b)=>b.dH-a.dH).slice(0,8);
+    new Chart(document.getElementById('cRecPer'),{type:'bar',data:{
+      labels:top5.map(r=>r.s.slice(0,7)),
+      datasets:[{label:'Abbassamento H (m)',data:top5.map(r=>r.dH),
+        backgroundColor:'rgba(79,195,247,.6)',borderRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // Curva esaurimento teorica
+    dc('cRecTeo');
+    const days=Array.from({length:120},(_,i)=>i);
+    const a1=0.05,a2=0.008,Q0=1;
+    new Chart(document.getElementById('cRecTeo'),{type:'line',data:{
+      labels:days,
+      datasets:[
+        {label:'Q totale (α₁+α₂)',data:days.map(t=>Q0*0.4*Math.exp(-a1*t)+Q0*0.6*Math.exp(-a2*t)),
+          borderColor:'#4caf82',borderWidth:2.5,pointRadius:0,fill:false},
+        {label:'Quickflow (α₁=0.05)',data:days.map(t=>Q0*0.4*Math.exp(-a1*t)),
+          borderColor:'#4fc3f7',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,3]},
+        {label:'Baseflow (α₂=0.008)',data:days.map(t=>Q0*0.6*Math.exp(-a2*t)),
+          borderColor:'#ffb347',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,3]},
+      ]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'Giorni dalla piena',color:'#7a94b8',font:{size:9}}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'Q/Q₀',color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // CeS mensile tutti i punti
+    dc('cCesMens');
+    const byM={};
+    ['BO-0','BO-2','BO-5','BO-8','AL-100'].forEach(s=>{
+      (scada[s]||[]).forEach(d=>{if(d.CeS==null)return;const m=d.t.slice(0,7);if(!byM[m])byM[m]={};if(!byM[m][s])byM[m][s]=[];byM[m][s].push(d.CeS);});
+    });
+    const mks=Object.keys(byM).sort();
+    const clrs={'BO-0':'#ff8c42','BO-2':'#ffb347','BO-5':'#ffd080','BO-8':'#e06020','AL-100':'#b39ddb'};
+    new Chart(document.getElementById('cCesMens'),{type:'line',data:{datasets:
+      Object.entries(clrs).map(([s,c])=>{
+        return{label:s,data:mks.map(k=>{const v=byM[k]?.[s];return v?.length?Math.round(avg(v)):null;}),
+               borderColor:c,borderWidth:2,pointRadius:3,fill:false,spanGaps:true};
+      })},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // Gradiente CeS lungo asta
+    dc('cCesGrad');
+    const sOrder=['BO-0','BO-2','BO-5','BO-8'];
+    const quote={  'BO-0':648,'BO-2':623,'BO-5':521,'BO-8':366};
+    const cesmed=sOrder.map(s=>{const v=(scada[s]||[]).map(d=>d.CeS).filter(x=>x!=null);return v.length?Math.round(avg(v)):null;});
+    new Chart(document.getElementById('cCesGrad'),{type:'line',data:{
+      labels:sOrder.map(s=>s+' ('+quote[s]+'m)'),
+      datasets:[
+        {label:'CeS media (μS/cm)',data:cesmed,borderColor:'#4caf82',
+          backgroundColor:'rgba(76,175,130,.15)',borderWidth:2.5,pointRadius:7,fill:true},
+        {label:'AL-100 — T. Alino (bacino separato)',
+          data:[null,null,null,Math.round(avg((scada['AL-100']||[]).map(d=>d.CeS).filter(x=>x!=null)))],
+          borderColor:'#b39ddb',borderWidth:0,pointRadius:10,pointStyle:'triangle',fill:false},
+      ]},options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
+      plugins:pl()}});
+
+    // Temperatura comparativa
+    dc('cTempComp');
+    new Chart(document.getElementById('cTempComp'),{type:'line',data:{datasets:[
+      {label:'BO-2 (Borlezza)',data:(scada['BO-2']||[]).filter(d=>d.T!=null).map(d=>{return{x:d.t,y:d.T}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+      {label:'AL-100 (Alino)',data:(scada['AL-100']||[]).filter(d=>d.T!=null).map(d=>{return{x:d.t,y:d.T}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('°C'),plugins:pl()}});
+
+    // CeS comparativa
+    dc('cCesComp');
+    new Chart(document.getElementById('cCesComp'),{type:'line',data:{datasets:[
+      {label:'BO-2 (Borlezza)',data:(scada['BO-2']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+      {label:'AL-100 (Alino)',data:(scada['AL-100']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('μS/cm'),plugins:pl()}});
+
+    // Temperatura serie
+    dc('cTemp');
+    new Chart(document.getElementById('cTemp'),{type:'line',data:{datasets:
+      [['BO-2','#ffb347'],['BO-5','#ffd080'],['AL-100','#b39ddb']].map(([s,c])=>{
+        const d=(scada[s]||[]).filter(x=>x.T!=null);
+        return{label:s,data:d.map(x=>{return{x:x.t,y:x.T}}),borderColor:c,borderWidth:1.5,pointRadius:0,fill:false};
+      })},options:{responsive:true,maintainAspectRatio:false,scales:sc('°C'),plugins:pl()}});
+
+  } catch(e){
+    document.getElementById('loadMsg').textContent='Errore: '+e.message;
+    console.error(e);
+  }
+  document.getElementById('loading').style.display='none';
+}
+init();
+</script>
+</main>
+</body>
+</html>
