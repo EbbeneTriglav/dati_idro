@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Idrogeologia Boione — Bilancio e Bacino</title>
+<title>Idrogeologia Boione</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
@@ -15,7 +15,7 @@ a{color:var(--acc);text-decoration:none}
 header{background:var(--card);border-bottom:2px solid var(--border);padding:10px 16px;
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
   position:sticky;top:0;z-index:500}
-.hdr-left h1{font-size:.95rem;font-weight:800;color:var(--acc)}
+.hdr-left h1{font-size:.92rem;font-weight:800;color:var(--acc)}
 .hdr-left p{font-size:9.5px;color:var(--muted);margin-top:2px}
 .nav{display:flex;gap:5px;flex-wrap:wrap}
 .btn{padding:4px 10px;border-radius:5px;border:1.5px solid var(--border);background:transparent;
@@ -23,11 +23,12 @@ header{background:var(--card);border-bottom:2px solid var(--border);padding:10px
 .btn:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
 main{max-width:1100px;margin:0 auto;padding:14px 16px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px}
-.card h3{font-size:11px;font-weight:700;color:var(--acc);margin-bottom:8px}
+.card h3{font-size:11px;font-weight:700;color:var(--acc);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:640px){.grid2{grid-template-columns:1fr}}
-.ch-wrap{position:relative;height:240px;margin:8px 0}
-.ch-wrap.tall{height:300px}.ch-wrap.short{height:160px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}}
+.ch-wrap{position:relative;height:230px;margin:8px 0}
+.ch-wrap.tall{height:280px}.ch-wrap.short{height:160px}
 .insight{background:#0d1a2e;border-left:3px solid var(--acc);border-radius:0 6px 6px 0;
   padding:8px 10px;margin:6px 0;font-size:10.5px;line-height:1.6;color:var(--muted)}
 .insight strong{color:var(--text)}.insight em{color:var(--orange);font-style:normal;font-weight:600}
@@ -35,29 +36,35 @@ main{max-width:1100px;margin:0 auto;padding:14px 16px}
 .dtbl th{background:#162340;color:var(--blue);font-weight:700;padding:5px 8px;
   text-align:left;border-bottom:2px solid var(--border)}
 .dtbl td{padding:4px 8px;border-bottom:1px solid var(--border)}
+.dtbl tr:hover td{background:#162340}
 .kpi-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .kpi{background:#162340;border-radius:6px;padding:8px 12px;text-align:center;min-width:90px;flex:1}
-.kpi .v{display:block;font-size:1.4rem;font-weight:800;line-height:1.2}
+.kpi .v{display:block;font-size:1.35rem;font-weight:800;line-height:1.2}
 .kpi .l{font-size:9px;color:var(--muted);margin-top:2px}
 section{margin-bottom:20px;border-top:2px solid var(--border);padding-top:14px}
-section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
+section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 #loading{position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:9999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--acc);
   border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loadMsg{color:var(--muted);font-size:12px;font-family:monospace}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;margin-left:6px}
+.badge-scada{background:rgba(255,179,71,.2);color:var(--orange);border:1px solid rgba(255,179,71,.4)}
+.badge-idrogea{background:rgba(79,195,247,.15);color:var(--blue);border:1px solid rgba(79,195,247,.4)}
+.badge-camp{background:rgba(76,175,130,.15);color:var(--acc);border:1px solid rgba(76,175,130,.4)}
 </style>
 </head>
 <body>
 <div id="loading"><div class="spinner"></div><div id="loadMsg">Carico dati idrogeologici…</div></div>
+
 <header>
   <div class="hdr-left">
-    <h1>⚖️ Idrogeologia Boione — Bilancio Idrico e Bacino</h1>
-    <p>Bilancio idrogeologico · Bacino di ricarica · Recession analysis · Schema concettuale</p>
+    <h1>⚖️ Idrogeologia Boione — Bilancio, Recessione, CeS</h1>
+    <p>Bilancio idrico · Recession analysis · CeS/T per famiglie · Confronto SCADA vs Idrogea Pz2</p>
   </div>
   <nav class="nav">
-    <a href="index.html" class="btn">🗺️ Home</a>
+    <a href="index.html" class="btn">🏠 Home</a>
     <a href="boione.html" class="btn">💧 Boione</a>
     <a href="boione_monitor.html" class="btn">📡 Monitor</a>
     <a href="boione_analisi.html" class="btn">📊 Analisi</a>
@@ -66,74 +73,79 @@ section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
 </header>
 <main>
 
-<!-- KPI bilancio -->
+<!-- KPI -->
 <div class="kpi-row">
-  <div class="kpi"><span class="v" style="color:var(--blue)">1750</span><span class="l">Precipit. media zona ricarica (mm/a)</span></div>
-  <div class="kpi"><span class="v" style="color:var(--orange)">745</span><span class="l">Evapotraspirazione (HS, mm/a)</span></div>
-  <div class="kpi"><span class="v" style="color:var(--acc)">1005</span><span class="l">Surplus idrico (mm/a)</span></div>
-  <div class="kpi"><span class="v" style="color:var(--text)">0.62</span><span class="l">Coefficiente infiltrazione (Ic)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--blue)">1750</span><span class="l">Pioggia zona ricarica (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--orange)">745</span><span class="l">ETP Hargreaves-Samani (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--acc)">1005</span><span class="l">Surplus idrico P–ETP (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--text)">0.62</span><span class="l">Ic infiltrazione (carsismo)</span></div>
   <div class="kpi"><span class="v" style="color:var(--acc)">~9 km²</span><span class="l">Bacino idrogeo. stimato</span></div>
   <div class="kpi"><span class="v" style="color:var(--purple)">4.5 km²</span><span class="l">Bacino superficiale Borlezza</span></div>
 </div>
 
 <!-- Schema concettuale -->
 <div class="card" style="border-color:var(--acc)">
-  <h3>🪨 Schema idrogeologico concettuale — Sorgente Boione</h3>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <h3>🪨 Schema idrogeologico — Sorgente Boione (639m s.l.m.)</h3>
+  <div class="grid2">
     <div>
       <table class="dtbl">
-        <tr><td style="color:var(--muted)">Litologia acquifero</td><td><strong>Dolomia Principale (Norico)</strong></td></tr>
-        <tr><td style="color:var(--muted)">Litologia acquiclude</td><td><strong>Argilliti di Riva di Solto</strong></td></tr>
-        <tr><td style="color:var(--muted)">Tipo sistema</td><td>Carsismo in roccia dolomitica</td></tr>
-        <tr><td style="color:var(--muted)">Quota emergenza</td><td>639m s.l.m.</td></tr>
-        <tr><td style="color:var(--muted)">Quota zona ricarica</td><td>~850-1200m (Mt. Aralalta, Cancervo)</td></tr>
+        <tr><td style="color:var(--muted)">Acquifero</td><td><strong>Dolomia Principale (Norico)</strong></td></tr>
+        <tr><td style="color:var(--muted)">Acquiclude</td><td><strong>Argilliti di Riva di Solto (Norico sup.)</strong></td></tr>
         <tr><td style="color:var(--muted)">Tipo emergenza</td><td>Sorgente di contatto (Dolomia/Argilliti)</td></tr>
-        <tr><td style="color:var(--muted)">Captazione</td><td>Uniacque SpA — acquedotto San Pellegrino T.</td></tr>
+        <tr><td style="color:var(--muted)">Quota sorgente</td><td>639m s.l.m.</td></tr>
+        <tr class="highlight"><td style="color:var(--muted)">Zona di ricarica</td><td><strong>~750–1260m</strong> — Sussia, Catremerio, Crosnello, Pizzo Cerro</td></tr>
+        <tr><td style="color:var(--muted)">Bacino superficiale</td><td>Borlezza 4.5 km² + Alino 1.8 km²</td></tr>
+        <tr><td style="color:var(--muted)">Bacino idrogeo. stimato</td><td>~9 km² (bilancio inverso per Q=200 l/s)</td></tr>
       </table>
+      <div class="insight" style="margin-top:8px;font-size:9.5px">
+        <strong>Come si stima la quota della zona di ricarica (750–1260m):</strong><br>
+        La Dolomia Principale affiora al di sopra del contatto stratigrafico con le Argilliti di Riva di Solto,
+        contatto che nella zona del Boione si trova a ~700–750m s.l.m. La ricarica avviene dove la Dolomia è esposta
+        alla superficie (zone fratturate, doline, valli cieche) fino alle creste del bacino allargato (~Pizzo Cerro, 1260m).
+        I toponimi <em>Sussia (~880m), Catremerio (~950m), Crosnello (~1050m), Pizzo Cerro (~1260m)</em>
+        corrispondono agli affioramenti principali di Dolomia Principale nel bacino idrogeologico stimato.
+      </div>
     </div>
     <div>
-      <div class="insight">
-        <strong>Flusso rapido (quickflow):</strong> Dall'epicarso attraverso fratture e condotti → risposta in 0-2 giorni agli eventi di pioggia.
-        <em>Segnale: abbassamento CeS e aumento NTU.</em>
-      </div>
-      <div class="insight">
-        <strong>Flusso lento (baseflow):</strong> Dall'acquifero dolomitico profondo → alimentazione continua della sorgente anche in siccità.
-        <em>Segnale: CeS alta e stabile (~343-360 μS/cm), T costante (~8-9°C).</em>
-      </div>
-      <div class="insight">
-        <strong>Bacino idrogeologico &gt; bacino superficiale:</strong> Il bilancio inverso stima ~9 km² vs 4.5 km² superficiali.
-        <em>I ~4.5 km² "nascosti" provengono probabilmente da bacini adiacenti via condotti carsici.</em>
-      </div>
+      <div class="insight"><strong>Quickflow (flusso rapido, epicarso):</strong><br>
+        Risposta in 0–2 giorni agli eventi di pioggia → abbassamento CeS, aumento NTU e torbidità.
+        Costante di esaurimento stimata α₁ ~ 0.3–1.0/d (t½ 1–2 giorni da Pz2).</div>
+      <div class="insight"><strong>Baseflow (flusso lento, acquifero profondo):</strong><br>
+        Alimentazione continua dalla Dolomia Principale → CeS alta e stabile (~343–360 μS/cm in magra),
+        T costante 8–10°C. Costante α₂ ~ 0.008/d (t½ ~90 gg stimata da modello).</div>
+      <div class="insight"><strong>Discrasia bacino superficiale vs idrogeologico:</strong><br>
+        Il bilancio inverso stima ~9 km² vs 4.5 km² superficiali del Borlezza.
+        I ~4.5 km² "nascosti" indicano ricarica da bacini contigui via condotti carsici profondi
+        (probabile contributo da versante N verso Sussia/Catremerio).</div>
     </div>
   </div>
 </div>
 
 <!-- Sezione 1: Bilancio idrico -->
 <section>
-<h2>💧 1. Bilancio idrico — stima bacino di ricarica</h2>
+<h2>💧 1. Bilancio idrico e stima bacino di ricarica</h2>
 <div class="card">
-  <h3>📊 Area bacino idrogeologico in funzione della portata media annua</h3>
+  <h3>📊 Area bacino idrogeologico vs portata media annua <span class="badge badge-camp">bilancio inverso</span></h3>
   <div class="ch-wrap"><canvas id="cBilancio"></canvas></div>
   <div class="insight">
-    <strong>Formula:</strong> A = Q_media × 31.557×10⁶ / (S × Ic) — dove S = surplus idrico (1005 mm/a), Ic = coefficiente di infiltrazione (0.622 per acquifero carsico dolomitico).
-    <br>Per Q = 100 l/s (stima portata totale media): <em>A ≈ 5.1 km²</em>.
-    Per Q = 160 l/s (max campagne): <em>A ≈ 8.2 km²</em>. 
-    Per Q = 200 l/s (stima conservativa): <em>A ≈ ~9 km²</em>.
+    <strong>Formula bilancio inverso:</strong> A = Q × 31.557×10⁶ / (S × Ic)<br>
+    dove <em>S = 1005 mm/a</em> (surplus idrico P–ETP), <em>Ic = 0.622</em> (coefficiente infiltrazione per carsismo dolomitico = 85% del surplus).<br>
+    Punto di misura: <strong>5 campagne Idrogea 2022–2023</strong> (Q totale = Pt.5 + Uniacque).
+    L'intervallo 60–156 l/s corrisponde a un'area 3.1–8.1 km². Per Q media stimata 160–200 l/s: <em>A ≈ 8–10 km²</em>.
   </div>
 </div>
 <div class="card">
-  <h3>📊 Parametri bilancio idrico — riepilogo</h3>
+  <h3>📊 Riepilogo parametri bilancio</h3>
   <table class="dtbl">
-    <thead><tr><th>Parametro</th><th>Valore</th><th>Fonte/Metodo</th><th>Note</th></tr></thead>
+    <thead><tr><th>Parametro</th><th>Valore</th><th>Metodo/Fonte</th><th>Note</th></tr></thead>
     <tbody>
-      <tr><td>Precipitazione zona ricarica (~900m)</td><td><strong>1750 mm/a</strong></td><td>ARPA Lombardia (Cornalita, Vettarola)</td><td>Media pesata quota</td></tr>
-      <tr><td>Evapotraspirazione reale (ETP)</td><td><strong>745 mm/a</strong></td><td>Hargreaves-Samani corretto per quota</td><td>T media zona ~8-9°C</td></tr>
-      <tr><td>Surplus idrico (P-ETP)</td><td><strong>1005 mm/a</strong></td><td>Calcolato</td><td>56% della precipitazione</td></tr>
-      <tr><td>Coeff. infiltrazione Ic</td><td><strong>0.622</strong></td><td>85% del surplus (carsismo)</td><td>15% = deflusso superficiale</td></tr>
-      <tr><td>Q totale Boione — minima (magra)</td><td>~60 l/s</td><td>Campagna ott.2022</td><td>Q_tot = Pt.5 + Uniacque</td></tr>
-      <tr><td>Q totale Boione — massima (piena)</td><td>~156 l/s</td><td>Campagna mag.2023</td><td>Q_tot = Pt.5 + Uniacque</td></tr>
-      <tr><td>Q totale Boione — media stimata</td><td>~100-120 l/s</td><td>Media campagne</td><td>Incertezza ±30%</td></tr>
-      <tr><td>Area bacino idrogeologico stimata</td><td><strong>~9 km²</strong></td><td>Bilancio inverso (Q=200 l/s)</td><td>vs 4.5 km² superficiale</td></tr>
+      <tr><td>Precipitazione zona ricarica (~900m media)</td><td><strong>1750 mm/a</strong></td><td>Media pesata Cornalita+Vettarola</td><td>Gradiente altimetrico +70mm/100m</td></tr>
+      <tr><td>ETP (Hargreaves-Samani, T~8°C)</td><td><strong>745 mm/a</strong></td><td>Formula HS, dati T ARPA</td><td>Ridotta per quota elevata</td></tr>
+      <tr><td>Surplus idrico P–ETP</td><td><strong>1005 mm/a</strong></td><td>Calcolato</td><td>~57% della precipitazione</td></tr>
+      <tr><td>Coefficiente infiltrazione Ic</td><td><strong>0.622</strong></td><td>85% del surplus per carsismo</td><td>15% deflusso superficiale</td></tr>
+      <tr><td>Q totale range campagne (2022–2023)</td><td>60–156 l/s</td><td>5 campagne Idrogea</td><td>Punta estiva (mag): 156 l/s</td></tr>
+      <tr><td>Q captata Uniacque (2015–2022)</td><td>~25 l/s media</td><td>Uniacque SpA</td><td>Solo 16–40% del totale stimato</td></tr>
+      <tr><td>Bacino idrogeologico stimato</td><td><strong>~9 km²</strong></td><td>Bilancio inverso Q=200 l/s</td><td>vs 4.5 km² bacino superficiale</td></tr>
     </tbody>
   </table>
 </div>
@@ -141,94 +153,155 @@ section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
 
 <!-- Sezione 2: Recession analysis -->
 <section>
-<h2>📉 2. Recession analysis — dati SCADA 2025-2026</h2>
+<h2>📉 2. Recession analysis — Pz2 Idrogea 2023 + SCADA BO-2/BO-5</h2>
 <div class="insight">
-  La curva di esaurimento descrive come la portata diminuisce durante i periodi senza pioggia.
-  Per sorgenti carsiche: <strong>Q(t) = Q₀ × e^(-α×t)</strong>.
-  Con i dati SCADA di livello H (proxy della portata), si possono identificare i periodi di recessione
-  e stimare le costanti α₁ (flusso rapido, epicarso) e α₂ (flusso lento, acquifero profondo).
+  <strong>Nota metodologica:</strong>
+  Pz2 è il punto più vicino alla sorgente Boione nel monitoraggio Idrogea 2023 — misura il livello piezometrico
+  nel tratto immediatamente a valle della sorgente. <em>Pz6 e Pz9 sono progressivamente più a valle</em> e
+  risentono anche di altri apporti. Il SCADA BO-2 (623m) è il punto della rete attuale più rappresentativo,
+  in funzione dall'apr 2025. L'analisi combinata copre i periodi 2023 (Pz2) e 2025–2026 (BO-2/5).
 </div>
 <div class="card">
-  <h3>📈 Livello H — BO-2 e BO-5 (2025-2026)</h3>
-  <div class="ch-wrap tall"><canvas id="cRecH"></canvas></div>
+  <h3>📈 Livello continuo: Pz2 (Idrogea 2023) + BO-2 + BO-5 (SCADA 2025–2026) <span class="badge badge-idrogea">Idrogea</span> <span class="badge badge-scada">SCADA</span></h3>
+  <div class="ch-wrap tall"><canvas id="cRecAll"></canvas></div>
 </div>
 <div class="grid2">
   <div class="card">
-    <h3>📉 Periodi di recessione identificati (BO-5)</h3>
-    <div class="ch-wrap"><canvas id="cRecPer"></canvas></div>
+    <h3>📉 Periodi di recessione identificati — Pz2 2023 <span class="badge badge-idrogea">Idrogea</span></h3>
+    <div class="ch-wrap"><canvas id="cRecPeriods"></canvas></div>
     <div class="insight" style="font-size:9.5px">
-      I periodi di recessione sono identificati come sequenze di H decrescente per >3 giorni consecutivi.
-      Ogni recessione ha una propria costante α che descrive la velocità di svuotamento dell'acquifero.
+      Periodi identificati su Pz2 come sequenze di H decrescente per ≥5 giorni consecutivi con ΔH &gt; 2 cm.
+      Le <em>costanti di esaurimento α</em> stimata da regressione esponenziale suggeriscono due comportamenti:
+      recessioni rapide (α ~ 1/d, epicarso) e recessioni lente (α ~ 0.3/d, acquifero profondo).
     </div>
   </div>
   <div class="card">
-    <h3>🧮 Curva di esaurimento teorica</h3>
-    <div class="ch-wrap"><canvas id="cRecTeo"></canvas></div>
+    <h3>📉 Recessioni dettagliate — curve normalizzate H/H₀ <span class="badge badge-idrogea">Pz2</span></h3>
+    <div class="ch-wrap"><canvas id="cRecNorm"></canvas></div>
     <div class="insight" style="font-size:9.5px">
-      Curva teorica per il sistema Boione con due componenti:
-      <strong>α₁ ~ 0.05/d</strong> (flusso rapido, t½ ~14 gg) +
-      <strong>α₂ ~ 0.008/d</strong> (flusso lento, t½ ~87 gg).
-      Valori da calibrare sui periodi di recessione SCADA.
+      Le curve normalizzate mostrano la diversa velocità di svuotamento nei diversi periodi stagionali.
+      <em>Recessioni invernali</em> (α~0.3/d) più lente = sistema saturo con riserve più alte.
+      <em>Recessioni estive-autunnali</em> (α~0.9-1.2/d) più rapide = svuotamento epicarso.
     </div>
+  </div>
+</div>
+<div class="card">
+  <h3>📏 Curva di esaurimento teorica e calibrazione sulle campagne Idrogea <span class="badge badge-camp">5 campagne</span></h3>
+  <div class="ch-wrap"><canvas id="cRecTeo"></canvas></div>
+  <div class="insight">
+    <strong>Portata totale Boione stimata nei 4 punti di misura Pz2 × campagne 2023:</strong>
+    La relazione tra livello Pz2 (H_pz2) e portata totale (Q_tot) misurata nelle campagne
+    non mostra una dipendenza significativa di H da Q (range H molto stretto: 104–112 cm per Q = 62–156 l/s).
+    <em>Questo è coerente con il comportamento di un piezometro</em> in acquifero confinato/semiconfinato,
+    dove la variazione di carico piezometrico è disaccoppiata dalla portata.
+    La curva di esaurimento è quindi costruita con Q in funzione del tempo, con
+    <em>intervallo di confidenza</em> stimato dalla variabilità inter-annuale delle campagne.
   </div>
 </div>
 </section>
 
-<!-- Sezione 3: CeS idrogeologica -->
+<!-- Sezione 3: CeS per famiglie -->
 <section>
-<h2>🧪 3. Interpretazione idrogeologica della CeS — SCADA 2025-2026</h2>
+<h2>🧪 3. Conducibilità elettrica (CeS) — due famiglie di misura</h2>
+<div class="insight">
+  I dati di CeS provengono da due fonti con caratteristiche diverse:
+  <strong>Famiglia 1 — SCADA 2025–2026:</strong> 5 sensori in continuo (BO-0/2/5/8 sul Borlezza, AL-100 sull'Alino) con risoluzione giornaliera.
+  <strong>Famiglia 2 — Campagne Idrogea 2022–2023:</strong> 5 misure puntuali in Pt.1–9, con CeS media e dettaglio per punto.
+  Le due famiglie sono temporalmente separate ma descrivono lo stesso sistema.
+</div>
+<div class="card">
+  <h3>📡 Famiglia 1 — SCADA Borlezza 2025–2026 <span class="badge badge-scada">continuo</span></h3>
+  <div class="ch-wrap tall"><canvas id="cCesScada"></canvas></div>
+  <div class="insight" style="font-size:9.5px">
+    <strong>Interpretazione:</strong> BO-0 (648m, a monte Boione) mostra CeS bassa e variabile = runoff + sorgentelle diffuse.
+    <em>BO-2 (623m, post-Boione)</em> mostra la firma dolomitica del Boione (~370 μS/cm in magra).
+    BO-5/8 mostrano progressivo mescolamento con apporti laterali verso valle.
+    AL-100 (Alino): CeS sistematicamente più alta (~418 μS/cm) per litologia diversa.
+  </div>
+</div>
+<div class="card">
+  <h3>🧪 Famiglia 2 — Campagne Idrogea 2022–2023 (CeS per punto) <span class="badge badge-camp">5 campagne</span></h3>
+  <div class="ch-wrap"><canvas id="cCesCamp"></canvas></div>
+  <div class="insight" style="font-size:9.5px">
+    CeS misurata nei punti Pt.2/Pt.5/Pt.8 nelle 5 campagne.
+    <em>Il pattern stagionale</em> è chiaro: CeS alta in magra invernale (acqua dolomitica profonda),
+    CeS più bassa in piena primaverile (diluizione da quickflow). La stagione estiva 2023
+    mantiene CeS più alta per le condizioni di siccità prolungata.
+  </div>
+</div>
 <div class="grid2">
   <div class="card">
-    <h3>📊 CeS media mensile — tutti i punti</h3>
+    <h3>📊 CeS media mensile SCADA — tutti i punti <span class="badge badge-scada">2025–26</span></h3>
     <div class="ch-wrap"><canvas id="cCesMens"></canvas></div>
   </div>
   <div class="card">
-    <h3>📊 Gradiente CeS lungo il Borlezza</h3>
-    <div class="ch-wrap"><canvas id="cCesGrad"></canvas></div>
+    <h3>🔄 CeS vs Livello H (BO-2) — diagramma di isteresi <span class="badge badge-scada">SCADA</span></h3>
+    <div class="ch-wrap"><canvas id="cCesH"></canvas></div>
     <div class="insight" style="font-size:9.5px">
-      Il gradiente CeS da BO-0 (648m) a BO-8 (366m) mostra l'apporto di acque sotterranee
-      nel tratto Borlezza. Il leggero aumento BO-2 → BO-5 indica contributi laterali di falda
-      con impronta dolomitica simile al Boione.
+      Il pattern CeS↓ all'aumentare di H mostra la <em>diluizione da quickflow</em>:
+      durante le piene la CeS scende per l'ingresso di acqua di percolazione superficiale (epicarso, bassa mineralizzazione).
     </div>
-  </div>
-</div>
-<div class="card">
-  <h3>🌡️ Temperatura — indicatore termico sorgente carsica</h3>
-  <div class="ch-wrap"><canvas id="cTemp"></canvas></div>
-  <div class="insight">
-    La temperatura di BO-2 (primo punto post-Boione) mostra variazioni stagionali <em>smorzate rispetto all'aria</em>
-    (tipico carsismo dolomitico): ~6°C in inverno, ~10°C in estate.
-    L'escursione termica ridotta è un indicatore di tempi di transito nell'acquifero di <em>1-3 mesi</em>.
   </div>
 </div>
 </section>
 
-<!-- Sezione 4: Confronto bacini -->
+<!-- Sezione 4: Temperatura per famiglie -->
 <section>
-<h2>🔀 4. Confronto Borlezza vs Alino — due bacini confinanti</h2>
-<div class="insight">
-  I due bacini (Borlezza 4.5 km², Alino 1.8 km²) condividono lo spartiacque topografico
-  ma sono <em>idraulicamente indipendenti</em> — entrambi confluiscono nel Brembo separatamente.
-  Il confronto delle caratteristiche idrogeologiche permette di inferire differenze di litologia e ricarica.
-</div>
+<h2>🌡️ 4. Temperatura — due famiglie di misura</h2>
 <div class="grid2">
   <div class="card">
-    <h3>📊 CeS comparativa Borlezza vs Alino</h3>
+    <h3>🌡️ Temperatura SCADA Borlezza 2025–2026 <span class="badge badge-scada">continuo</span></h3>
+    <div class="ch-wrap"><canvas id="cTempScada"></canvas></div>
+    <div class="insight" style="font-size:9.5px">
+      <strong>BO-2 (623m, post-Boione):</strong> Variazioni stagionali smorzate rispetto all'aria (~6°C inverno, ~10°C estate)
+      → tempo di transito nell'acquifero 1–3 mesi.
+      <em>AL-100 (Alino):</em> T sistematicamente più alta per la quota inferiore della sorgente.
+    </div>
+  </div>
+  <div class="card">
+    <h3>🌡️ Temperatura Pz2 Idrogea 2023 <span class="badge badge-idrogea">continuo</span></h3>
+    <div class="ch-wrap"><canvas id="cTempIdrogea"></canvas></div>
+    <div class="insight" style="font-size:9.5px">
+      Pz2 mostra T in <em>aumento da 8°C (gen 2023) a 12.8°C (lug–set 2023)</em>, poi calo in autunno.
+      L'escursione è più ampia rispetto ai dati SCADA BO-2 del 2025–2026, 
+      probabilmente perché Pz2 risente anche della temperatura del Borlezza superficiale nel tratto di misura.
+      <strong>Campagne Idrogea:</strong> T misurate direttamente alla sorgente confermano 8–12°C.
+    </div>
+  </div>
+</div>
+<div class="card">
+  <h3>📊 Confronto T per tipologia: SCADA Borlezza vs Alino vs Pz2 Idrogea <span class="badge badge-scada">SCADA</span> <span class="badge badge-idrogea">Idrogea</span></h3>
+  <div class="ch-wrap"><canvas id="cTempAll"></canvas></div>
+  <div class="insight">
+    <strong>BO-2 vs Pz2:</strong> I due periodi di misura (2023 e 2025–26) sul Borlezza mostrano
+    pattern stagionali coerenti — entrambi indicano un sistema carsico con moderata inerzia termica.
+    <strong>AL-100 (Alino):</strong> T più alta e più variabile, coerente con quota di sorgente inferiore e
+    bacino di dimensioni minori (risposta più rapida alle variazioni termiche).
+  </div>
+</div>
+</section>
+
+<!-- Sezione 5: Confronto Borlezza/Alino -->
+<section>
+<h2>🔀 5. Confronto idrogeologico Borlezza vs Alino</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>📊 CeS comparativa: Borlezza (BO-2) vs Alino (AL-100)</h3>
     <div class="ch-wrap"><canvas id="cCesComp"></canvas></div>
   </div>
   <div class="card">
-    <h3>🌡️ Temperatura comparativa</h3>
+    <h3>🌡️ T comparativa: Borlezza (BO-2) vs Alino (AL-100)</h3>
     <div class="ch-wrap"><canvas id="cTempComp"></canvas></div>
   </div>
 </div>
-<table class="dtbl" style="margin-top:10px">
-  <thead><tr><th>Parametro</th><th>Rio Borlezza (BO-2/5/8)</th><th>T. Alino (AL-100)</th><th>Interpretazione</th></tr></thead>
+<table class="dtbl" style="margin-top:8px">
+  <thead><tr><th>Parametro</th><th>Rio Borlezza (BO-2/5/8)</th><th>T. Alino (AL-100)</th><th>Interpretazione idrogeologica</th></tr></thead>
   <tbody>
-    <tr><td>CeS media</td><td style="color:var(--orange)">~371-376 μS/cm</td><td style="color:var(--purple)">~418 μS/cm</td><td>Litologia di ricarica diversa — Alino più mineralizzato</td></tr>
-    <tr><td>CeS variabilità</td><td>Alta (320-400 μS/cm)</td><td>Media (370-450 μS/cm)</td><td>Borlezza più reattivo (carsismo puro)</td></tr>
-    <tr><td>T media</td><td style="color:var(--orange)">~8.7°C (BO-2)</td><td style="color:var(--purple)">~11.1°C (AL-100)</td><td>Alino ha quota sorgente più bassa</td></tr>
-    <tr><td>Bacino superficie</td><td>4.5 km²</td><td>1.8 km²</td><td>Da GeoPackage QGIS</td></tr>
-    <tr><td>Recapito finale</td><td>→ F. Brembo (via San Pellegrino T.)</td><td>→ F. Brembo (direttamente)</td><td>Bacini paralleli, non in serie</td></tr>
+    <tr><td>CeS media SCADA</td><td style="color:var(--orange)">~371 μS/cm</td><td style="color:var(--purple)">~418 μS/cm</td><td>Litologie diverse: Alino con contributo da formazioni più carbonatiche o con gesso</td></tr>
+    <tr><td>CeS variabilità (σ)</td><td>Alta (~20–30 μS/cm)</td><td>Media (~15–20 μS/cm)</td><td>Borlezza più reattivo al quickflow (carsismo aperto)</td></tr>
+    <tr><td>T media SCADA</td><td style="color:var(--orange)">~8.7°C</td><td style="color:var(--purple)">~11.1°C</td><td>Quota emergenza più bassa per AL-100 + bacino minore</td></tr>
+    <tr><td>Bacino superficiale</td><td>4.5 km²</td><td>1.8 km²</td><td>Bacini separati, entrambi tributari diretti al Brembo</td></tr>
+    <tr><td>Recapito</td><td>→ F. Brembo via San Pellegrino T.</td><td>→ F. Brembo direttamente</td><td>Bacini paralleli, non in serie</td></tr>
   </tbody>
 </table>
 </section>
@@ -236,152 +309,306 @@ section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
 </main>
 
 <script>
-const GITHUB='https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
-async function fetchJ(n){
-  const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),12000);
-  try{const r=await fetch(GITHUB+n,{signal:ctrl.signal});clearTimeout(tid);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
-  catch(e){clearTimeout(tid);throw e;}
-}
-const C={};function dc(id){if(C[id]){C[id].destroy();delete C[id];}};
-function avg(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b)/v.length:null;}
-function pl(){return{legend:{labels:{color:'#e3eaf8',usePointStyle:true,font:{size:9.5}}},tooltip:{mode:'index',intersect:false}};}
-function sc(yL=''){return{x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9},maxTicksLimit:12}},y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:!!yL,text:yL,color:'#7a94b8',font:{size:9}}}};}
+// ── Dati embedded (fetch da GitHub già avvenuto a build-time) ─────────────
+const SCADA   = {"BO-0":[{"t":"2025-11-14","H":0.08,"T":8.562,"CeS":339.834},{"t":"2025-11-15","H":0.093,"T":8.866,"CeS":337.403},{"t":"2025-11-16","H":0.191,"T":9.435,"CeS":339.277},{"t":"2025-11-17","H":0.228,"T":9.597,"CeS":371.116},{"t":"2025-11-18","H":0.156,"T":7.003,"CeS":387.67},{"t":"2025-11-19","H":0.13,"T":6.173,"CeS":382.646},{"t":"2025-11-20","H":0.118,"T":5.525,"CeS":376.553},{"t":"2025-11-21","H":0.114,"T":3.705,"CeS":366.906},{"t":"2025-11-22","H":0.11,"T":2.933,"CeS":372.7},{"t":"2025-11-23","H":0.108,"T":2.365,"CeS":377.043},{"t":"2025-11-24","H":0.111,"T":3.128,"CeS":369.696},{"t":"2025-11-25","H":0.124,"T":3.35,"CeS":360.021},{"t":"2025-11-26","H":0.13,"T":3.575,"CeS":373.155},{"t":"2025-11-27","H":0.123,"T":2.774,"CeS":375.263},{"t":"2025-11-28","H":0.12,"T":2.361,"CeS":374.031},{"t":"2025-11-29","H":0.12,"T":2.792,"CeS":368.838},{"t":"2025-11-30","H":0.119,"T":3.221,"CeS":363.777},{"t":"2025-12-01","H":0.129,"T":4.584,"CeS":358.663},{"t":"2025-12-02","H":0.138,"T":5.7,"CeS":358.857},{"t":"2025-12-03","H":0.13,"T":6.073,"CeS":355.145},{"t":"2025-12-04","H":0.121,"T":6.23,"CeS":353.305},{"t":"2025-12-05","H":0.119,"T":6.087,"CeS":352.675},{"t":"2025-12-06","H":0.11,"T":4.658,"CeS":355.334},{"t":"2025-12-07","H":0.11,"T":4.873,"CeS":353.537},{"t":"2025-12-08","H":0.1,"T":4.97,"CeS":352.943},{"t":"2025-12-09","H":0.1,"T":4.853,"CeS":352.764},{"t":"2025-12-10","H":0.1,"T":4.714,"CeS":352.125},{"t":"2025-12-11","H":0.095,"T":5.591,"CeS":348.842},{"t":"2025-12-12","H":0.09,"T":4.739,"CeS":348.105},{"t":"2025-12-13","H":0.09,"T":4.295,"CeS":350.374},{"t":"2025-12-14","H":0.09,"T":3.994,"CeS":350.896},{"t":"2025-12-15","H":0.084,"T":3.662,"CeS":350.13},{"t":"2025-12-16","H":0.091,"T":4.319,"CeS":344.038},{"t":"2025-12-17","H":0.12,"T":5.906,"CeS":334.74},{"t":"2025-12-18","H":0.14,"T":6.91,"CeS":350.77},{"t":"2025-12-19","H":0.127,"T":6.565,"CeS":360.746},{"t":"2025-12-20","H":0.12,"T":5.741,"CeS":360.612},{"t":"2025-12-21","H":0.11,"T":5.506,"CeS":360.347},{"t":"2025-12-22","H":0.108,"T":5.465,"CeS":359.329},{"t":"2025-12-23","H":0.1,"T":5.556,"CeS":358.66},{"t":"2025-12-24","H":0.104,"T":5.579,"CeS":354.476},{"t":"2025-12-25","H":0.107,"T":5.227,"CeS":355.082},{"t":"2025-12-26","H":0.1,"T":4.833,"CeS":360.682},{"t":"2025-12-27","H":0.1,"T":3.751,"CeS":362.651},{"t":"2025-12-28","H":0.099,"T":3.393,"CeS":363.813},{"t":"2025-12-29","H":0.09,"T":3.075,"CeS":363.746},{"t":"2025-12-30","H":0.09,"T":2.501,"CeS":364.242},{"t":"2025-12-31","H":0.09,"T":2.556,"CeS":363.45},{"t":"2026-01-01","H":0.087,"T":2.073,"CeS":363.069},{"t":"2026-01-02","H":null,"T":null,"CeS":null},{"t":"2026-01-03","H":null,"T":null,"CeS":null},{"t":"2026-01-04","H":null,"T":null,"CeS":null},{"t":"2026-01-05","H":null,"T":null,"CeS":null},{"t":"2026-01-06","H":null,"T":null,"CeS":null},{"t":"2026-01-07","H":null,"T":null,"CeS":null},{"t":"2026-01-08","H":null,"T":null,"CeS":null},{"t":"2026-01-09","H":0.07,"T":null,"CeS":367.455},{"t":"2026-01-10","H":0.07,"T":null,"CeS":360.573},{"t":"2026-01-11","H":0.064,"T":null,"CeS":362.302},{"t":"2026-01-12","H":0.065,"T":null,"CeS":370.008},{"t":"2026-01-13","H":0.07,"T":null,"CeS":362.214},{"t":"2026-01-14","H":0.07,"T":2.039,"CeS":342.81},{"t":"2026-01-15","H":0.07,"T":2.278,"CeS":335.206},{"t":"2026-01-16","H":0.07,"T":2.972,"CeS":340.956},{"t":"2026-01-17","H":0.07,"T":3.99,"CeS":347.16},{"t":"2026-01-18","H":0.066,"T":4.299,"CeS":348.171},{"t":"2026-01-19","H":0.06,"T":4.324,"CeS":348.432},{"t":"2026-01-20","H":0.06,"T":3.262,"CeS":349.504},{"t":"2026-01-21","H":0.06,"T":2.232,"CeS":351.54},{"t":"2026-01-22","H":0.06,"T":null,"CeS":353.353},{"t":"2026-01-23","H":0.06,"T":2.024,"CeS":355.602},{"t":"2026-01-24","H":0.07,"T":null,"CeS":348.887},{"t":"2026-01-25","H":null,"T":null,"CeS":null},{"t":"2026-01-26","H":null,"T":null,"CeS":null},{"t":"2026-01-27","H":null,"T":null,"CeS":null},{"t":"2026-01-28","H":null,"T":null,"CeS":null},{"t":"2026-01-29","H":null,"T":null,"CeS":null},{"t":"2026-01-30","H":null,"T":null,"CeS":null},{"t":"2026-01-31","H":null,"T":null,"CeS":null},{"t":"2026-02-01","H":null,"T":null,"CeS":null},{"t":"2026-02-02","H":null,"T":null,"CeS":null},{"t":"2026-02-03","H":0.13,"T":3.274,"CeS":345.863},{"t":"2026-02-04","H":0.147,"T":3.77,"CeS":354.015},{"t":"2026-02-05","H":0.206,"T":4.584,"CeS":349.88},{"t":"2026-02-06","H":null,"T":null,"CeS":null},{"t":"2026-02-07","H":0.14,"T":5.511,"CeS":365.738},{"t":"2026-02-08","H":0.14,"T":5.37,"CeS":360.748},{"t":"2026-02-09","H":0.138,"T":5.324,"CeS":363.169},{"t":"2026-02-10","H":0.131,"T":5.397,"CeS":362.859},{"t":"2026-02-11","H":0.144,"T":5.57,"CeS":356.964},{"t":"2026-02-12","H":0.137,"T":5.904,"CeS":360.844},{"t":"2026-02-13","H":0.126,"T":4.905,"CeS":362.553},{"t":"2026-02-14","H":0.12,"T":5.598,"CeS":358.791},{"t":"2026-02-15","H":0.114,"T":4.588,"CeS":361.117},{"t":"2026-02-16","H":0.11,"T":4.361,"CeS":361.523},{"t":"2026-02-17","H":0.106,"T":3.431,"CeS":362.205},{"t":"2026-02-18","H":0.1,"T":2.775,"CeS":363.411},{"t":"2026-02-19","H":0.141,"T":3.087,"CeS":336.354},{"t":"2026-02-20","H":0.163,"T":4.083,"CeS":361.956},{"t":"2026-02-21","H":0.155,"T":4.721,"CeS":370.403},{"t":"2026-02-22","H":0.142,"T":4.799,"CeS":364.999},{"t":"2026-02-23","H":0.131,"T":5.057,"CeS":363.495},{"t":"2026-02-24","H":0.123,"T":5.445,"CeS":361.389},{"t":"2026-02-25","H":0.119,"T":6.152,"CeS":358.143},{"t":"2026-02-26","H":0.11,"T":5.294,"CeS":358.269},{"t":"2026-02-27","H":0.11,"T":5.55,"CeS":356.307},{"t":"2026-02-28","H":0.1,"T":6.298,"CeS":353.078},{"t":"2026-03-01","H":0.1,"T":6.886,"CeS":353.123},{"t":"2026-03-02","H":0.099,"T":6.821,"CeS":352.811},{"t":"2026-03-03","H":0.09,"T":6.077,"CeS":352.042},{"t":"2026-03-04","H":0.09,"T":6.044,"CeS":350.55},{"t":"2026-03-05","H":0.089,"T":6.204,"CeS":350.25},{"t":"2026-03-06","H":0.08,"T":5.517,"CeS":349.904},{"t":"2026-03-07","H":0.08,"T":5.307,"CeS":350.335},{"t":"2026-03-08","H":0.08,"T":5.259,"CeS":350.442},{"t":"2026-03-09","H":0.08,"T":5.852,"CeS":349.345},{"t":"2026-03-10","H":0.08,"T":6.573,"CeS":347.754},{"t":"2026-03-11","H":0.079,"T":7.002,"CeS":345.006},{"t":"2026-03-12","H":0.072,"T":6.506,"CeS":345.882},{"t":"2026-03-13","H":0.07,"T":6.503,"CeS":344.087},{"t":"2026-03-14","H":0.113,"T":6.446,"CeS":331.842},{"t":"2026-03-15","H":0.202,"T":6.99,"CeS":346.93},{"t":"2026-03-16","H":0.156,"T":6.566,"CeS":373.913},{"t":"2026-03-17","H":0.138,"T":5.956,"CeS":375.171},{"t":"2026-03-18","H":0.128,"T":6.384,"CeS":369.908},{"t":"2026-03-19","H":0.12,"T":5.438,"CeS":372.934},{"t":"2026-03-20","H":0.114,"T":5.542,"CeS":371.067},{"t":"2026-03-21","H":0.11,"T":5.812,"CeS":367.781},{"t":"2026-03-22","H":0.109,"T":5.969,"CeS":365.358},{"t":"2026-03-23","H":0.1,"T":5.356,"CeS":365.44},{"t":"2026-03-24","H":0.1,"T":5.399,"CeS":363.372},{"t":"2026-03-25","H":0.102,"T":5.57,"CeS":358.618},{"t":"2026-03-26","H":0.102,"T":5.255,"CeS":351.929},{"t":"2026-03-27","H":0.096,"T":3.925,"CeS":366.499},{"t":"2026-03-28","H":0.09,"T":4.065,"CeS":367.83},{"t":"2026-03-29","H":0.09,"T":4.516,"CeS":366.452}],"BO-2":[{"t":"2025-11-14","H":0.141,"T":9.468,"CeS":371.205},{"t":"2025-11-15","H":0.151,"T":9.509,"CeS":368.685},{"t":"2025-11-16","H":0.264,"T":9.591,"CeS":357.746},{"t":"2025-11-17","H":0.386,"T":9.682,"CeS":386.641},{"t":"2025-11-18","H":0.315,"T":9.109,"CeS":390.266},{"t":"2025-11-19","H":0.253,"T":8.902,"CeS":396.845},{"t":"2025-11-20","H":0.223,"T":8.788,"CeS":394.888},{"t":"2025-11-21","H":0.209,"T":8.386,"CeS":389.751},{"t":"2025-11-22","H":0.192,"T":8.255,"CeS":389.593},{"t":"2025-11-23","H":0.185,"T":8.074,"CeS":386.939},{"t":"2025-11-24","H":0.184,"T":8.26,"CeS":382.585},{"t":"2025-11-25","H":0.191,"T":8.076,"CeS":380.57},{"t":"2025-11-26","H":0.19,"T":8.034,"CeS":384.2},{"t":"2025-11-27","H":0.182,"T":7.913,"CeS":384.79},{"t":"2025-11-28","H":0.177,"T":7.89,"CeS":382.656},{"t":"2025-11-29","H":0.174,"T":8.071,"CeS":379.962},{"t":"2025-11-30","H":0.172,"T":8.245,"CeS":377.664},{"t":"2025-12-01","H":0.177,"T":8.407,"CeS":372.831},{"t":"2025-12-02","H":0.186,"T":8.627,"CeS":378.87},{"t":"2025-12-03","H":0.19,"T":8.738,"CeS":380.392},{"t":"2025-12-04","H":null,"T":null,"CeS":null},{"t":"2025-12-05","H":0.17,"T":8.894,"CeS":376.676},{"t":"2025-12-06","H":0.165,"T":8.639,"CeS":376.987},{"t":"2025-12-07","H":0.159,"T":8.715,"CeS":374.3},{"t":"2025-12-08","H":0.156,"T":8.761,"CeS":372.866},{"t":"2025-12-09","H":0.158,"T":8.767,"CeS":372.943},{"t":"2025-12-10","H":0.144,"T":8.787,"CeS":368.325},{"t":"2025-12-11","H":0.145,"T":8.946,"CeS":367.044},{"t":"2025-12-12","H":0.144,"T":8.776,"CeS":366.284},{"t":"2025-12-13","H":0.142,"T":8.734,"CeS":363.637},{"t":"2025-12-14","H":0.145,"T":8.71,"CeS":362.721},{"t":"2025-12-15","H":0.133,"T":8.682,"CeS":364.318},{"t":"2025-12-16","H":0.139,"T":8.749,"CeS":362.431},{"t":"2025-12-17","H":0.156,"T":8.793,"CeS":361.261},{"t":"2025-12-18","H":0.177,"T":8.843,"CeS":365.013},{"t":"2025-12-19","H":0.169,"T":8.859,"CeS":372.014},{"t":"2025-12-20","H":0.163,"T":8.759,"CeS":371.378},{"t":"2025-12-21","H":0.158,"T":8.773,"CeS":372.064},{"t":"2025-12-22","H":0.154,"T":8.832,"CeS":371.548},{"t":"2025-12-23","H":0.152,"T":8.904,"CeS":370.84},{"t":"2025-12-24","H":0.152,"T":8.85,"CeS":369.142},{"t":"2025-12-25","H":0.152,"T":8.79,"CeS":369.363},{"t":"2025-12-26","H":0.146,"T":8.743,"CeS":369.816},{"t":"2025-12-27","H":0.144,"T":8.489,"CeS":370.282},{"t":"2025-12-28","H":0.144,"T":8.469,"CeS":369.531},{"t":"2025-12-29","H":0.143,"T":8.443,"CeS":368.369},{"t":"2025-12-30","H":0.142,"T":8.371,"CeS":367.522},{"t":"2025-12-31","H":0.138,"T":8.437,"CeS":367.411},{"t":"2026-01-01","H":0.142,"T":8.335,"CeS":366.938},{"t":"2026-01-02","H":null,"T":null,"CeS":null},{"t":"2026-01-03","H":null,"T":null,"CeS":null},{"t":"2026-01-04","H":null,"T":null,"CeS":null},{"t":"2026-01-05","H":null,"T":null,"CeS":null},{"t":"2026-01-06","H":null,"T":null,"CeS":null},{"t":"2026-01-07","H":null,"T":null,"CeS":null},{"t":"2026-01-08","H":null,"T":null,"CeS":null},{"t":"2026-01-09","H":null,"T":null,"CeS":null},{"t":"2026-01-10","H":null,"T":null,"CeS":null},{"t":"2026-01-11","H":null,"T":null,"CeS":null},{"t":"2026-01-12","H":null,"T":null,"CeS":null},{"t":"2026-01-13","H":null,"T":null,"CeS":null},{"t":"2026-01-14","H":null,"T":null,"CeS":365.79},{"t":"2026-01-15","H":null,"T":null,"CeS":null},{"t":"2026-01-16","H":null,"T":null,"CeS":null},{"t":"2026-01-17","H":null,"T":null,"CeS":364.94},{"t":"2026-01-18","H":null,"T":null,"CeS":null},{"t":"2026-01-19","H":null,"T":null,"CeS":null},{"t":"2026-01-20","H":null,"T":null,"CeS":null},{"t":"2026-01-21","H":null,"T":null,"CeS":null},{"t":"2026-01-22","H":null,"T":null,"CeS":null},{"t":"2026-01-23","H":null,"T":null,"CeS":null},{"t":"2026-01-24","H":null,"T":null,"CeS":null},{"t":"2026-01-25","H":null,"T":null,"CeS":null},{"t":"2026-01-26","H":null,"T":null,"CeS":null},{"t":"2026-01-27","H":null,"T":null,"CeS":null},{"t":"2026-01-28","H":null,"T":null,"CeS":null},{"t":"2026-01-29","H":null,"T":null,"CeS":null},{"t":"2026-01-30","H":null,"T":null,"CeS":null},{"t":"2026-01-31","H":null,"T":null,"CeS":null},{"t":"2026-02-01","H":null,"T":null,"CeS":null},{"t":"2026-02-02","H":null,"T":null,"CeS":null},{"t":"2026-02-03","H":null,"T":null,"CeS":null},{"t":"2026-02-04","H":null,"T":null,"CeS":null},{"t":"2026-02-05","H":null,"T":null,"CeS":null},{"t":"2026-02-06","H":null,"T":null,"CeS":null},{"t":"2026-02-07","H":null,"T":null,"CeS":null},{"t":"2026-02-08","H":0.198,"T":8.57,"CeS":374.512},{"t":"2026-02-09","H":0.201,"T":8.706,"CeS":379.461},{"t":"2026-02-10","H":0.189,"T":8.717,"CeS":376.001},{"t":"2026-02-11","H":0.197,"T":8.58,"CeS":372.945},{"t":"2026-02-12","H":0.197,"T":8.78,"CeS":375.272},{"t":"2026-02-13","H":0.186,"T":8.636,"CeS":375.547},{"t":"2026-02-14","H":0.177,"T":8.823,"CeS":374.092},{"t":"2026-02-15","H":0.166,"T":8.614,"CeS":373.079},{"t":"2026-02-16","H":0.161,"T":8.615,"CeS":372.146},{"t":"2026-02-17","H":0.153,"T":8.467,"CeS":371.82},{"t":"2026-02-18","H":0.146,"T":8.389,"CeS":371.106},{"t":"2026-02-19","H":0.18,"T":7.535,"CeS":358.409},{"t":"2026-02-20","H":0.206,"T":7.683,"CeS":371.849},{"t":"2026-02-21","H":0.197,"T":8.053,"CeS":376.768},{"t":"2026-02-22","H":0.188,"T":8.327,"CeS":376.576},{"t":"2026-02-23","H":0.183,"T":8.559,"CeS":375.412},{"t":"2026-02-24","H":0.176,"T":8.731,"CeS":374.477},{"t":"2026-02-25","H":0.165,"T":8.928,"CeS":373.663},{"t":"2026-02-26","H":0.157,"T":8.767,"CeS":371.711},{"t":"2026-02-27","H":0.154,"T":8.857,"CeS":371.334},{"t":"2026-02-28","H":0.149,"T":9.05,"CeS":368.614},{"t":"2026-03-01","H":0.145,"T":9.166,"CeS":360.936},{"t":"2026-03-02","H":0.142,"T":9.152,"CeS":364.118},{"t":"2026-03-03","H":0.137,"T":9.035,"CeS":365.728},{"t":"2026-03-04","H":0.134,"T":9.057,"CeS":365.805},{"t":"2026-03-05","H":0.131,"T":9.078,"CeS":365.289},{"t":"2026-03-06","H":0.129,"T":8.981,"CeS":363.913},{"t":"2026-03-07","H":0.125,"T":8.963,"CeS":362.346},{"t":"2026-03-08","H":0.124,"T":8.988,"CeS":362.306},{"t":"2026-03-09","H":0.123,"T":9.117,"CeS":362.257},{"t":"2026-03-10","H":0.128,"T":9.136,"CeS":362.324},{"t":"2026-03-11","H":0.119,"T":9.268,"CeS":362.876},{"t":"2026-03-12","H":0.118,"T":9.201,"CeS":362.396},{"t":"2026-03-13","H":0.118,"T":9.215,"CeS":361.878},{"t":"2026-03-14","H":0.152,"T":8.838,"CeS":351.118},{"t":"2026-03-15","H":0.267,"T":8.525,"CeS":362.948},{"t":"2026-03-16","H":0.208,"T":8.75,"CeS":376.679},{"t":"2026-03-17","H":0.182,"T":8.736,"CeS":370.981},{"t":"2026-03-18","H":0.17,"T":8.865,"CeS":367.421},{"t":"2026-03-19","H":0.16,"T":8.744,"CeS":366.485},{"t":"2026-03-20","H":0.154,"T":8.817,"CeS":362.157},{"t":"2026-03-21","H":0.15,"T":8.923,"CeS":366.031},{"t":"2026-03-22","H":0.145,"T":8.966,"CeS":365.015},{"t":"2026-03-23","H":0.15,"T":8.837,"CeS":363.82},{"t":"2026-03-24","H":0.134,"T":8.942,"CeS":361.309},{"t":"2026-03-25","H":0.137,"T":8.957,"CeS":364.192},{"t":"2026-03-26","H":0.142,"T":8.849,"CeS":367.036},{"t":"2026-03-27","H":0.134,"T":8.751,"CeS":368.493},{"t":"2026-03-28","H":0.128,"T":8.833,"CeS":364.137},{"t":"2026-03-29","H":0.13,"T":8.872,"CeS":363.508}],"BO-5":[{"t":"2025-04-10","H":0.252,"T":9.307,"CeS":371.004},{"t":"2025-04-11","H":0.251,"T":9.516,"CeS":371.002},{"t":"2025-04-12","H":0.251,"T":9.676,"CeS":370.733},{"t":"2025-04-13","H":0.25,"T":9.755,"CeS":370.153},{"t":"2025-04-14","H":0.25,"T":9.725,"CeS":369.523},{"t":"2025-04-15","H":0.256,"T":9.736,"CeS":366.552},{"t":"2025-04-16","H":0.254,"T":9.936,"CeS":370.049},{"t":"2025-04-17","H":0.317,"T":9.825,"CeS":357.86},{"t":"2025-04-18","H":0.338,"T":9.641,"CeS":374.959},{"t":"2025-04-19","H":0.315,"T":9.77,"CeS":370.204},{"t":"2025-04-20","H":0.303,"T":9.751,"CeS":369.908},{"t":"2025-04-21","H":0.299,"T":9.74,"CeS":371.03},{"t":"2025-04-22","H":0.288,"T":9.786,"CeS":372.913},{"t":"2025-04-23","H":0.284,"T":9.87,"CeS":372.385},{"t":"2025-04-24","H":0.363,"T":9.841,"CeS":364.072},{"t":"2025-04-25","H":0.319,"T":9.71,"CeS":375.514},{"t":"2025-04-26","H":0.299,"T":9.72,"CeS":376.21},{"t":"2025-04-27","H":0.287,"T":10.012,"CeS":376.18},{"t":"2025-04-28","H":0.277,"T":9.993,"CeS":376.545},{"t":"2025-04-29","H":0.273,"T":10.096,"CeS":376.124},{"t":"2025-04-30","H":0.27,"T":10.226,"CeS":374.965},{"t":"2025-05-01","H":0.267,"T":10.417,"CeS":375.431},{"t":"2025-05-02","H":0.264,"T":10.45,"CeS":375.447},{"t":"2025-05-03","H":0.261,"T":10.313,"CeS":374.875},{"t":"2025-05-04","H":0.261,"T":10.179,"CeS":374.411},{"t":"2025-05-05","H":0.291,"T":10.471,"CeS":365.137},{"t":"2025-05-06","H":0.329,"T":10.064,"CeS":377.591},{"t":"2025-05-07","H":0.35,"T":9.904,"CeS":374.178},{"t":"2025-05-08","H":0.373,"T":9.649,"CeS":371.497},{"t":"2025-05-09","H":0.342,"T":9.729,"CeS":371.609},{"t":"2025-05-10","H":0.329,"T":9.831,"CeS":377.678},{"t":"2025-05-11","H":0.313,"T":9.961,"CeS":378.261},{"t":"2025-05-12","H":0.302,"T":10.021,"CeS":378.851},{"t":"2025-05-13","H":0.295,"T":10.051,"CeS":378.582},{"t":"2025-05-14","H":0.33,"T":10.077,"CeS":375.412},{"t":"2025-05-15","H":0.314,"T":10.214,"CeS":381.49},{"t":"2025-05-16","H":0.299,"T":9.964,"CeS":380.299},{"t":"2025-05-17","H":0.286,"T":9.782,"CeS":380.946},{"t":"2025-05-18","H":0.281,"T":9.938,"CeS":381.644},{"t":"2025-05-19","H":0.274,"T":10.134,"CeS":381.352},{"t":"2025-05-20","H":0.275,"T":10.299,"CeS":377.183},{"t":"2025-05-21","H":0.281,"T":10.19,"CeS":380.858},{"t":"2025-05-22","H":0.395,"T":10.151,"CeS":368.612},{"t":"2025-05-23","H":0.396,"T":9.872,"CeS":368.988},{"t":"2025-05-24","H":0.332,"T":9.83,"CeS":374.441},{"t":"2025-05-25","H":0.307,"T":9.969,"CeS":379.102},{"t":"2025-05-26","H":0.298,"T":10.229,"CeS":378.734},{"t":"2025-05-27","H":0.345,"T":10.428,"CeS":375.383},{"t":"2025-05-28","H":0.327,"T":10.273,"CeS":379.491},{"t":"2025-05-29","H":0.31,"T":10.351,"CeS":379.891},{"t":"2025-05-30","H":0.296,"T":10.411,"CeS":381.272},{"t":"2025-05-31","H":0.289,"T":10.592,"CeS":380.116},{"t":"2025-06-01","H":0.284,"T":10.747,"CeS":380.315},{"t":"2025-06-02","H":0.28,"T":10.746,"CeS":380.63},{"t":"2025-06-03","H":0.277,"T":10.682,"CeS":380.957},{"t":"2025-06-04","H":0.273,"T":10.585,"CeS":380.933},{"t":"2025-06-05","H":0.27,"T":10.605,"CeS":380.601},{"t":"2025-06-06","H":0.268,"T":10.668,"CeS":380.109},{"t":"2025-06-07","H":0.264,"T":10.753,"CeS":379.307},{"t":"2025-06-08","H":0.263,"T":10.85,"CeS":378.183},{"t":"2025-06-09","H":0.259,"T":10.604,"CeS":377.364},{"t":"2025-06-10","H":0.26,"T":10.784,"CeS":376.953},{"t":"2025-06-11","H":0.26,"T":10.873,"CeS":376.061},{"t":"2025-06-12","H":0.258,"T":11.015,"CeS":375.712},{"t":"2025-06-13","H":0.255,"T":11.172,"CeS":375.456},{"t":"2025-06-14","H":0.252,"T":11.253,"CeS":374.992},{"t":"2025-06-15","H":0.251,"T":11.08,"CeS":374.218},{"t":"2025-06-16","H":0.251,"T":11.003,"CeS":373.523},{"t":"2025-06-17","H":0.251,"T":10.824,"CeS":372.901},{"t":"2025-06-18","H":0.249,"T":10.878,"CeS":372.419},{"t":"2025-06-19","H":0.249,"T":11.09,"CeS":372.167},{"t":"2025-06-20","H":0.249,"T":11.19,"CeS":371.816},{"t":"2025-06-21","H":0.25,"T":11.213,"CeS":367.973},{"t":"2025-06-22","H":0.25,"T":11.09,"CeS":369.885},{"t":"2025-06-23","H":0.248,"T":11.085,"CeS":371.566},{"t":"2025-06-24","H":0.247,"T":11.226,"CeS":371.016},{"t":"2025-06-25","H":0.246,"T":11.368,"CeS":370.422},{"t":"2025-06-26","H":0.245,"T":11.334,"CeS":370.092},{"t":"2025-06-27","H":0.244,"T":11.099,"CeS":369.616},{"t":"2025-06-28","H":0.241,"T":11.255,"CeS":369.804},{"t":"2025-06-29","H":0.241,"T":11.391,"CeS":369.579},{"t":"2025-06-30","H":0.241,"T":11.459,"CeS":369.251},{"t":"2025-07-01","H":0.241,"T":11.419,"CeS":368.183},{"t":"2025-07-02","H":0.242,"T":11.306,"CeS":368.928},{"t":"2025-07-03","H":0.24,"T":11.178,"CeS":368.278},{"t":"2025-07-04","H":0.24,"T":11.259,"CeS":368.186},{"t":"2025-07-05","H":0.242,"T":11.289,"CeS":365.411},{"t":"2025-07-06","H":0.256,"T":11.449,"CeS":352.387},{"t":"2025-07-07","H":0.256,"T":11.303,"CeS":365.838},{"t":"2025-07-08","H":0.277,"T":11.068,"CeS":360.982},{"t":"2025-07-09","H":0.245,"T":10.443,"CeS":372.443},{"t":"2025-07-10","H":0.241,"T":10.636,"CeS":368.788},{"t":"2025-07-11","H":0.241,"T":10.767,"CeS":367.164},{"t":"2025-07-12","H":0.24,"T":10.921,"CeS":365.61},{"t":"2025-07-13","H":0.265,"T":11.384,"CeS":351.512},{"t":"2025-07-14","H":0.249,"T":11.079,"CeS":366.113},{"t":"2025-07-15","H":0.243,"T":11.126,"CeS":365.771},{"t":"2025-07-16","H":0.241,"T":11.175,"CeS":365.087},{"t":"2025-07-17","H":0.243,"T":11.136,"CeS":364.82},{"t":"2025-07-18","H":0.241,"T":11.039,"CeS":364.594},{"t":"2025-07-19","H":0.236,"T":11.065,"CeS":364.478},{"t":"2025-07-20","H":0.238,"T":11.159,"CeS":363.981},{"t":"2025-07-21","H":0.265,"T":11.991,"CeS":346.224},{"t":"2025-07-22","H":0.245,"T":11.29,"CeS":366.474},{"t":"2025-07-23","H":0.24,"T":11.166,"CeS":366.413},{"t":"2025-07-24","H":0.37,"T":12.618,"CeS":347.082},{"t":"2025-07-25","H":0.351,"T":11.21,"CeS":369.827},{"t":"2025-07-26","H":0.286,"T":11.27,"CeS":365.197},{"t":"2025-07-27","H":0.28,"T":11.114,"CeS":368.491},{"t":"2025-07-28","H":0.261,"T":10.99,"CeS":367.81},{"t":"2025-07-29","H":0.247,"T":10.759,"CeS":368.315},{"t":"2025-07-30","H":0.241,"T":10.846,"CeS":367.77},{"t":"2025-07-31","H":0.238,"T":10.892,"CeS":366.891},{"t":"2025-08-01","H":0.237,"T":10.877,"CeS":365.807},{"t":"2025-08-02","H":0.296,"T":11.512,"CeS":358.096},{"t":"2025-08-03","H":0.27,"T":10.998,"CeS":375.762},{"t":"2025-08-04","H":0.249,"T":10.898,"CeS":372.715},{"t":"2025-08-05","H":0.243,"T":11.071,"CeS":370.954},{"t":"2025-08-06","H":0.238,"T":11.148,"CeS":369.634},{"t":"2025-08-07","H":0.234,"T":11.234,"CeS":368.809},{"t":"2025-08-08","H":0.233,"T":11.301,"CeS":368.472},{"t":"2025-08-09","H":0.233,"T":11.456,"CeS":368.285},{"t":"2025-08-10","H":0.231,"T":11.613,"CeS":368.095},{"t":"2025-08-11","H":0.23,"T":11.528,"CeS":367.644},{"t":"2025-08-12","H":0.229,"T":11.575,"CeS":367.207},{"t":"2025-08-13","H":0.228,"T":11.691,"CeS":366.895},{"t":"2025-08-14","H":0.228,"T":11.575,"CeS":366.282},{"t":"2025-08-15","H":0.227,"T":11.425,"CeS":365.945},{"t":"2025-08-16","H":0.225,"T":11.208,"CeS":365.591},{"t":"2025-08-17","H":0.226,"T":11.265,"CeS":365.337},{"t":"2025-08-18","H":0.224,"T":11.236,"CeS":365.141},{"t":"2025-08-19","H":0.226,"T":11.256,"CeS":364.625},{"t":"2025-08-20","H":0.24,"T":11.768,"CeS":352.036},{"t":"2025-08-21","H":0.236,"T":11.389,"CeS":360.745},{"t":"2025-08-22","H":0.231,"T":11.125,"CeS":364.878},{"t":"2025-08-23","H":0.228,"T":11.03,"CeS":365.941},{"t":"2025-08-24","H":0.229,"T":10.824,"CeS":364.741},{"t":"2025-08-25","H":0.227,"T":10.858,"CeS":363.0},{"t":"2025-08-26","H":0.225,"T":10.9,"CeS":364.127},{"t":"2025-08-27","H":0.226,"T":10.962,"CeS":362.486},{"t":"2025-08-28","H":0.258,"T":11.642,"CeS":353.068},{"t":"2025-08-29","H":0.391,"T":12.208,"CeS":359.344},{"t":"2025-08-30","H":0.468,"T":11.515,"CeS":361.136},{"t":"2025-08-31","H":0.407,"T":10.526,"CeS":367.049},{"t":"2025-09-01","H":0.336,"T":10.463,"CeS":377.935},{"t":"2025-09-02","H":0.346,"T":11.151,"CeS":375.269},{"t":"2025-09-03","H":0.334,"T":10.753,"CeS":387.393},{"t":"2025-09-04","H":0.294,"T":10.822,"CeS":390.022},{"t":"2025-09-05","H":0.278,"T":10.945,"CeS":387.251},{"t":"2025-09-06","H":0.26,"T":10.464,"CeS":386.211},{"t":"2025-09-07","H":0.253,"T":10.654,"CeS":383.383},{"t":"2025-09-08","H":0.25,"T":10.734,"CeS":381.163},{"t":"2025-09-09","H":0.248,"T":10.826,"CeS":380.024},{"t":"2025-09-10","H":0.367,"T":11.504,"CeS":370.097},{"t":"2025-09-11","H":0.322,"T":10.886,"CeS":387.13},{"t":"2025-09-12","H":0.279,"T":10.904,"CeS":389.877},{"t":"2025-09-13","H":0.357,"T":11.193,"CeS":381.668},{"t":"2025-09-14","H":0.33,"T":10.696,"CeS":387.884},{"t":"2025-09-15","H":0.29,"T":10.72,"CeS":392.286},{"t":"2025-09-16","H":0.271,"T":10.8,"CeS":392.287},{"t":"2025-09-17","H":0.259,"T":10.706,"CeS":390.528},{"t":"2025-09-18","H":0.249,"T":10.71,"CeS":389.142},{"t":"2025-09-19","H":0.246,"T":10.817,"CeS":387.5},{"t":"2025-09-20","H":0.244,"T":10.89,"CeS":385.237},{"t":"2025-09-21","H":0.242,"T":10.979,"CeS":383.746},{"t":"2025-09-22","H":0.297,"T":11.47,"CeS":373.124},{"t":"2025-09-23","H":0.299,"T":11.158,"CeS":389.684},{"t":"2025-09-24","H":0.311,"T":10.855,"CeS":393.999},{"t":"2025-09-25","H":0.29,"T":10.115,"CeS":393.047},{"t":"2025-09-26","H":0.311,"T":10.136,"CeS":392.148},{"t":"2025-09-27","H":0.462,"T":10.65,"CeS":392.536},{"t":"2025-09-28","H":0.415,"T":10.178,"CeS":400.2},{"t":"2025-09-29","H":0.353,"T":10.069,"CeS":405.335},{"t":"2025-09-30","H":0.304,"T":10.168,"CeS":403.921},{"t":"2025-10-01","H":0.285,"T":10.229,"CeS":401.066},{"t":"2025-10-02","H":0.272,"T":9.874,"CeS":397.624},{"t":"2025-10-03","H":0.263,"T":9.744,"CeS":394.402},{"t":"2025-10-04","H":0.258,"T":9.794,"CeS":392.466},{"t":"2025-10-05","H":0.255,"T":9.888,"CeS":390.792},{"t":"2025-10-06","H":0.249,"T":9.468,"CeS":389.002},{"t":"2025-10-07","H":0.248,"T":9.654,"CeS":387.832},{"t":"2025-10-08","H":0.247,"T":9.803,"CeS":385.537},{"t":"2025-10-09","H":0.246,"T":10.08,"CeS":384.565},{"t":"2025-10-10","H":0.244,"T":10.165,"CeS":382.905},{"t":"2025-10-11","H":0.241,"T":10.141,"CeS":382.589},{"t":"2025-10-12","H":0.241,"T":10.291,"CeS":381.96},{"t":"2025-10-13","H":0.239,"T":10.292,"CeS":374.06},{"t":"2025-10-14","H":0.239,"T":10.149,"CeS":371.892},{"t":"2025-10-15","H":0.239,"T":10.182,"CeS":379.12},{"t":"2025-10-16","H":0.238,"T":10.112,"CeS":375.566},{"t":"2025-10-17","H":0.238,"T":9.955,"CeS":377.656},{"t":"2025-10-18","H":0.238,"T":9.696,"CeS":376.868},{"t":"2025-10-19","H":0.236,"T":9.91,"CeS":376.436},{"t":"2025-10-20","H":0.238,"T":9.767,"CeS":374.368},{"t":"2025-10-21","H":0.24,"T":9.926,"CeS":375.146},{"t":"2025-10-22","H":0.237,"T":9.962,"CeS":376.803},{"t":"2025-10-23","H":0.245,"T":10.003,"CeS":371.13},{"t":"2025-10-24","H":0.243,"T":9.126,"CeS":373.528},{"t":"2025-10-25","H":0.237,"T":9.038,"CeS":378.072},{"t":"2025-10-26","H":0.236,"T":9.101,"CeS":376.3},{"t":"2025-10-27","H":0.234,"T":8.963,"CeS":375.175},{"t":"2025-10-28","H":0.234,"T":9.025,"CeS":374.869},{"t":"2025-10-29","H":0.235,"T":9.42,"CeS":372.627},{"t":"2025-10-30","H":0.275,"T":9.898,"CeS":371.118},{"t":"2025-10-31","H":0.246,"T":10.123,"CeS":385.513},{"t":"2025-11-01","H":0.247,"T":10.306,"CeS":385.177},{"t":"2025-11-02","H":0.325,"T":10.291,"CeS":373.891},{"t":"2025-11-03","H":0.382,"T":9.51,"CeS":392.238},{"t":"2025-11-04","H":0.305,"T":9.161,"CeS":394.433},{"t":"2025-11-05","H":0.273,"T":8.959,"CeS":393.914},{"t":"2025-11-06","H":0.261,"T":8.764,"CeS":392.06},{"t":"2025-11-07","H":0.253,"T":8.838,"CeS":391.208},{"t":"2025-11-08","H":0.247,"T":8.842,"CeS":389.454},{"t":"2025-11-09","H":0.244,"T":9.073,"CeS":388.065},{"t":"2025-11-10","H":0.24,"T":8.789,"CeS":386.168},{"t":"2025-11-11","H":0.237,"T":8.844,"CeS":384.298},{"t":"2025-11-12","H":0.235,"T":8.943,"CeS":382.781},{"t":"2025-11-13","H":0.234,"T":9.111,"CeS":381.278},{"t":"2025-11-14","H":0.233,"T":9.452,"CeS":379.827},{"t":"2025-11-15","H":0.237,"T":9.678,"CeS":376.232},{"t":"2025-11-16","H":0.326,"T":9.712,"CeS":369.245},{"t":"2025-11-17","H":0.406,"T":9.73,"CeS":390.119},{"t":"2025-11-18","H":0.359,"T":9.026,"CeS":393.419},{"t":"2025-11-19","H":0.302,"T":8.816,"CeS":399.214},{"t":"2025-11-20","H":0.28,"T":8.692,"CeS":397.908},{"t":"2025-11-21","H":0.27,"T":8.163,"CeS":394.122},{"t":"2025-11-22","H":0.26,"T":7.954,"CeS":396.225},{"t":"2025-11-23","H":0.258,"T":7.73,"CeS":394.679},{"t":"2025-11-24","H":0.255,"T":8.034,"CeS":390.963},{"t":"2025-11-25","H":0.259,"T":7.925,"CeS":391.119},{"t":"2025-11-26","H":0.259,"T":7.844,"CeS":392.435},{"t":"2025-11-27","H":0.255,"T":7.629,"CeS":391.207},{"t":"2025-11-28","H":0.252,"T":7.551,"CeS":388.687},{"t":"2025-11-29","H":0.25,"T":7.795,"CeS":387.21},{"t":"2025-11-30","H":0.249,"T":8.027,"CeS":385.51},{"t":"2025-12-01","H":0.252,"T":8.353,"CeS":383.688},{"t":"2025-12-02","H":0.258,"T":8.644,"CeS":385.83},{"t":"2025-12-03","H":0.258,"T":8.805,"CeS":386.02},{"t":"2025-12-04","H":0.254,"T":8.89,"CeS":385.112},{"t":"2025-12-05","H":0.252,"T":8.806,"CeS":385.265},{"t":"2025-12-06","H":0.246,"T":8.399,"CeS":384.036},{"t":"2025-12-07","H":0.242,"T":8.555,"CeS":382.322},{"t":"2025-12-08","H":0.242,"T":8.561,"CeS":380.525},{"t":"2025-12-09","H":0.239,"T":8.517,"CeS":379.351},{"t":"2025-12-10","H":0.238,"T":8.538,"CeS":377.998},{"t":"2025-12-11","H":0.237,"T":8.806,"CeS":376.933},{"t":"2025-12-12","H":0.236,"T":8.476,"CeS":375.938},{"t":"2025-12-13","H":0.232,"T":8.4,"CeS":375.329},{"t":"2025-12-14","H":0.232,"T":8.323,"CeS":374.456},{"t":"2025-12-15","H":0.231,"T":8.289,"CeS":373.751},{"t":"2025-12-16","H":0.233,"T":8.57,"CeS":371.031},{"t":"2025-12-17","H":0.241,"T":8.842,"CeS":369.089},{"t":"2025-12-18","H":0.254,"T":8.913,"CeS":373.07},{"t":"2025-12-19","H":0.248,"T":8.793,"CeS":378.092},{"t":"2025-12-20","H":0.244,"T":8.613,"CeS":377.625},{"t":"2025-12-21","H":0.242,"T":8.6,"CeS":377.582},{"t":"2025-12-22","H":0.24,"T":8.667,"CeS":377.162},{"t":"2025-12-23","H":0.236,"T":8.775,"CeS":377.176},{"t":"2025-12-24","H":0.238,"T":8.681,"CeS":375.33},{"t":"2025-12-25","H":0.238,"T":8.646,"CeS":375.917},{"t":"2025-12-26","H":0.236,"T":8.552,"CeS":375.824},{"t":"2025-12-27","H":0.234,"T":8.076,"CeS":374.726},{"t":"2025-12-28","H":0.235,"T":8.055,"CeS":374.008},{"t":"2025-12-29","H":0.234,"T":7.963,"CeS":373.596},{"t":"2025-12-30","H":0.234,"T":7.828,"CeS":373.22},{"t":"2025-12-31","H":0.232,"T":7.914,"CeS":372.94},{"t":"2026-01-01","H":0.232,"T":7.613,"CeS":372.07},{"t":"2026-01-02","H":null,"T":null,"CeS":null},{"t":"2026-01-03","H":null,"T":null,"CeS":null},{"t":"2026-01-04","H":null,"T":null,"CeS":null},{"t":"2026-01-05","H":null,"T":null,"CeS":null},{"t":"2026-01-06","H":null,"T":null,"CeS":null},{"t":"2026-01-07","H":null,"T":null,"CeS":null},{"t":"2026-01-08","H":null,"T":null,"CeS":null},{"t":"2026-01-09","H":0.223,"T":7.536,"CeS":369.518},{"t":"2026-01-10","H":0.224,"T":7.615,"CeS":368.799},{"t":"2026-01-11","H":0.223,"T":7.484,"CeS":368.846},{"t":"2026-01-12","H":0.223,"T":7.56,"CeS":368.794},{"t":"2026-01-13","H":0.223,"T":8.209,"CeS":367.96},{"t":"2026-01-14","H":0.224,"T":8.494,"CeS":366.517},{"t":"2026-01-15","H":0.224,"T":8.624,"CeS":365.999},{"t":"2026-01-16","H":0.223,"T":8.707,"CeS":366.214},{"t":"2026-01-17","H":0.229,"T":8.751,"CeS":366.755},{"t":"2026-01-18","H":0.217,"T":8.185,"CeS":364.89},{"t":"2026-01-19","H":0.218,"T":7.839,"CeS":364.612},{"t":"2026-01-20","H":0.218,"T":7.721,"CeS":364.721},{"t":"2026-01-21","H":0.221,"T":7.87,"CeS":364.634},{"t":"2026-01-22","H":0.216,"T":7.743,"CeS":365.497},{"t":"2026-01-23","H":0.218,"T":8.134,"CeS":364.923},{"t":"2026-01-24","H":0.222,"T":8.034,"CeS":363.03},{"t":"2026-01-25","H":null,"T":null,"CeS":null},{"t":"2026-01-26","H":null,"T":null,"CeS":null},{"t":"2026-01-27","H":null,"T":null,"CeS":null},{"t":"2026-01-28","H":null,"T":null,"CeS":null},{"t":"2026-01-29","H":null,"T":null,"CeS":null},{"t":"2026-01-30","H":null,"T":null,"CeS":null},{"t":"2026-01-31","H":null,"T":null,"CeS":null},{"t":"2026-02-01","H":null,"T":null,"CeS":null},{"t":"2026-02-02","H":0.231,"T":7.954,"CeS":369.594},{"t":"2026-02-03","H":0.238,"T":7.688,"CeS":364.824},{"t":"2026-02-04","H":0.257,"T":7.702,"CeS":364.605},{"t":"2026-02-05","H":0.298,"T":7.815,"CeS":372.756},{"t":"2026-02-06","H":0.274,"T":8.243,"CeS":379.005},{"t":"2026-02-07","H":0.266,"T":8.467,"CeS":378.733},{"t":"2026-02-08","H":0.266,"T":8.533,"CeS":380.138},{"t":"2026-02-09","H":0.269,"T":8.585,"CeS":382.774},{"t":"2026-02-10","H":0.261,"T":8.625,"CeS":379.848},{"t":"2026-02-11","H":0.266,"T":8.56,"CeS":376.898},{"t":"2026-02-12","H":0.265,"T":8.714,"CeS":379.428},{"t":"2026-02-13","H":0.259,"T":8.437,"CeS":380.129},{"t":"2026-02-14","H":0.254,"T":8.747,"CeS":379.068},{"t":"2026-02-15","H":0.247,"T":8.344,"CeS":378.328},{"t":"2026-02-16","H":0.243,"T":8.335,"CeS":377.639},{"t":"2026-02-17","H":0.239,"T":8.092,"CeS":377.429},{"t":"2026-02-18","H":0.236,"T":7.982,"CeS":376.902},{"t":"2026-02-19","H":0.257,"T":7.311,"CeS":361.76},{"t":"2026-02-20","H":0.273,"T":7.561,"CeS":375.283},{"t":"2026-02-21","H":0.267,"T":7.954,"CeS":381.191},{"t":"2026-02-22","H":0.262,"T":8.183,"CeS":381.19},{"t":"2026-02-23","H":0.259,"T":8.405,"CeS":380.38},{"t":"2026-02-24","H":0.254,"T":8.606,"CeS":380.511},{"t":"2026-02-25","H":0.247,"T":8.834,"CeS":380.155},{"t":"2026-02-26","H":0.243,"T":8.585,"CeS":379.028},{"t":"2026-02-27","H":0.241,"T":8.708,"CeS":378.186},{"t":"2026-02-28","H":0.238,"T":9.024,"CeS":377.827},{"t":"2026-03-01","H":0.237,"T":9.152,"CeS":377.866},{"t":"2026-03-02","H":0.235,"T":9.089,"CeS":376.862},{"t":"2026-03-03","H":0.233,"T":8.911,"CeS":376.309},{"t":"2026-03-04","H":0.232,"T":8.939,"CeS":375.184},{"t":"2026-03-05","H":0.231,"T":8.928,"CeS":374.435},{"t":"2026-03-06","H":0.23,"T":8.767,"CeS":373.446},{"t":"2026-03-07","H":0.228,"T":8.746,"CeS":372.963},{"t":"2026-03-08","H":0.227,"T":8.774,"CeS":372.093},{"t":"2026-03-09","H":0.227,"T":9.013,"CeS":371.848},{"t":"2026-03-10","H":0.225,"T":9.185,"CeS":371.539},{"t":"2026-03-11","H":0.224,"T":9.198,"CeS":370.949},{"t":"2026-03-12","H":0.223,"T":9.083,"CeS":370.6},{"t":"2026-03-13","H":0.224,"T":9.102,"CeS":370.584},{"t":"2026-03-14","H":0.247,"T":8.779,"CeS":358.663},{"t":"2026-03-15","H":0.321,"T":8.593,"CeS":366.789},{"t":"2026-03-16","H":0.276,"T":8.697,"CeS":380.888},{"t":"2026-03-17","H":0.26,"T":8.644,"CeS":379.547},{"t":"2026-03-18","H":0.251,"T":8.751,"CeS":377.493},{"t":"2026-03-19","H":0.243,"T":8.569,"CeS":377.673},{"t":"2026-03-20","H":0.24,"T":8.644,"CeS":377.26},{"t":"2026-03-21","H":0.238,"T":8.799,"CeS":376.685},{"t":"2026-03-22","H":0.236,"T":8.811,"CeS":376.531},{"t":"2026-03-23","H":0.234,"T":8.693,"CeS":376.26},{"t":"2026-03-24","H":0.231,"T":8.742,"CeS":375.508},{"t":"2026-03-25","H":0.232,"T":8.827,"CeS":373.294},{"t":"2026-03-26","H":0.234,"T":8.498,"CeS":373.009},{"t":"2026-03-27","H":0.231,"T":8.378,"CeS":375.451},{"t":"2026-03-28","H":0.23,"T":8.55,"CeS":374.884},{"t":"2026-03-29","H":0.231,"T":8.562,"CeS":374.502}],"BO-8":[{"t":"2025-04-10","H":0.193,"T":10.135,"CeS":null},{"t":"2025-04-11","H":0.201,"T":9.653,"CeS":null},{"t":"2025-04-12","H":0.202,"T":10.133,"CeS":null},{"t":"2025-04-13","H":0.201,"T":10.435,"CeS":null},{"t":"2025-04-14","H":0.205,"T":10.377,"CeS":null},{"t":"2025-04-15","H":0.209,"T":10.389,"CeS":null},{"t":"2025-04-16","H":0.203,"T":10.892,"CeS":null},{"t":"2025-04-17","H":0.253,"T":10.645,"CeS":null},{"t":"2025-04-18","H":0.267,"T":10.284,"CeS":null},{"t":"2025-04-19","H":0.245,"T":10.516,"CeS":null},{"t":"2025-04-20","H":0.239,"T":10.432,"CeS":null},{"t":"2025-04-21","H":0.234,"T":10.387,"CeS":null},{"t":"2025-04-22","H":0.225,"T":10.415,"CeS":null},{"t":"2025-04-23","H":0.225,"T":10.691,"CeS":null},{"t":"2025-04-24","H":0.288,"T":10.514,"CeS":null},{"t":"2025-04-25","H":0.247,"T":10.265,"CeS":null},{"t":"2025-04-26","H":0.23,"T":10.274,"CeS":null},{"t":"2025-04-27","H":0.217,"T":10.937,"CeS":null},{"t":"2025-04-28","H":0.216,"T":10.877,"CeS":null},{"t":"2025-04-29","H":0.214,"T":11.061,"CeS":null},{"t":"2025-04-30","H":0.213,"T":11.341,"CeS":null},{"t":"2025-05-01","H":0.215,"T":11.797,"CeS":null},{"t":"2025-05-02","H":0.213,"T":11.866,"CeS":null},{"t":"2025-05-03","H":0.214,"T":11.59,"CeS":null},{"t":"2025-05-04","H":0.213,"T":11.424,"CeS":null},{"t":"2025-05-05","H":0.228,"T":11.613,"CeS":null},{"t":"2025-05-06","H":0.252,"T":10.886,"CeS":null},{"t":"2025-05-07","H":0.275,"T":10.625,"CeS":null},{"t":"2025-05-08","H":0.294,"T":10.173,"CeS":null},{"t":"2025-05-09","H":0.269,"T":10.344,"CeS":null},{"t":"2025-05-10","H":0.253,"T":10.528,"CeS":null},{"t":"2025-05-11","H":0.238,"T":10.834,"CeS":null},{"t":"2025-05-12","H":0.23,"T":10.934,"CeS":null},{"t":"2025-05-13","H":0.225,"T":11.042,"CeS":null},{"t":"2025-05-14","H":0.256,"T":10.919,"CeS":null},{"t":"2025-05-15","H":0.239,"T":11.262,"CeS":null},{"t":"2025-05-16","H":0.227,"T":10.784,"CeS":null},{"t":"2025-05-17","H":0.22,"T":10.387,"CeS":null},{"t":"2025-05-18","H":0.215,"T":10.783,"CeS":null},{"t":"2025-05-19","H":0.21,"T":11.291,"CeS":369.664},{"t":"2025-05-20","H":0.212,"T":11.566,"CeS":366.953},{"t":"2025-05-21","H":0.216,"T":11.44,"CeS":365.904},{"t":"2025-05-22","H":0.312,"T":10.904,"CeS":352.467},{"t":"2025-05-23","H":0.305,"T":10.611,"CeS":363.292},{"t":"2025-05-24","H":0.256,"T":10.558,"CeS":368.1},{"t":"2025-05-25","H":0.234,"T":10.86,"CeS":371.029},{"t":"2025-05-26","H":0.226,"T":11.444,"CeS":368.084},{"t":"2025-05-27","H":0.268,"T":11.486,"CeS":364.711},{"t":"2025-05-28","H":0.25,"T":11.428,"CeS":371.23},{"t":"2025-05-29","H":0.234,"T":11.619,"CeS":370.285},{"t":"2025-05-30","H":0.223,"T":11.771,"CeS":370.608},{"t":"2025-05-31","H":0.217,"T":12.28,"CeS":368.333},{"t":"2025-06-01","H":0.213,"T":12.677,"CeS":367.217},{"t":"2025-06-02","H":0.21,"T":13.17,"CeS":366.218},{"t":"2025-06-03","H":0.21,"T":12.75,"CeS":366.54},{"t":"2025-06-04","H":0.207,"T":12.46,"CeS":366.412},{"t":"2025-06-05","H":0.205,"T":12.52,"CeS":365.232},{"t":"2025-06-06","H":0.201,"T":12.794,"CeS":364.398},{"t":"2025-06-07","H":0.2,"T":13.057,"CeS":363.272},{"t":"2025-06-08","H":0.2,"T":13.397,"CeS":361.783},{"t":"2025-06-09","H":0.197,"T":12.548,"CeS":360.983},{"t":"2025-06-10","H":0.196,"T":13.287,"CeS":359.931},{"t":"2025-06-11","H":0.195,"T":13.524,"CeS":358.351},{"t":"2025-06-12","H":0.194,"T":13.984,"CeS":357.638},{"t":"2025-06-13","H":0.193,"T":14.451,"CeS":357.051},{"t":"2025-06-14","H":0.192,"T":14.735,"CeS":355.929},{"t":"2025-06-15","H":0.191,"T":14.109,"CeS":355.529},{"t":"2025-06-16","H":0.19,"T":14.09,"CeS":354.828},{"t":"2025-06-17","H":0.19,"T":13.526,"CeS":354.063},{"t":"2025-06-18","H":0.19,"T":13.679,"CeS":353.778},{"t":"2025-06-19","H":0.19,"T":14.336,"CeS":352.623},{"t":"2025-06-20","H":0.19,"T":14.75,"CeS":351.652},{"t":"2025-06-21","H":0.191,"T":14.617,"CeS":347.3},{"t":"2025-06-22","H":0.19,"T":14.1,"CeS":346.606},{"t":"2025-06-23","H":0.189,"T":14.467,"CeS":351.958},{"t":"2025-06-24","H":0.188,"T":14.921,"CeS":350.758},{"t":"2025-06-25","H":0.187,"T":15.468,"CeS":350.405},{"t":"2025-06-26","H":0.186,"T":15.457,"CeS":349.73},{"t":"2025-06-27","H":0.187,"T":14.307,"CeS":351.767},{"t":"2025-06-28","H":0.183,"T":14.877,"CeS":350.889},{"t":"2025-06-29","H":0.183,"T":15.433,"CeS":349.767},{"t":"2025-06-30","H":0.183,"T":15.716,"CeS":348.951},{"t":"2025-07-01","H":0.184,"T":15.759,"CeS":348.248},{"t":"2025-07-02","H":0.184,"T":15.226,"CeS":348.691},{"t":"2025-07-03","H":0.183,"T":15.057,"CeS":348.731},{"t":"2025-07-04","H":0.182,"T":14.857,"CeS":349.092},{"t":"2025-07-05","H":0.18,"T":15.394,"CeS":347.109},{"t":"2025-07-06","H":0.197,"T":14.576,"CeS":331.319},{"t":"2025-07-07","H":0.198,"T":14.207,"CeS":338.652},{"t":"2025-07-08","H":0.211,"T":12.726,"CeS":338.592},{"t":"2025-07-09","H":0.202,"T":11.963,"CeS":356.167},{"t":"2025-07-10","H":0.216,"T":12.674,"CeS":354.482},{"t":"2025-07-11","H":0.215,"T":13.238,"CeS":351.969},{"t":"2025-07-12","H":0.213,"T":13.897,"CeS":349.908},{"t":"2025-07-13","H":0.233,"T":13.805,"CeS":326.481},{"t":"2025-07-14","H":0.224,"T":13.762,"CeS":350.205},{"t":"2025-07-15","H":0.22,"T":14.29,"CeS":350.122},{"t":"2025-07-16","H":0.22,"T":14.561,"CeS":348.261},{"t":"2025-07-17","H":0.219,"T":14.674,"CeS":348.951},{"t":"2025-07-18","H":0.219,"T":14.369,"CeS":350.555},{"t":"2025-07-19","H":0.218,"T":14.542,"CeS":348.351},{"t":"2025-07-20","H":0.218,"T":14.862,"CeS":345.329},{"t":"2025-07-21","H":0.236,"T":14.557,"CeS":319.959},{"t":"2025-07-22","H":0.223,"T":14.146,"CeS":348.874},{"t":"2025-07-23","H":0.22,"T":14.437,"CeS":349.34},{"t":"2025-07-24","H":0.328,"T":14.08,"CeS":323.43},{"t":"2025-07-25","H":0.314,"T":12.665,"CeS":352.737},{"t":"2025-07-26","H":0.265,"T":12.647,"CeS":355.962},{"t":"2025-07-27","H":0.261,"T":12.881,"CeS":361.984},{"t":"2025-07-28","H":0.246,"T":12.848,"CeS":354.236},{"t":"2025-07-29","H":0.238,"T":12.444,"CeS":354.58},{"t":"2025-07-30","H":0.233,"T":12.868,"CeS":353.739},{"t":"2025-07-31","H":0.229,"T":13.103,"CeS":351.937},{"t":"2025-08-01","H":0.228,"T":13.064,"CeS":350.818},{"t":"2025-08-02","H":0.276,"T":13.097,"CeS":336.946},{"t":"2025-08-03","H":0.252,"T":12.608,"CeS":360.673},{"t":"2025-08-04","H":0.24,"T":12.681,"CeS":356.718},{"t":"2025-08-05","H":0.234,"T":13.343,"CeS":355.358},{"t":"2025-08-06","H":0.23,"T":13.754,"CeS":353.46},{"t":"2025-08-07","H":0.226,"T":14.036,"CeS":352.54},{"t":"2025-08-08","H":0.224,"T":14.325,"CeS":349.976},{"t":"2025-08-09","H":0.223,"T":14.864,"CeS":349.673},{"t":"2025-08-10","H":0.22,"T":15.431,"CeS":350.072},{"t":"2025-08-11","H":0.219,"T":15.232,"CeS":349.884},{"t":"2025-08-12","H":0.218,"T":15.49,"CeS":348.286},{"t":"2025-08-13","H":0.218,"T":15.99,"CeS":347.712},{"t":"2025-08-14","H":0.217,"T":15.678,"CeS":347.56},{"t":"2025-08-15","H":0.215,"T":15.226,"CeS":347.085},{"t":"2025-08-16","H":0.214,"T":14.648,"CeS":347.599},{"t":"2025-08-17","H":0.214,"T":14.791,"CeS":347.475},{"t":"2025-08-18","H":0.213,"T":14.807,"CeS":347.418},{"t":"2025-08-19","H":0.214,"T":14.874,"CeS":347.121},{"t":"2025-08-20","H":0.227,"T":14.873,"CeS":328.58},{"t":"2025-08-21","H":0.224,"T":14.097,"CeS":342.502},{"t":"2025-08-22","H":0.217,"T":13.881,"CeS":347.788},{"t":"2025-08-23","H":0.213,"T":14.164,"CeS":348.815},{"t":"2025-08-24","H":0.214,"T":13.606,"CeS":348.59},{"t":"2025-08-25","H":0.213,"T":13.577,"CeS":347.68},{"t":"2025-08-26","H":0.21,"T":14.554,"CeS":346.609},{"t":"2025-08-27","H":0.213,"T":13.981,"CeS":345.37},{"t":"2025-08-28","H":0.239,"T":13.747,"CeS":333.844},{"t":"2025-08-29","H":0.372,"T":13.193,"CeS":339.971},{"t":"2025-08-30","H":0.455,"T":12.311,"CeS":324.329},{"t":"2025-08-31","H":0.364,"T":11.493,"CeS":359.937},{"t":"2025-09-01","H":0.304,"T":11.594,"CeS":368.481},{"t":"2025-09-02","H":0.319,"T":12.207,"CeS":363.522},{"t":"2025-09-03","H":0.301,"T":12.146,"CeS":376.624},{"t":"2025-09-04","H":0.27,"T":12.202,"CeS":377.444},{"t":"2025-09-05","H":0.257,"T":12.48,"CeS":372.34},{"t":"2025-09-06","H":0.246,"T":11.482,"CeS":372.141},{"t":"2025-09-07","H":0.24,"T":12.043,"CeS":367.99},{"t":"2025-09-08","H":0.239,"T":12.365,"CeS":365.45},{"t":"2025-09-09","H":0.236,"T":12.655,"CeS":363.985},{"t":"2025-09-10","H":0.35,"T":12.719,"CeS":357.211},{"t":"2025-09-11","H":0.298,"T":12.133,"CeS":377.021},{"t":"2025-09-12","H":0.264,"T":12.252,"CeS":379.468},{"t":"2025-09-13","H":0.329,"T":12.361,"CeS":371.022},{"t":"2025-09-14","H":0.303,"T":11.967,"CeS":377.62},{"t":"2025-09-15","H":0.268,"T":12.076,"CeS":380.238},{"t":"2025-09-16","H":0.255,"T":12.38,"CeS":377.763},{"t":"2025-09-17","H":0.246,"T":12.185,"CeS":375.595},{"t":"2025-09-18","H":0.24,"T":12.275,"CeS":373.614},{"t":"2025-09-19","H":0.238,"T":12.639,"CeS":371.274},{"t":"2025-09-20","H":0.234,"T":12.827,"CeS":368.266},{"t":"2025-09-21","H":0.231,"T":12.973,"CeS":365.504},{"t":"2025-09-22","H":0.276,"T":12.961,"CeS":355.838},{"t":"2025-09-23","H":0.28,"T":12.459,"CeS":372.956},{"t":"2025-09-24","H":0.289,"T":11.828,"CeS":379.468},{"t":"2025-09-25","H":0.269,"T":10.637,"CeS":377.762},{"t":"2025-09-26","H":0.288,"T":10.581,"CeS":377.853},{"t":"2025-09-27","H":0.447,"T":11.152,"CeS":384.549},{"t":"2025-09-28","H":0.374,"T":10.685,"CeS":392.185},{"t":"2025-09-29","H":0.318,"T":10.482,"CeS":391.788},{"t":"2025-09-30","H":0.27,"T":11.481,"CeS":383.114},{"t":"2025-10-01","H":0.263,"T":11.008,"CeS":381.725},{"t":"2025-10-02","H":0.252,"T":10.219,"CeS":377.427},{"t":"2025-10-03","H":0.246,"T":9.828,"CeS":372.884},{"t":"2025-10-04","H":0.242,"T":10.046,"CeS":369.483},{"t":"2025-10-05","H":0.242,"T":10.401,"CeS":366.202},{"t":"2025-10-06","H":0.236,"T":9.306,"CeS":367.106},{"t":"2025-10-07","H":0.233,"T":9.691,"CeS":364.776},{"t":"2025-10-08","H":0.231,"T":10.145,"CeS":362.098},{"t":"2025-10-09","H":0.23,"T":10.89,"CeS":359.937},{"t":"2025-10-10","H":0.23,"T":11.134,"CeS":358.16},{"t":"2025-10-11","H":0.229,"T":11.078,"CeS":355.195},{"t":"2025-10-12","H":0.228,"T":11.44,"CeS":354.176},{"t":"2025-10-13","H":0.228,"T":11.503,"CeS":352.79},{"t":"2025-10-14","H":0.225,"T":11.116,"CeS":351.82},{"t":"2025-10-15","H":0.224,"T":11.18,"CeS":353.163},{"t":"2025-10-16","H":0.222,"T":11.004,"CeS":351.847},{"t":"2025-10-17","H":0.22,"T":10.67,"CeS":351.53},{"t":"2025-10-18","H":0.22,"T":9.82,"CeS":352.209},{"t":"2025-10-19","H":0.22,"T":10.484,"CeS":350.953},{"t":"2025-10-20","H":0.22,"T":10.061,"CeS":349.647},{"t":"2025-10-21","H":0.222,"T":10.575,"CeS":348.653},{"t":"2025-10-22","H":0.22,"T":10.671,"CeS":351.101},{"t":"2025-10-23","H":0.227,"T":10.779,"CeS":345.915},{"t":"2025-10-24","H":0.225,"T":8.733,"CeS":354.686},{"t":"2025-10-25","H":0.22,"T":8.195,"CeS":356.591},{"t":"2025-10-26","H":0.22,"T":8.58,"CeS":353.928},{"t":"2025-10-27","H":0.22,"T":7.993,"CeS":353.306},{"t":"2025-10-28","H":0.219,"T":8.245,"CeS":352.522},{"t":"2025-10-29","H":0.219,"T":8.913,"CeS":349.498},{"t":"2025-10-30","H":0.254,"T":10.382,"CeS":343.557},{"t":"2025-10-31","H":0.233,"T":10.854,"CeS":358.973},{"t":"2025-11-01","H":0.233,"T":11.266,"CeS":358.147},{"t":"2025-11-02","H":0.299,"T":11.049,"CeS":348.971},{"t":"2025-11-03","H":0.342,"T":9.57,"CeS":378.769},{"t":"2025-11-04","H":0.277,"T":8.805,"CeS":380.911},{"t":"2025-11-05","H":0.253,"T":8.359,"CeS":380.938},{"t":"2025-11-06","H":0.244,"T":7.746,"CeS":381.982},{"t":"2025-11-07","H":0.239,"T":7.947,"CeS":380.991},{"t":"2025-11-08","H":0.234,"T":7.844,"CeS":379.02},{"t":"2025-11-09","H":0.23,"T":8.644,"CeS":376.001},{"t":"2025-11-10","H":0.23,"T":7.807,"CeS":375.262},{"t":"2025-11-11","H":0.229,"T":7.808,"CeS":373.138},{"t":"2025-11-12","H":0.226,"T":8.083,"CeS":370.888},{"t":"2025-11-13","H":0.223,"T":8.646,"CeS":368.024},{"t":"2025-11-14","H":0.221,"T":9.182,"CeS":365.275},{"t":"2025-11-15","H":0.225,"T":9.992,"CeS":360.611},{"t":"2025-11-16","H":0.286,"T":10.153,"CeS":352.391},{"t":"2025-11-17","H":0.364,"T":10.101,"CeS":376.815},{"t":"2025-11-18","H":0.309,"T":8.632,"CeS":383.492},{"t":"2025-11-19","H":0.269,"T":8.136,"CeS":388.803},{"t":"2025-11-20","H":0.254,"T":7.809,"CeS":387.038},{"t":"2025-11-21","H":0.246,"T":6.852,"CeS":382.564},{"t":"2025-11-22","H":0.236,"T":6.249,"CeS":385.699},{"t":"2025-11-23","H":0.232,"T":5.569,"CeS":384.586},{"t":"2025-11-24","H":0.231,"T":6.404,"CeS":379.744},{"t":"2025-11-25","H":0.238,"T":6.466,"CeS":376.592},{"t":"2025-11-26","H":0.236,"T":6.436,"CeS":380.045},{"t":"2025-11-27","H":null,"T":null,"CeS":null},{"t":"2025-11-28","H":null,"T":null,"CeS":null},{"t":"2025-11-29","H":null,"T":null,"CeS":null},{"t":"2025-11-30","H":null,"T":null,"CeS":null},{"t":"2025-12-01","H":null,"T":null,"CeS":null},{"t":"2025-12-02","H":null,"T":null,"CeS":null},{"t":"2025-12-03","H":null,"T":null,"CeS":null},{"t":"2025-12-04","H":null,"T":null,"CeS":null},{"t":"2025-12-05","H":null,"T":null,"CeS":null},{"t":"2025-12-06","H":null,"T":null,"CeS":null},{"t":"2025-12-07","H":null,"T":null,"CeS":null},{"t":"2025-12-08","H":null,"T":null,"CeS":null},{"t":"2025-12-09","H":null,"T":null,"CeS":null},{"t":"2025-12-10","H":null,"T":null,"CeS":null},{"t":"2025-12-11","H":0.209,"T":8.036,"CeS":360.813},{"t":"2025-12-12","H":0.209,"T":7.0,"CeS":364.118},{"t":"2025-12-13","H":0.206,"T":6.705,"CeS":364.27},{"t":"2025-12-14","H":0.205,"T":6.467,"CeS":362.887},{"t":"2025-12-15","H":0.204,"T":6.299,"CeS":361.912},{"t":"2025-12-16","H":0.207,"T":6.973,"CeS":355.776},{"t":"2025-12-17","H":0.211,"T":8.344,"CeS":352.027},{"t":"2025-12-18","H":0.219,"T":8.843,"CeS":356.641},{"t":"2025-12-19","H":0.215,"T":8.431,"CeS":362.559},{"t":"2025-12-20","H":0.212,"T":7.61,"CeS":362.141},{"t":"2025-12-21","H":0.21,"T":7.598,"CeS":361.048},{"t":"2025-12-22","H":0.21,"T":7.675,"CeS":361.713},{"t":"2025-12-23","H":0.21,"T":7.67,"CeS":361.217},{"t":"2025-12-24","H":0.21,"T":7.669,"CeS":358.187},{"t":"2025-12-25","H":0.21,"T":7.469,"CeS":359.193}],"AL-100":[{"t":"2025-04-10","H":0.23,"T":8.685,"CeS":416.446},{"t":"2025-04-11","H":0.23,"T":9.475,"CeS":416.984},{"t":"2025-04-12","H":0.229,"T":10.122,"CeS":415.507},{"t":"2025-04-13","H":0.225,"T":10.5,"CeS":417.445},{"t":"2025-04-14","H":0.224,"T":10.399,"CeS":418.969},{"t":"2025-04-15","H":0.23,"T":10.329,"CeS":413.673},{"t":"2025-04-16","H":0.221,"T":10.903,"CeS":417.043},{"t":"2025-04-17","H":0.297,"T":10.921,"CeS":377.774},{"t":"2025-04-18","H":0.308,"T":10.541,"CeS":391.362},{"t":"2025-04-19","H":0.278,"T":10.887,"CeS":399.764},{"t":"2025-04-20","H":0.269,"T":10.73,"CeS":406.004},{"t":"2025-04-21","H":0.266,"T":10.707,"CeS":409.663},{"t":"2025-04-22","H":0.256,"T":10.624,"CeS":414.553},{"t":"2025-04-23","H":0.25,"T":11.107,"CeS":418.535},{"t":"2025-04-24","H":0.335,"T":10.859,"CeS":386.953},{"t":"2025-04-25","H":0.293,"T":10.378,"CeS":400.654},{"t":"2025-04-26","H":0.268,"T":10.389,"CeS":410.534},{"t":"2025-04-27","H":0.254,"T":11.35,"CeS":414.594},{"t":"2025-04-28","H":0.244,"T":11.413,"CeS":418.364},{"t":"2025-04-29","H":0.24,"T":11.672,"CeS":421.365},{"t":"2025-04-30","H":0.234,"T":12.05,"CeS":421.527},{"t":"2025-05-01","H":0.23,"T":12.525,"CeS":425.003},{"t":"2025-05-02","H":0.23,"T":12.865,"CeS":426.078},{"t":"2025-05-03","H":0.226,"T":12.706,"CeS":426.983},{"t":"2025-05-04","H":0.22,"T":12.402,"CeS":426.672},{"t":"2025-05-05","H":0.253,"T":12.645,"CeS":392.634},{"t":"2025-05-06","H":0.281,"T":11.811,"CeS":408.617},{"t":"2025-05-07","H":0.314,"T":11.394,"CeS":395.048},{"t":"2025-05-08","H":0.337,"T":10.532,"CeS":403.051},{"t":"2025-05-09","H":0.314,"T":10.766,"CeS":404.28},{"t":"2025-05-10","H":0.299,"T":10.934,"CeS":416.737},{"t":"2025-05-11","H":0.278,"T":11.374,"CeS":421.181},{"t":"2025-05-12","H":0.265,"T":11.642,"CeS":423.375},{"t":"2025-05-13","H":0.258,"T":11.978,"CeS":417.614},{"t":"2025-05-14","H":0.283,"T":11.719,"CeS":412.953},{"t":"2025-05-15","H":0.272,"T":12.117,"CeS":420.506},{"t":"2025-05-16","H":0.258,"T":11.558,"CeS":420.849},{"t":"2025-05-17","H":0.248,"T":10.99,"CeS":422.535},{"t":"2025-05-18","H":0.241,"T":11.378,"CeS":423.107},{"t":"2025-05-19","H":0.234,"T":11.902,"CeS":425.1},{"t":"2025-05-20","H":0.244,"T":12.581,"CeS":408.665},{"t":"2025-05-21","H":0.246,"T":12.475,"CeS":410.352},{"t":"2025-05-22","H":0.377,"T":11.667,"CeS":382.992},{"t":"2025-05-23","H":0.354,"T":11.29,"CeS":414.969},{"t":"2025-05-24","H":0.302,"T":11.195,"CeS":425.671},{"t":"2025-05-25","H":0.282,"T":11.596,"CeS":428.958},{"t":"2025-05-26","H":0.268,"T":12.403,"CeS":427.808},{"t":"2025-05-27","H":0.318,"T":12.644,"CeS":403.466},{"t":"2025-05-28","H":0.296,"T":12.58,"CeS":421.325},{"t":"2025-05-29","H":0.277,"T":12.897,"CeS":425.607},{"t":"2025-05-30","H":0.265,"T":13.025,"CeS":427.894},{"t":"2025-05-31","H":0.26,"T":13.763,"CeS":429.257},{"t":"2025-06-01","H":0.252,"T":14.427,"CeS":429.659},{"t":"2025-06-02","H":0.257,"T":14.787,"CeS":427.674},{"t":"2025-06-03","H":0.26,"T":14.808,"CeS":428.925},{"t":"2025-06-04","H":0.251,"T":14.585,"CeS":430.308},{"t":"2025-06-05","H":0.257,"T":14.531,"CeS":428.365},{"t":"2025-06-06","H":0.254,"T":14.742,"CeS":428.902},{"t":"2025-06-07","H":0.25,"T":15.088,"CeS":430.065},{"t":"2025-06-08","H":0.25,"T":15.455,"CeS":429.93},{"t":"2025-06-09","H":0.25,"T":14.672,"CeS":427.435},{"t":"2025-06-10","H":0.25,"T":15.223,"CeS":427.806},{"t":"2025-06-11","H":0.251,"T":15.544,"CeS":427.798},{"t":"2025-06-12","H":0.25,"T":16.082,"CeS":427.24},{"t":"2025-06-13","H":0.253,"T":16.616,"CeS":427.775},{"t":"2025-06-14","H":0.25,"T":17.124,"CeS":426.438},{"t":"2025-06-15","H":0.253,"T":16.655,"CeS":426.017},{"t":"2025-06-16","H":0.257,"T":16.748,"CeS":423.468},{"t":"2025-06-17","H":0.257,"T":16.187,"CeS":423.778},{"t":"2025-06-18","H":0.256,"T":16.052,"CeS":422.372},{"t":"2025-06-19","H":0.257,"T":16.572,"CeS":421.472},{"t":"2025-06-20","H":0.256,"T":17.131,"CeS":421.822},{"t":"2025-06-21","H":0.264,"T":17.295,"CeS":414.602},{"t":"2025-06-22","H":0.253,"T":16.537,"CeS":421.541},{"t":"2025-06-23","H":0.248,"T":16.909,"CeS":423.414},{"t":"2025-06-24","H":0.243,"T":17.285,"CeS":422.76},{"t":"2025-06-25","H":0.242,"T":17.794,"CeS":421.843},{"t":"2025-06-26","H":0.248,"T":18.142,"CeS":419.87},{"t":"2025-06-27","H":0.247,"T":17.386,"CeS":420.116},{"t":"2025-06-28","H":0.246,"T":17.409,"CeS":420.096},{"t":"2025-06-29","H":0.247,"T":17.88,"CeS":419.849},{"t":"2025-06-30","H":0.252,"T":18.292,"CeS":419.022},{"t":"2025-07-01","H":0.255,"T":18.476,"CeS":417.106},{"t":"2025-07-02","H":0.246,"T":18.077,"CeS":417.971},{"t":"2025-07-03","H":0.2,"T":17.836,"CeS":417.797},{"t":"2025-07-04","H":0.202,"T":17.686,"CeS":417.775},{"t":"2025-07-05","H":0.213,"T":17.757,"CeS":410.209},{"t":"2025-07-06","H":0.232,"T":17.316,"CeS":394.322},{"t":"2025-07-07","H":0.222,"T":16.719,"CeS":395.504},{"t":"2025-07-08","H":0.242,"T":14.983,"CeS":381.03},{"t":"2025-07-09","H":0.207,"T":14.263,"CeS":415.884},{"t":"2025-07-10","H":0.2,"T":14.777,"CeS":418.299},{"t":"2025-07-11","H":0.2,"T":15.244,"CeS":418.128},{"t":"2025-07-12","H":0.2,"T":15.95,"CeS":417.828},{"t":"2025-07-13","H":0.231,"T":16.104,"CeS":372.901},{"t":"2025-07-14","H":0.208,"T":15.995,"CeS":415.308},{"t":"2025-07-15","H":0.2,"T":16.473,"CeS":418.818},{"t":"2025-07-16","H":0.2,"T":16.782,"CeS":417.994},{"t":"2025-07-17","H":0.2,"T":16.927,"CeS":419.036},{"t":"2025-07-18","H":0.2,"T":16.902,"CeS":417.637},{"t":"2025-07-19","H":0.2,"T":16.956,"CeS":417.819},{"t":"2025-07-20","H":0.2,"T":17.284,"CeS":417.204},{"t":"2025-07-21","H":0.251,"T":17.082,"CeS":359.372},{"t":"2025-07-22","H":0.213,"T":16.571,"CeS":416.198},{"t":"2025-07-23","H":0.201,"T":16.931,"CeS":420.783},{"t":"2025-07-24","H":0.356,"T":15.952,"CeS":354.481},{"t":"2025-07-25","H":0.344,"T":14.391,"CeS":395.264},{"t":"2025-07-26","H":0.282,"T":14.597,"CeS":403.669},{"t":"2025-07-27","H":0.272,"T":14.758,"CeS":419.553},{"t":"2025-07-28","H":0.256,"T":15.156,"CeS":418.317},{"t":"2025-07-29","H":0.241,"T":14.594,"CeS":422.743},{"t":"2025-07-30","H":0.23,"T":15.092,"CeS":424.594},{"t":"2025-07-31","H":0.226,"T":15.262,"CeS":424.213},{"t":"2025-08-01","H":0.22,"T":15.497,"CeS":420.315},{"t":"2025-08-02","H":0.326,"T":14.816,"CeS":376.564},{"t":"2025-08-03","H":0.282,"T":14.077,"CeS":421.819},{"t":"2025-08-04","H":0.254,"T":14.36,"CeS":423.564},{"t":"2025-08-05","H":0.243,"T":15.105,"CeS":425.193},{"t":"2025-08-06","H":0.235,"T":15.743,"CeS":426.813},{"t":"2025-08-07","H":0.229,"T":16.332,"CeS":423.714},{"t":"2025-08-08","H":0.22,"T":16.627,"CeS":422.92},{"t":"2025-08-09","H":0.22,"T":17.234,"CeS":420.963},{"t":"2025-08-10","H":0.22,"T":17.876,"CeS":418.689},{"t":"2025-08-11","H":0.22,"T":17.937,"CeS":416.793},{"t":"2025-08-12","H":0.216,"T":18.09,"CeS":417.327},{"t":"2025-08-13","H":0.216,"T":18.597,"CeS":416.96},{"t":"2025-08-14","H":0.215,"T":18.603,"CeS":415.556},{"t":"2025-08-15","H":0.213,"T":18.26,"CeS":415.173},{"t":"2025-08-16","H":0.216,"T":17.69,"CeS":413.869},{"t":"2025-08-17","H":0.214,"T":17.65,"CeS":413.039},{"t":"2025-08-18","H":0.21,"T":17.734,"CeS":412.938},{"t":"2025-08-19","H":0.21,"T":17.824,"CeS":413.115},{"t":"2025-08-20","H":0.237,"T":17.754,"CeS":389.701},{"t":"2025-08-21","H":0.224,"T":17.129,"CeS":411.298},{"t":"2025-08-22","H":0.219,"T":16.626,"CeS":416.696},{"t":"2025-08-23","H":0.211,"T":16.913,"CeS":416.518},{"t":"2025-08-24","H":0.211,"T":16.571,"CeS":413.926},{"t":"2025-08-25","H":0.21,"T":16.407,"CeS":414.524},{"t":"2025-08-26","H":0.21,"T":16.367,"CeS":413.639},{"t":"2025-08-27","H":0.215,"T":16.649,"CeS":409.3},{"t":"2025-08-28","H":0.258,"T":16.507,"CeS":386.217},{"t":"2025-08-29","H":0.398,"T":14.686,"CeS":368.511},{"t":"2025-08-30","H":0.474,"T":13.18,"CeS":382.571},{"t":"2025-08-31","H":0.345,"T":13.115,"CeS":424.645},{"t":"2025-09-01","H":0.296,"T":13.795,"CeS":431.188},{"t":"2025-09-02","H":0.346,"T":13.99,"CeS":403.17},{"t":"2025-09-03","H":0.335,"T":13.297,"CeS":428.427},{"t":"2025-09-04","H":0.296,"T":13.994,"CeS":435.286},{"t":"2025-09-05","H":0.283,"T":14.477,"CeS":426.169},{"t":"2025-09-06","H":0.267,"T":13.295,"CeS":429.554},{"t":"2025-09-07","H":0.26,"T":13.799,"CeS":427.995},{"t":"2025-09-08","H":0.255,"T":14.331,"CeS":426.206},{"t":"2025-09-09","H":0.25,"T":14.801,"CeS":425.563},{"t":"2025-09-10","H":0.387,"T":14.315,"CeS":388.849},{"t":"2025-09-11","H":0.332,"T":13.734,"CeS":427.877},{"t":"2025-09-12","H":0.294,"T":14.164,"CeS":431.782},{"t":"2025-09-13","H":0.343,"T":14.1,"CeS":413.099},{"t":"2025-09-14","H":0.316,"T":13.952,"CeS":432.904},{"t":"2025-09-15","H":0.291,"T":13.995,"CeS":433.992},{"t":"2025-09-16","H":0.279,"T":14.453,"CeS":431.049},{"t":"2025-09-17","H":0.266,"T":14.293,"CeS":427.825},{"t":"2025-09-18","H":0.257,"T":14.337,"CeS":426.449},{"t":"2025-09-19","H":0.25,"T":14.794,"CeS":426.602},{"t":"2025-09-20","H":0.25,"T":15.186,"CeS":426.859},{"t":"2025-09-21","H":0.245,"T":15.385,"CeS":426.665},{"t":"2025-09-22","H":0.301,"T":15.099,"CeS":400.825},{"t":"2025-09-23","H":0.314,"T":14.372,"CeS":410.543},{"t":"2025-09-24","H":0.339,"T":12.986,"CeS":420.156},{"t":"2025-09-25","H":0.311,"T":11.613,"CeS":423.096},{"t":"2025-09-26","H":0.329,"T":11.356,"CeS":422.501},{"t":"2025-09-27","H":0.474,"T":11.506,"CeS":416.697},{"t":"2025-09-28","H":0.381,"T":11.295,"CeS":442.677},{"t":"2025-09-29","H":0.323,"T":11.375,"CeS":443.319},{"t":"2025-09-30","H":0.297,"T":11.662,"CeS":440.771},{"t":"2025-10-01","H":0.283,"T":12.101,"CeS":437.64},{"t":"2025-10-02","H":0.272,"T":11.209,"CeS":434.743},{"t":"2025-10-03","H":0.269,"T":10.528,"CeS":432.238},{"t":"2025-10-04","H":0.26,"T":10.556,"CeS":430.729},{"t":"2025-10-05","H":0.261,"T":11.319,"CeS":429.042},{"t":"2025-10-06","H":0.254,"T":10.167,"CeS":426.428},{"t":"2025-10-07","H":0.25,"T":10.223,"CeS":428.12},{"t":"2025-10-08","H":0.25,"T":10.803,"CeS":427.52},{"t":"2025-10-09","H":0.25,"T":11.7,"CeS":428.176},{"t":"2025-10-10","H":0.245,"T":12.206,"CeS":427.685},{"t":"2025-10-11","H":0.24,"T":12.278,"CeS":427.54},{"t":"2025-10-12","H":0.24,"T":12.719,"CeS":429.655},{"t":"2025-10-13","H":0.24,"T":12.949,"CeS":430.042},{"t":"2025-10-14","H":0.24,"T":12.67,"CeS":429.355},{"t":"2025-10-15","H":0.24,"T":12.671,"CeS":428.805},{"t":"2025-10-16","H":0.24,"T":12.545,"CeS":426.563},{"t":"2025-10-17","H":0.237,"T":12.282,"CeS":426.45},{"t":"2025-10-18","H":0.232,"T":11.175,"CeS":425.516},{"t":"2025-10-19","H":0.233,"T":11.822,"CeS":425.867},{"t":"2025-10-20","H":0.242,"T":11.273,"CeS":423.641},{"t":"2025-10-21","H":0.245,"T":11.569,"CeS":423.841},{"t":"2025-10-22","H":0.238,"T":11.858,"CeS":428.228},{"t":"2025-10-23","H":0.251,"T":11.936,"CeS":416.901},{"t":"2025-10-24","H":0.246,"T":10.059,"CeS":423.053},{"t":"2025-10-25","H":0.236,"T":9.023,"CeS":425.387},{"t":"2025-10-26","H":0.23,"T":9.332,"CeS":424.991},{"t":"2025-10-27","H":0.23,"T":8.681,"CeS":423.062},{"t":"2025-10-28","H":0.23,"T":8.706,"CeS":424.296},{"t":"2025-10-29","H":0.234,"T":9.183,"CeS":419.625},{"t":"2025-10-30","H":0.303,"T":10.623,"CeS":402.584},{"t":"2025-10-31","H":0.271,"T":11.28,"CeS":429.113},{"t":"2025-11-01","H":0.27,"T":11.904,"CeS":432.106},{"t":"2025-11-02","H":0.349,"T":11.709,"CeS":406.975},{"t":"2025-11-03","H":0.375,"T":9.52,"CeS":429.066},{"t":"2025-11-04","H":0.304,"T":8.395,"CeS":438.047},{"t":"2025-11-05","H":0.284,"T":7.913,"CeS":438.636},{"t":"2025-11-06","H":0.277,"T":7.124,"CeS":437.155},{"t":"2025-11-07","H":0.27,"T":7.247,"CeS":435.645},{"t":"2025-11-08","H":0.261,"T":7.147,"CeS":433.746},{"t":"2025-11-09","H":0.26,"T":8.169,"CeS":432.021},{"t":"2025-11-10","H":0.26,"T":7.404,"CeS":431.058},{"t":"2025-11-11","H":0.26,"T":7.3,"CeS":429.379},{"t":"2025-11-12","H":0.259,"T":7.713,"CeS":427.598},{"t":"2025-11-13","H":0.252,"T":8.206,"CeS":426.938},{"t":"2025-11-14","H":0.25,"T":8.771,"CeS":426.242},{"t":"2025-11-15","H":0.262,"T":9.686,"CeS":419.445},{"t":"2025-11-16","H":0.344,"T":10.205,"CeS":390.815},{"t":"2025-11-17","H":0.403,"T":10.193,"CeS":416.736},{"t":"2025-11-18","H":0.332,"T":7.824,"CeS":439.996},{"t":"2025-11-19","H":0.3,"T":7.288,"CeS":442.906},{"t":"2025-11-20","H":0.285,"T":6.935,"CeS":438.809},{"t":"2025-11-21","H":0.28,"T":5.799,"CeS":432.594},{"t":"2025-11-22","H":0.27,"T":5.065,"CeS":447.012},{"t":"2025-11-23","H":0.269,"T":4.208,"CeS":438.037},{"t":"2025-11-24","H":0.269,"T":4.988,"CeS":434.452},{"t":"2025-11-25","H":0.278,"T":5.178,"CeS":430.356},{"t":"2025-11-26","H":0.279,"T":5.058,"CeS":437.702},{"t":"2025-11-27","H":0.27,"T":4.227,"CeS":432.797},{"t":"2025-11-28","H":0.27,"T":3.638,"CeS":421.777},{"t":"2025-11-29","H":0.269,"T":3.951,"CeS":430.947},{"t":"2025-11-30","H":0.26,"T":4.323,"CeS":430.046},{"t":"2025-12-01","H":0.266,"T":5.824,"CeS":429.659},{"t":"2025-12-02","H":0.27,"T":6.681,"CeS":434.931},{"t":"2025-12-03","H":0.261,"T":7.038,"CeS":435.923},{"t":"2025-12-04","H":0.26,"T":7.221,"CeS":434.641},{"t":"2025-12-05","H":0.26,"T":7.193,"CeS":429.097},{"t":"2025-12-06","H":0.255,"T":5.711,"CeS":426.595},{"t":"2025-12-07","H":0.25,"T":5.757,"CeS":426.083},{"t":"2025-12-08","H":0.25,"T":5.785,"CeS":425.536},{"t":"2025-12-09","H":0.25,"T":5.592,"CeS":425.304},{"t":"2025-12-10","H":0.25,"T":5.44,"CeS":424.457},{"t":"2025-12-11","H":0.25,"T":6.337,"CeS":424.15},{"t":"2025-12-12","H":0.25,"T":5.513,"CeS":424.7},{"t":"2025-12-13","H":0.248,"T":5.065,"CeS":423.569},{"t":"2025-12-14","H":0.243,"T":4.713,"CeS":423.512},{"t":"2025-12-15","H":0.24,"T":4.464,"CeS":422.694},{"t":"2025-12-16","H":0.247,"T":5.212,"CeS":415.014},{"t":"2025-12-17","H":0.26,"T":6.815,"CeS":416.071},{"t":"2025-12-18","H":0.266,"T":7.765,"CeS":427.545},{"t":"2025-12-19","H":0.26,"T":7.491,"CeS":429.702},{"t":"2025-12-20","H":0.255,"T":6.432,"CeS":424.91},{"t":"2025-12-21","H":0.25,"T":6.186,"CeS":424.051},{"t":"2025-12-22","H":0.25,"T":6.382,"CeS":413.672},{"t":"2025-12-23","H":0.25,"T":6.392,"CeS":417.543},{"t":"2025-12-24","H":0.251,"T":6.374,"CeS":409.111},{"t":"2025-12-25","H":0.25,"T":6.479,"CeS":416.075},{"t":"2025-12-26","H":0.248,"T":6.451,"CeS":421.542},{"t":"2025-12-27","H":0.241,"T":5.132,"CeS":421.528},{"t":"2025-12-28","H":0.241,"T":4.421,"CeS":420.295},{"t":"2025-12-29","H":0.24,"T":3.949,"CeS":419.399},{"t":"2025-12-30","H":0.24,"T":3.396,"CeS":418.759},{"t":"2025-12-31","H":0.24,"T":3.469,"CeS":417.039},{"t":"2026-01-01","H":0.24,"T":2.799,"CeS":417.548},{"t":"2026-01-02","H":null,"T":null,"CeS":null},{"t":"2026-01-03","H":null,"T":null,"CeS":null},{"t":"2026-01-04","H":null,"T":null,"CeS":null},{"t":"2026-01-05","H":null,"T":null,"CeS":null},{"t":"2026-01-06","H":null,"T":null,"CeS":null},{"t":"2026-01-07","H":null,"T":null,"CeS":null},{"t":"2026-01-08","H":null,"T":null,"CeS":null},{"t":"2026-01-09","H":0.23,"T":null,"CeS":414.124},{"t":"2026-01-10","H":0.23,"T":null,"CeS":415.378},{"t":"2026-01-11","H":0.23,"T":null,"CeS":414.358},{"t":"2026-01-12","H":0.23,"T":null,"CeS":414.074},{"t":"2026-01-13","H":0.23,"T":2.733,"CeS":414.142},{"t":"2026-01-14","H":0.23,"T":3.569,"CeS":411.176},{"t":"2026-01-15","H":0.232,"T":4.539,"CeS":411.053},{"t":"2026-01-16","H":0.23,"T":5.158,"CeS":413.23},{"t":"2026-01-17","H":0.23,"T":5.382,"CeS":414.957},{"t":"2026-01-18","H":0.23,"T":4.556,"CeS":413.371},{"t":"2026-01-19","H":0.23,"T":3.26,"CeS":413.181},{"t":"2026-01-20","H":0.23,"T":2.646,"CeS":411.56},{"t":"2026-01-21","H":0.23,"T":2.604,"CeS":415.671},{"t":"2026-01-22","H":0.23,"T":2.864,"CeS":411.587},{"t":"2026-01-23","H":0.23,"T":3.345,"CeS":426.842},{"t":"2026-01-24","H":0.24,"T":3.507,"CeS":413.432},{"t":"2026-01-25","H":null,"T":null,"CeS":null},{"t":"2026-01-26","H":null,"T":null,"CeS":null},{"t":"2026-01-27","H":null,"T":null,"CeS":null},{"t":"2026-01-28","H":null,"T":null,"CeS":null},{"t":"2026-01-29","H":null,"T":null,"CeS":null},{"t":"2026-01-30","H":null,"T":null,"CeS":null},{"t":"2026-01-31","H":null,"T":null,"CeS":null},{"t":"2026-02-01","H":null,"T":null,"CeS":null},{"t":"2026-02-02","H":0.25,"T":4.797,"CeS":410.436},{"t":"2026-02-03","H":0.256,"T":4.407,"CeS":418.25},{"t":"2026-02-04","H":0.277,"T":5.26,"CeS":423.09},{"t":"2026-02-05","H":0.32,"T":6.249,"CeS":406.606},{"t":"2026-02-06","H":0.296,"T":6.57,"CeS":409.584},{"t":"2026-02-07","H":0.281,"T":6.134,"CeS":414.701},{"t":"2026-02-08","H":0.272,"T":6.563,"CeS":413.295},{"t":"2026-02-09","H":0.269,"T":6.391,"CeS":416.54},{"t":"2026-02-10","H":0.262,"T":6.531,"CeS":413.951},{"t":"2026-02-11","H":0.27,"T":6.959,"CeS":414.236},{"t":"2026-02-12","H":0.269,"T":7.139,"CeS":417.985},{"t":"2026-02-13","H":0.26,"T":6.131,"CeS":417.347},{"t":"2026-02-14","H":0.26,"T":6.703,"CeS":412.686},{"t":"2026-02-15","H":0.254,"T":6.054,"CeS":415.468},{"t":"2026-02-16","H":0.251,"T":5.597,"CeS":415.107},{"t":"2026-02-17","H":0.25,"T":4.968,"CeS":414.436},{"t":"2026-02-18","H":0.25,"T":4.462,"CeS":413.962},{"t":"2026-02-19","H":0.296,"T":4.747,"CeS":378.853},{"t":"2026-02-20","H":0.305,"T":5.626,"CeS":411.99},{"t":"2026-02-21","H":0.292,"T":6.056,"CeS":413.431},{"t":"2026-02-22","H":0.279,"T":5.828,"CeS":415.153},{"t":"2026-02-23","H":0.27,"T":6.034,"CeS":415.534},{"t":"2026-02-24","H":0.268,"T":6.439,"CeS":415.261},{"t":"2026-02-25","H":0.26,"T":7.221,"CeS":413.983},{"t":"2026-02-26","H":0.256,"T":6.513,"CeS":415.014},{"t":"2026-02-27","H":0.25,"T":6.758,"CeS":413.537},{"t":"2026-02-28","H":0.25,"T":7.31,"CeS":412.617},{"t":"2026-03-01","H":0.25,"T":8.017,"CeS":413.755},{"t":"2026-03-02","H":0.25,"T":8.063,"CeS":411.979},{"t":"2026-03-03","H":0.249,"T":7.745,"CeS":413.848},{"t":"2026-03-04","H":0.242,"T":7.683,"CeS":412.089},{"t":"2026-03-05","H":0.24,"T":7.62,"CeS":412.101},{"t":"2026-03-06","H":0.24,"T":7.056,"CeS":383.976},{"t":"2026-03-07","H":0.24,"T":6.966,"CeS":409.686},{"t":"2026-03-08","H":0.24,"T":6.992,"CeS":409.218},{"t":"2026-03-09","H":0.24,"T":7.413,"CeS":409.099},{"t":"2026-03-10","H":0.24,"T":8.109,"CeS":408.098},{"t":"2026-03-11","H":0.24,"T":8.432,"CeS":408.539},{"t":"2026-03-12","H":0.241,"T":8.232,"CeS":406.216},{"t":"2026-03-13","H":0.24,"T":8.195,"CeS":409.778},{"t":"2026-03-14","H":0.266,"T":7.799,"CeS":384.808},{"t":"2026-03-15","H":0.337,"T":8.099,"CeS":384.427},{"t":"2026-03-16","H":0.291,"T":7.711,"CeS":399.969},{"t":"2026-03-17","H":0.275,"T":7.024,"CeS":403.067},{"t":"2026-03-18","H":0.266,"T":7.377,"CeS":403.062},{"t":"2026-03-19","H":0.26,"T":6.714,"CeS":407.603},{"t":"2026-03-20","H":0.259,"T":6.974,"CeS":407.031},{"t":"2026-03-21","H":0.25,"T":6.99,"CeS":404.64},{"t":"2026-03-22","H":0.25,"T":7.24,"CeS":404.416},{"t":"2026-03-23","H":0.25,"T":7.147,"CeS":404.257},{"t":"2026-03-24","H":0.25,"T":7.082,"CeS":404.824},{"t":"2026-03-25","H":0.251,"T":7.308,"CeS":407.256},{"t":"2026-03-26","H":0.25,"T":6.785,"CeS":422.238},{"t":"2026-03-27","H":0.25,"T":6.052,"CeS":415.614},{"t":"2026-03-28","H":0.25,"T":6.3,"CeS":415.133},{"t":"2026-03-29","H":0.25,"T":6.257,"CeS":493.38}]};
+const DIVER   = {"pz2":[{"t":"2023-01-31","H":111.519,"T":8.25},{"t":"2023-02-01","H":111.722,"T":8.34},{"t":"2023-02-02","H":111.807,"T":8.377},{"t":"2023-02-03","H":111.987,"T":8.45},{"t":"2023-02-04","H":111.439,"T":8.581},{"t":"2023-02-05","H":112.753,"T":8.494},{"t":"2023-02-06","H":112.939,"T":8.578},{"t":"2023-02-07","H":113.188,"T":8.38},{"t":"2023-02-08","H":113.639,"T":8.355},{"t":"2023-02-09","H":113.542,"T":8.37},{"t":"2023-02-10","H":113.587,"T":8.324},{"t":"2023-02-11","H":113.684,"T":8.348},{"t":"2023-02-12","H":112.939,"T":8.418},{"t":"2023-02-13","H":113.166,"T":8.458},{"t":"2023-02-14","H":112.723,"T":8.491},{"t":"2023-02-15","H":112.495,"T":8.533},{"t":"2023-02-16","H":112.488,"T":8.615},{"t":"2023-02-17","H":112.315,"T":8.708},{"t":"2023-02-18","H":112.348,"T":8.796},{"t":"2023-02-19","H":112.235,"T":8.855},{"t":"2023-02-20","H":112.314,"T":8.954},{"t":"2023-02-21","H":111.909,"T":8.938},{"t":"2023-02-22","H":112.052,"T":9.159},{"t":"2023-02-23","H":111.895,"T":9.188},{"t":"2023-02-24","H":111.797,"T":9.143},{"t":"2023-02-25","H":111.419,"T":8.987},{"t":"2023-02-26","H":112.07,"T":8.818},{"t":"2023-02-27","H":112.882,"T":8.674},{"t":"2023-02-28","H":113.153,"T":8.715},{"t":"2023-03-01","H":113.03,"T":8.744},{"t":"2023-03-02","H":112.542,"T":8.904},{"t":"2023-03-03","H":112.602,"T":8.88},{"t":"2023-03-04","H":112.477,"T":8.9},{"t":"2023-03-05","H":112.397,"T":8.859},{"t":"2023-03-06","H":112.125,"T":8.837},{"t":"2023-03-07","H":112.211,"T":8.953},{"t":"2023-03-08","H":112.255,"T":8.996},{"t":"2023-03-09","H":111.703,"T":9.077},{"t":"2023-03-10","H":111.451,"T":9.162},{"t":"2023-03-11","H":111.612,"T":9.102},{"t":"2023-03-12","H":112.356,"T":9.047},{"t":"2023-03-13","H":112.015,"T":9.198},{"t":"2023-03-14","H":105.186,"T":8.636},{"t":"2023-03-15","H":108.599,"T":8.088},{"t":"2023-03-16","H":110.087,"T":8.197},{"t":"2023-03-17","H":110.541,"T":8.434},{"t":"2023-03-18","H":110.464,"T":8.584},{"t":"2023-03-19","H":110.556,"T":8.825},{"t":"2023-03-20","H":110.403,"T":9.043},{"t":"2023-03-21","H":110.307,"T":9.102},{"t":"2023-03-22","H":110.222,"T":9.166},{"t":"2023-03-23","H":110.283,"T":9.25},{"t":"2023-03-24","H":110.228,"T":9.335},{"t":"2023-03-25","H":110.074,"T":9.282},{"t":"2023-03-26","H":110.386,"T":9.027},{"t":"2023-03-27","H":110.83,"T":8.88},{"t":"2023-03-28","H":111.711,"T":8.777},{"t":"2023-03-29","H":111.618,"T":8.948},{"t":"2023-03-30","H":111.243,"T":9.196},{"t":"2023-03-31","H":111.145,"T":9.167},{"t":"2023-04-01","H":110.772,"T":9.084},{"t":"2023-04-02","H":110.985,"T":9.141},{"t":"2023-04-03","H":111.49,"T":9.172},{"t":"2023-04-04","H":111.761,"T":9.071},{"t":"2023-04-05","H":112.172,"T":8.94},{"t":"2023-04-06","H":112.27,"T":8.91},{"t":"2023-04-07","H":112.127,"T":8.995},{"t":"2023-04-08","H":111.978,"T":9.092},{"t":"2023-04-09","H":111.864,"T":9.249},{"t":"2023-04-10","H":111.894,"T":9.293},{"t":"2023-04-11","H":111.53,"T":9.411},{"t":"2023-04-12","H":111.159,"T":9.463},{"t":"2023-04-13","H":107.934,"T":8.729},{"t":"2023-04-14","H":108.276,"T":8.709},{"t":"2023-04-15","H":108.943,"T":8.957},{"t":"2023-04-16","H":109.47,"T":9.153},{"t":"2023-04-17","H":109.668,"T":9.214},{"t":"2023-04-18","H":109.838,"T":9.31},{"t":"2023-04-19","H":109.734,"T":9.437},{"t":"2023-04-20","H":107.687,"T":9.114},{"t":"2023-04-21","H":96.558,"T":9.024},{"t":"2023-04-22","H":102.066,"T":9.384},{"t":"2023-04-23","H":104.611,"T":9.604},{"t":"2023-04-24","H":102.648,"T":9.513},{"t":"2023-04-25","H":104.542,"T":9.32},{"t":"2023-04-26","H":105.996,"T":9.201},{"t":"2023-04-27","H":106.729,"T":9.351},{"t":"2023-04-28","H":107.25,"T":9.529},{"t":"2023-04-29","H":107.069,"T":9.749},{"t":"2023-04-30","H":106.808,"T":9.865},{"t":"2023-05-01","H":106.265,"T":9.722},{"t":"2023-05-02","H":102.576,"T":9.768},{"t":"2023-05-03","H":104.191,"T":9.757},{"t":"2023-05-04","H":104.85,"T":9.891},{"t":"2023-05-05","H":105.406,"T":9.962},{"t":"2023-05-06","H":105.393,"T":10.073},{"t":"2023-05-07","H":104.443,"T":10.311},{"t":"2023-05-08","H":103.99,"T":10.28},{"t":"2023-05-09","H":103.988,"T":10.162},{"t":"2023-05-10","H":101.288,"T":9.896},{"t":"2023-05-11","H":95.948,"T":9.614},{"t":"2023-05-12","H":86.582,"T":9.537},{"t":"2023-05-13","H":89.55,"T":9.504},{"t":"2023-05-14","H":91.892,"T":9.521},{"t":"2023-05-15","H":96.673,"T":9.657},{"t":"2023-05-16","H":100.88,"T":9.597},{"t":"2023-05-17","H":102.917,"T":9.672},{"t":"2023-05-18","H":104.42,"T":9.69},{"t":"2023-05-19","H":104.664,"T":9.731},{"t":"2023-05-20","H":105.02,"T":9.737},{"t":"2023-05-21","H":104.717,"T":9.979},{"t":"2023-05-22","H":104.644,"T":10.133},{"t":"2023-05-23","H":104.722,"T":10.244},{"t":"2023-05-24","H":104.914,"T":10.236},{"t":"2023-05-25","H":101.92,"T":10.404},{"t":"2023-05-26","H":103.817,"T":10.276},{"t":"2023-05-27","H":104.058,"T":10.553},{"t":"2023-05-28","H":103.294,"T":10.637},{"t":"2023-05-29","H":104.224,"T":10.34},{"t":"2023-05-30","H":104.707,"T":10.369},{"t":"2023-05-31","H":105.137,"T":10.32},{"t":"2023-06-01","H":105.082,"T":10.275},{"t":"2023-06-02","H":105.453,"T":10.302},{"t":"2023-06-03","H":105.44,"T":10.413},{"t":"2023-06-04","H":96.14,"T":10.789},{"t":"2023-06-05","H":100.232,"T":10.363},{"t":"2023-06-06","H":102.5,"T":10.46},{"t":"2023-06-07","H":103.351,"T":10.561},{"t":"2023-06-08","H":102.994,"T":10.71},{"t":"2023-06-09","H":103.563,"T":10.622},{"t":"2023-06-10","H":103.899,"T":10.623},{"t":"2023-06-11","H":104.42,"T":10.617},{"t":"2023-06-12","H":104.574,"T":10.611},{"t":"2023-06-13","H":104.397,"T":10.575},{"t":"2023-06-14","H":104.339,"T":10.693},{"t":"2023-06-15","H":104.369,"T":10.854},{"t":"2023-06-16","H":104.628,"T":10.688},{"t":"2023-06-17","H":105.468,"T":10.454},{"t":"2023-06-18","H":105.496,"T":10.54},{"t":"2023-06-19","H":105.509,"T":10.646},{"t":"2023-06-20","H":105.626,"T":10.766},{"t":"2023-06-21","H":105.672,"T":10.725},{"t":"2023-06-22","H":105.664,"T":10.825},{"t":"2023-06-23","H":106.115,"T":10.812},{"t":"2023-06-24","H":106.501,"T":10.557},{"t":"2023-06-25","H":106.492,"T":10.55},{"t":"2023-06-26","H":106.468,"T":10.614},{"t":"2023-06-27","H":106.225,"T":10.68},{"t":"2023-06-28","H":106.779,"T":10.544},{"t":"2023-06-29","H":106.595,"T":10.499},{"t":"2023-06-30","H":105.751,"T":10.967},{"t":"2023-07-01","H":106.269,"T":10.742},{"t":"2023-07-02","H":106.414,"T":10.627},{"t":"2023-07-03","H":104.899,"T":10.869},{"t":"2023-07-04","H":95.574,"T":11.864},{"t":"2023-07-05","H":99.138,"T":11.4},{"t":"2023-07-06","H":96.475,"T":11.107},{"t":"2023-07-07","H":98.614,"T":10.478},{"t":"2023-07-08","H":102.956,"T":10.775},{"t":"2023-07-09","H":103.884,"T":10.882},{"t":"2023-07-10","H":104.409,"T":10.967},{"t":"2023-07-11","H":104.158,"T":11.048},{"t":"2023-07-12","H":103.162,"T":11.575},{"t":"2023-07-13","H":95.744,"T":11.858},{"t":"2023-07-14","H":101.517,"T":11.087},{"t":"2023-07-15","H":102.4,"T":11.137},{"t":"2023-07-16","H":102.883,"T":11.188},{"t":"2023-07-17","H":103.168,"T":11.209},{"t":"2023-07-18","H":103.45,"T":11.195},{"t":"2023-07-19","H":103.273,"T":11.396},{"t":"2023-07-20","H":103.832,"T":11.109},{"t":"2023-07-21","H":103.005,"T":11.484},{"t":"2023-07-22","H":104.006,"T":11.324},{"t":"2023-07-23","H":104.234,"T":11.05},{"t":"2023-07-24","H":104.387,"T":11.025},{"t":"2023-07-25","H":100.9,"T":11.953},{"t":"2023-07-26","H":103.532,"T":10.979},{"t":"2023-07-27","H":105.032,"T":10.544},{"t":"2023-07-28","H":105.024,"T":10.666},{"t":"2023-07-29","H":104.859,"T":10.804},{"t":"2023-07-30","H":104.959,"T":10.992},{"t":"2023-07-31","H":105.164,"T":10.911},{"t":"2023-08-01","H":104.64,"T":11.007},{"t":"2023-08-02","H":105.191,"T":10.755},{"t":"2023-08-03","H":104.934,"T":10.931},{"t":"2023-08-04","H":105.329,"T":10.631},{"t":"2023-08-05","H":105.261,"T":10.671},{"t":"2023-08-06","H":105.773,"T":10.358},{"t":"2023-08-07","H":106.542,"T":10.062},{"t":"2023-08-08","H":106.74,"T":10.033},{"t":"2023-08-09","H":106.584,"T":10.159},{"t":"2023-08-10","H":106.483,"T":10.254},{"t":"2023-08-11","H":106.442,"T":10.408},{"t":"2023-08-12","H":106.335,"T":10.447},{"t":"2023-08-13","H":106.159,"T":10.517},{"t":"2023-08-14","H":106.124,"T":10.565},{"t":"2023-08-15","H":106.054,"T":10.539},{"t":"2023-08-16","H":105.909,"T":10.957},{"t":"2023-08-17","H":106.546,"T":10.577},{"t":"2023-08-18","H":106.59,"T":10.551},{"t":"2023-08-19","H":106.596,"T":10.691},{"t":"2023-08-20","H":106.678,"T":10.802},{"t":"2023-08-21","H":106.532,"T":10.807},{"t":"2023-08-22","H":106.141,"T":10.665},{"t":"2023-08-23","H":106.016,"T":10.657},{"t":"2023-08-24","H":106.382,"T":10.629},{"t":"2023-08-25","H":106.213,"T":10.578},{"t":"2023-08-26","H":106.597,"T":10.595},{"t":"2023-08-27","H":105.451,"T":11.592},{"t":"2023-08-28","H":91.297,"T":12.788},{"t":"2023-08-29","H":98.993,"T":11.239},{"t":"2023-08-30","H":104.341,"T":11.0},{"t":"2023-08-31","H":105.433,"T":10.674},{"t":"2023-09-01","H":105.884,"T":10.624},{"t":"2023-09-02","H":105.983,"T":10.689},{"t":"2023-09-03","H":106.239,"T":10.679},{"t":"2023-09-04","H":106.337,"T":10.717},{"t":"2023-09-05","H":106.085,"T":10.66},{"t":"2023-09-06","H":106.458,"T":10.513},{"t":"2023-09-07","H":106.602,"T":10.518},{"t":"2023-09-08","H":106.493,"T":10.541},{"t":"2023-09-09","H":106.508,"T":10.552},{"t":"2023-09-10","H":106.415,"T":10.596},{"t":"2023-09-11","H":106.358,"T":10.628},{"t":"2023-09-12","H":106.548,"T":10.593},{"t":"2023-09-13","H":106.305,"T":10.81},{"t":"2023-09-14","H":105.942,"T":11.027},{"t":"2023-09-15","H":105.738,"T":11.272},{"t":"2023-09-16","H":106.199,"T":10.975},{"t":"2023-09-17","H":104.425,"T":11.577},{"t":"2023-09-18","H":104.831,"T":11.427},{"t":"2023-09-19","H":103.913,"T":11.766},{"t":"2023-09-20","H":106.512,"T":11.169},{"t":"2023-09-21","H":107.532,"T":11.178},{"t":"2023-09-22","H":92.712,"T":11.966},{"t":"2023-09-23","H":80.454,"T":10.607},{"t":"2023-09-24","H":99.683,"T":10.037},{"t":"2023-09-25","H":105.13,"T":10.114},{"t":"2023-09-26","H":106.023,"T":10.198},{"t":"2023-09-27","H":106.623,"T":10.389},{"t":"2023-09-28","H":105.889,"T":10.391},{"t":"2023-09-29","H":105.44,"T":10.313},{"t":"2023-09-30","H":105.874,"T":10.386},{"t":"2023-10-01","H":105.665,"T":10.373},{"t":"2023-10-02","H":105.966,"T":10.364},{"t":"2023-10-03","H":105.663,"T":10.356},{"t":"2023-10-04","H":105.795,"T":10.45},{"t":"2023-10-05","H":105.43,"T":10.375},{"t":"2023-10-06","H":106.286,"T":10.238},{"t":"2023-10-07","H":106.463,"T":10.143},{"t":"2023-10-08","H":105.639,"T":10.093},{"t":"2023-10-09","H":104.61,"T":10.065},{"t":"2023-10-10","H":105.318,"T":10.033},{"t":"2023-10-11","H":106.672,"T":10.047},{"t":"2023-10-12","H":106.923,"T":10.067},{"t":"2023-10-13","H":106.939,"T":10.104},{"t":"2023-10-14","H":106.576,"T":10.023},{"t":"2023-10-15","H":104.06,"T":9.881},{"t":"2023-10-16","H":103.215,"T":9.663},{"t":"2023-10-17","H":105.871,"T":9.512},{"t":"2023-10-18","H":108.159,"T":9.56},{"t":"2023-10-19","H":108.491,"T":9.725},{"t":"2023-10-20","H":98.432,"T":10.887},{"t":"2023-10-21","H":101.714,"T":10.609},{"t":"2023-10-22","H":92.059,"T":10.305},{"t":"2023-10-23","H":97.601,"T":10.056},{"t":"2023-10-24","H":99.405,"T":10.581},{"t":"2023-10-25","H":96.326,"T":10.174},{"t":"2023-10-26","H":96.648,"T":9.977},{"t":"2023-10-27","H":109.102,"T":10.62},{"t":"2023-10-28","H":101.996,"T":9.835},{"t":"2023-10-29","H":98.848,"T":9.865},{"t":"2023-10-30","H":101.938,"T":10.338},{"t":"2023-10-31","H":117.614,"T":10.559},{"t":"2023-11-01","H":109.32,"T":9.725},{"t":"2023-11-02","H":88.268,"T":10.219},{"t":"2023-11-03","H":83.617,"T":10.039},{"t":"2023-11-04","H":98.256,"T":9.541},{"t":"2023-11-05","H":98.866,"T":9.534},{"t":"2023-11-06","H":98.614,"T":9.441},{"t":"2023-11-07","H":96.592,"T":9.454},{"t":"2023-11-08","H":97.35,"T":9.062},{"t":"2023-11-09","H":99.127,"T":9.009},{"t":"2023-11-10","H":98.672,"T":9.126},{"t":"2023-11-11","H":97.812,"T":8.805},{"t":"2023-11-12","H":95.618,"T":8.811},{"t":"2023-11-13","H":99.657,"T":8.856},{"t":"2023-11-14","H":101.163,"T":9.106},{"t":"2023-11-15","H":104.548,"T":9.196}],"pz6":[{"t":"2023-01-31","H":109.235,"T":4.656},{"t":"2023-02-01","H":109.12,"T":4.755},{"t":"2023-02-02","H":109.109,"T":4.928},{"t":"2023-02-03","H":109.212,"T":5.279},{"t":"2023-02-04","H":109.02,"T":5.961},{"t":"2023-02-05","H":109.437,"T":5.367},{"t":"2023-02-06","H":109.26,"T":5.655},{"t":"2023-02-07","H":109.597,"T":4.691},{"t":"2023-02-08","H":109.799,"T":4.202},{"t":"2023-02-09","H":109.897,"T":4.241},{"t":"2023-02-10","H":109.892,"T":3.383},{"t":"2023-02-11","H":110.23,"T":3.922},{"t":"2023-02-12","H":109.702,"T":4.816},{"t":"2023-02-13","H":109.685,"T":4.941},{"t":"2023-02-14","H":109.612,"T":5.13},{"t":"2023-02-15","H":109.743,"T":5.298},{"t":"2023-02-16","H":109.652,"T":5.601},{"t":"2023-02-17","H":109.422,"T":6.166},{"t":"2023-02-18","H":109.474,"T":6.506},{"t":"2023-02-19","H":109.396,"T":6.632},{"t":"2023-02-20","H":109.364,"T":7.044},{"t":"2023-02-21","H":109.345,"T":6.787},{"t":"2023-02-22","H":109.129,"T":8.195},{"t":"2023-02-23","H":109.121,"T":8.305},{"t":"2023-02-24","H":109.091,"T":7.925},{"t":"2023-02-25","H":108.974,"T":7.591},{"t":"2023-02-26","H":109.211,"T":6.252},{"t":"2023-02-27","H":109.588,"T":5.739},{"t":"2023-02-28","H":109.901,"T":5.93},{"t":"2023-03-01","H":109.862,"T":5.761},{"t":"2023-03-02","H":109.512,"T":6.722},{"t":"2023-03-03","H":109.507,"T":6.61},{"t":"2023-03-04","H":109.753,"T":6.685},{"t":"2023-03-05","H":109.535,"T":6.451},{"t":"2023-03-06","H":109.385,"T":6.735},{"t":"2023-03-07","H":109.548,"T":6.862},{"t":"2023-03-08","H":109.523,"T":7.122},{"t":"2023-03-09","H":109.337,"T":8.077},{"t":"2023-03-10","H":109.372,"T":8.106},{"t":"2023-03-11","H":109.529,"T":7.74},{"t":"2023-03-12","H":109.639,"T":7.507},{"t":"2023-03-13","H":109.798,"T":7.904},{"t":"2023-03-14","H":104.474,"T":8.815},{"t":"2023-03-15","H":107.26,"T":6.892},{"t":"2023-03-16","H":108.413,"T":6.258},{"t":"2023-03-17","H":108.626,"T":6.662},{"t":"2023-03-18","H":108.828,"T":7.009},{"t":"2023-03-19","H":108.778,"T":7.561},{"t":"2023-03-20","H":108.802,"T":8.433},{"t":"2023-03-21","H":108.858,"T":8.563},{"t":"2023-03-22","H":108.785,"T":8.78},{"t":"2023-03-23","H":108.849,"T":8.908},{"t":"2023-03-24","H":108.882,"T":9.264},{"t":"2023-03-25","H":108.678,"T":9.281},{"t":"2023-03-26","H":108.876,"T":7.875},{"t":"2023-03-27","H":108.984,"T":7.152},{"t":"2023-03-28","H":109.101,"T":6.384},{"t":"2023-03-29","H":108.955,"T":7.115},{"t":"2023-03-30","H":108.839,"T":8.559},{"t":"2023-03-31","H":108.523,"T":8.609},{"t":"2023-04-01","H":108.426,"T":8.075},{"t":"2023-04-02","H":108.677,"T":8.151},{"t":"2023-04-03","H":108.968,"T":8.211},{"t":"2023-04-04","H":109.261,"T":7.782},{"t":"2023-04-05","H":109.268,"T":6.795},{"t":"2023-04-06","H":109.317,"T":6.618},{"t":"2023-04-07","H":109.246,"T":7.064},{"t":"2023-04-08","H":109.372,"T":7.637},{"t":"2023-04-09","H":109.169,"T":8.277},{"t":"2023-04-10","H":109.165,"T":8.634},{"t":"2023-04-11","H":108.924,"T":9.028},{"t":"2023-04-12","H":108.686,"T":9.404},{"t":"2023-04-13","H":105.663,"T":8.574},{"t":"2023-04-14","H":106.819,"T":8.176},{"t":"2023-04-15","H":107.998,"T":8.317},{"t":"2023-04-16","H":108.113,"T":8.851},{"t":"2023-04-17","H":108.379,"T":8.995},{"t":"2023-04-18","H":108.466,"T":9.348},{"t":"2023-04-19","H":108.64,"T":9.597},{"t":"2023-04-20","H":106.413,"T":9.301},{"t":"2023-04-21","H":98.806,"T":9.22},{"t":"2023-04-22","H":103.05,"T":9.822},{"t":"2023-04-23","H":104.625,"T":10.362},{"t":"2023-04-24","H":103.353,"T":10.142},{"t":"2023-04-25","H":104.388,"T":9.536},{"t":"2023-04-26","H":105.666,"T":9.161},{"t":"2023-04-27","H":106.33,"T":9.543},{"t":"2023-04-28","H":106.656,"T":9.994},{"t":"2023-04-29","H":106.698,"T":10.762},{"t":"2023-04-30","H":106.413,"T":10.912},{"t":"2023-05-01","H":106.023,"T":10.526},{"t":"2023-05-02","H":103.617,"T":10.551},{"t":"2023-05-03","H":104.514,"T":10.659},{"t":"2023-05-04","H":105.3,"T":11.039},{"t":"2023-05-05","H":105.745,"T":11.281},{"t":"2023-05-06","H":105.964,"T":11.556},{"t":"2023-05-07","H":105.11,"T":11.758},{"t":"2023-05-08","H":104.347,"T":11.399},{"t":"2023-05-09","H":104.311,"T":11.249},{"t":"2023-05-10","H":93.77,"T":10.474},{"t":"2023-05-11","H":97.253,"T":10.203},{"t":"2023-05-12","H":95.758,"T":10.048},{"t":"2023-05-13","H":96.233,"T":9.996},{"t":"2023-05-14","H":96.963,"T":10.021},{"t":"2023-05-15","H":99.414,"T":10.348},{"t":"2023-05-16","H":101.49,"T":10.136},{"t":"2023-05-17","H":102.847,"T":10.393},{"t":"2023-05-18","H":103.681,"T":10.437},{"t":"2023-05-19","H":104.2,"T":10.489},{"t":"2023-05-20","H":104.263,"T":10.491},{"t":"2023-05-21","H":104.035,"T":10.99},{"t":"2023-05-22","H":104.891,"T":11.378},{"t":"2023-05-23","H":105.48,"T":11.635},{"t":"2023-05-24","H":105.543,"T":11.432},{"t":"2023-05-25","H":102.919,"T":11.435},{"t":"2023-05-26","H":104.205,"T":11.458},{"t":"2023-05-27","H":104.885,"T":11.874},{"t":"2023-05-28","H":103.911,"T":11.921},{"t":"2023-05-29","H":104.67,"T":11.588},{"t":"2023-05-30","H":105.198,"T":11.783},{"t":"2023-05-31","H":105.593,"T":11.756},{"t":"2023-06-01","H":105.978,"T":11.705},{"t":"2023-06-02","H":106.239,"T":11.873},{"t":"2023-06-03","H":106.064,"T":11.909},{"t":"2023-06-04","H":100.37,"T":11.74},{"t":"2023-06-05","H":102.354,"T":11.363},{"t":"2023-06-06","H":104.033,"T":11.813},{"t":"2023-06-07","H":104.66,"T":11.982},{"t":"2023-06-08","H":104.237,"T":12.044},{"t":"2023-06-09","H":104.947,"T":12.146},{"t":"2023-06-10","H":105.189,"T":12.256},{"t":"2023-06-11","H":105.434,"T":12.396},{"t":"2023-06-12","H":105.977,"T":12.477},{"t":"2023-06-13","H":105.71,"T":12.224},{"t":"2023-06-14","H":105.991,"T":12.344},{"t":"2023-06-15","H":105.307,"T":12.531},{"t":"2023-06-16","H":106.12,"T":12.464},{"t":"2023-06-17","H":106.685,"T":12.008},{"t":"2023-06-18","H":106.945,"T":12.488},{"t":"2023-06-19","H":106.867,"T":12.984},{"t":"2023-06-20","H":106.945,"T":13.387},{"t":"2023-06-21","H":107.053,"T":13.33},{"t":"2023-06-22","H":107.019,"T":13.775},{"t":"2023-06-23","H":107.03,"T":13.768},{"t":"2023-06-24","H":107.489,"T":13.011},{"t":"2023-06-25","H":107.666,"T":13.167},{"t":"2023-06-26","H":107.555,"T":13.559},{"t":"2023-06-27","H":107.396,"T":13.979},{"t":"2023-06-28","H":107.732,"T":13.403},{"t":"2023-06-29","H":107.732,"T":13.267},{"t":"2023-06-30","H":106.425,"T":12.987},{"t":"2023-07-01","H":106.89,"T":13.162},{"t":"2023-07-02","H":107.704,"T":13.61},{"t":"2023-07-03","H":106.669,"T":13.711},{"t":"2023-07-04","H":98.712,"T":13.064},{"t":"2023-07-05","H":102.139,"T":12.749},{"t":"2023-07-06","H":99.269,"T":12.206},{"t":"2023-07-07","H":101.049,"T":11.816},{"t":"2023-07-08","H":104.283,"T":12.61},{"t":"2023-07-09","H":105.196,"T":13.16},{"t":"2023-07-10","H":105.932,"T":13.608},{"t":"2023-07-11","H":105.634,"T":14.067},{"t":"2023-07-12","H":104.477,"T":13.956},{"t":"2023-07-13","H":98.522,"T":13.174},{"t":"2023-07-14","H":103.186,"T":12.697},{"t":"2023-07-15","H":104.012,"T":13.363},{"t":"2023-07-16","H":104.523,"T":13.834},{"t":"2023-07-17","H":104.937,"T":14.105},{"t":"2023-07-18","H":105.299,"T":14.3},{"t":"2023-07-19","H":105.29,"T":14.591},{"t":"2023-07-20","H":105.613,"T":14.205},{"t":"2023-07-21","H":104.426,"T":13.358},{"t":"2023-07-22","H":104.896,"T":13.749},{"t":"2023-07-23","H":105.262,"T":13.742},{"t":"2023-07-24","H":105.19,"T":13.354},{"t":"2023-07-25","H":102.535,"T":13.581},{"t":"2023-07-26","H":104.842,"T":12.731},{"t":"2023-07-27","H":105.911,"T":12.136},{"t":"2023-07-28","H":106.041,"T":12.87},{"t":"2023-07-29","H":106.334,"T":13.461},{"t":"2023-07-30","H":106.622,"T":13.89},{"t":"2023-07-31","H":106.883,"T":13.821},{"t":"2023-08-01","H":106.493,"T":13.847},{"t":"2023-08-02","H":106.723,"T":13.618},{"t":"2023-08-03","H":106.619,"T":14.048},{"t":"2023-08-04","H":107.052,"T":13.36},{"t":"2023-08-05","H":106.908,"T":13.162},{"t":"2023-08-06","H":107.423,"T":12.757},{"t":"2023-08-07","H":107.792,"T":11.692},{"t":"2023-08-08","H":107.894,"T":11.596},{"t":"2023-08-09","H":107.788,"T":12.216},{"t":"2023-08-10","H":107.71,"T":12.829},{"t":"2023-08-11","H":107.761,"T":13.499},{"t":"2023-08-12","H":107.699,"T":13.71},{"t":"2023-08-13","H":107.542,"T":14.158},{"t":"2023-08-14","H":107.607,"T":14.284},{"t":"2023-08-15","H":107.598,"T":14.376},{"t":"2023-08-16","H":107.373,"T":14.774},{"t":"2023-08-17","H":107.81,"T":14.118},{"t":"2023-08-18","H":107.793,"T":14.062},{"t":"2023-08-19","H":108.167,"T":14.677},{"t":"2023-08-20","H":108.497,"T":15.341},{"t":"2023-08-21","H":108.404,"T":15.677},{"t":"2023-08-22","H":108.239,"T":15.395},{"t":"2023-08-23","H":108.274,"T":15.433},{"t":"2023-08-24","H":108.346,"T":15.465},{"t":"2023-08-25","H":108.337,"T":15.313},{"t":"2023-08-26","H":108.263,"T":14.865},{"t":"2023-08-27","H":106.919,"T":14.13},{"t":"2023-08-28","H":96.893,"T":13.797},{"t":"2023-08-29","H":101.889,"T":12.351},{"t":"2023-08-30","H":105.968,"T":12.483},{"t":"2023-08-31","H":107.019,"T":12.279},{"t":"2023-09-01","H":107.45,"T":12.495},{"t":"2023-09-02","H":107.641,"T":12.9},{"t":"2023-09-03","H":107.828,"T":13.038},{"t":"2023-09-04","H":108.019,"T":13.41},{"t":"2023-09-05","H":107.786,"T":13.236},{"t":"2023-09-06","H":108.151,"T":12.776},{"t":"2023-09-07","H":108.169,"T":12.954},{"t":"2023-09-08","H":108.209,"T":13.225},{"t":"2023-09-09","H":108.139,"T":13.25},{"t":"2023-09-10","H":108.318,"T":13.539},{"t":"2023-09-11","H":108.223,"T":13.75},{"t":"2023-09-12","H":108.244,"T":13.696},{"t":"2023-09-13","H":107.703,"T":13.453},{"t":"2023-09-14","H":107.084,"T":13.187},{"t":"2023-09-15","H":107.202,"T":13.376},{"t":"2023-09-16","H":107.506,"T":13.208},{"t":"2023-09-17","H":105.602,"T":13.598},{"t":"2023-09-18","H":106.287,"T":13.437},{"t":"2023-09-19","H":105.273,"T":13.412},{"t":"2023-09-20","H":109.034,"T":13.132},{"t":"2023-09-21","H":110.219,"T":12.955},{"t":"2023-09-22","H":102.774,"T":13.048},{"t":"2023-09-23","H":99.052,"T":11.454},{"t":"2023-09-24","H":105.559,"T":10.644},{"t":"2023-09-25","H":108.833,"T":10.839},{"t":"2023-09-26","H":109.362,"T":11.197},{"t":"2023-09-27","H":110.073,"T":11.778},{"t":"2023-09-28","H":109.519,"T":11.863},{"t":"2023-09-29","H":108.723,"T":11.759},{"t":"2023-09-30","H":109.157,"T":12.048},{"t":"2023-10-01","H":109.004,"T":12.092},{"t":"2023-10-02","H":109.214,"T":12.175},{"t":"2023-10-03","H":108.995,"T":12.18},{"t":"2023-10-04","H":108.909,"T":12.505},{"t":"2023-10-05","H":108.445,"T":12.513},{"t":"2023-10-06","H":108.973,"T":12.082},{"t":"2023-10-07","H":109.336,"T":11.821},{"t":"2023-10-08","H":108.642,"T":11.805},{"t":"2023-10-09","H":107.934,"T":11.748},{"t":"2023-10-10","H":108.455,"T":11.706},{"t":"2023-10-11","H":109.565,"T":11.873},{"t":"2023-10-12","H":109.682,"T":11.901},{"t":"2023-10-13","H":109.84,"T":12.198},{"t":"2023-10-14","H":109.343,"T":11.788},{"t":"2023-10-15","H":106.96,"T":11.259},{"t":"2023-10-16","H":105.351,"T":10.12},{"t":"2023-10-17","H":107.756,"T":9.426},{"t":"2023-10-18","H":110.353,"T":9.643},{"t":"2023-10-19","H":110.982,"T":10.446},{"t":"2023-10-20","H":103.425,"T":11.637},{"t":"2023-10-21","H":105.088,"T":11.369},{"t":"2023-10-22","H":96.453,"T":10.871},{"t":"2023-10-23","H":103.038,"T":10.777},{"t":"2023-10-24","H":100.159,"T":11.232},{"t":"2023-10-25","H":98.936,"T":10.887},{"t":"2023-10-26","H":102.241,"T":10.629},{"t":"2023-10-27","H":94.521,"T":11.194},{"t":"2023-10-28","H":98.69,"T":10.26},{"t":"2023-10-29","H":102.776,"T":10.462},{"t":"2023-10-30","H":102.626,"T":11.0},{"t":"2023-10-31","H":92.098,"T":11.098},{"t":"2023-11-01","H":97.099,"T":9.989},{"t":"2023-11-02","H":93.235,"T":10.653},{"t":"2023-11-03","H":90.126,"T":10.409},{"t":"2023-11-04","H":94.972,"T":9.549},{"t":"2023-11-05","H":96.178,"T":9.692},{"t":"2023-11-06","H":97.993,"T":9.448},{"t":"2023-11-07","H":100.371,"T":9.605},{"t":"2023-11-08","H":102.794,"T":8.693},{"t":"2023-11-09","H":104.46,"T":8.697},{"t":"2023-11-10","H":104.365,"T":9.118},{"t":"2023-11-11","H":102.791,"T":8.173},{"t":"2023-11-12","H":100.13,"T":8.18},{"t":"2023-11-13","H":103.692,"T":8.263},{"t":"2023-11-14","H":105.174,"T":8.818},{"t":"2023-11-15","H":111.263,"T":8.892}],"pz9":[{"t":"2023-01-31","H":128.067,"T":3.894},{"t":"2023-02-01","H":127.853,"T":4.013},{"t":"2023-02-02","H":127.88,"T":4.177},{"t":"2023-02-03","H":128.126,"T":4.653},{"t":"2023-02-04","H":128.227,"T":5.325},{"t":"2023-02-05","H":128.216,"T":4.776},{"t":"2023-02-06","H":128.181,"T":4.982},{"t":"2023-02-07","H":128.178,"T":3.992},{"t":"2023-02-08","H":128.384,"T":3.343},{"t":"2023-02-09","H":128.577,"T":3.357},{"t":"2023-02-10","H":128.442,"T":2.49},{"t":"2023-02-11","H":128.819,"T":2.984},{"t":"2023-02-12","H":128.684,"T":4.093},{"t":"2023-02-13","H":128.434,"T":4.319},{"t":"2023-02-14","H":128.403,"T":4.571},{"t":"2023-02-15","H":128.408,"T":4.814},{"t":"2023-02-16","H":128.168,"T":5.105},{"t":"2023-02-17","H":128.274,"T":5.721},{"t":"2023-02-18","H":128.418,"T":6.091},{"t":"2023-02-19","H":128.527,"T":6.265},{"t":"2023-02-20","H":128.353,"T":6.655},{"t":"2023-02-21","H":128.281,"T":6.429},{"t":"2023-02-22","H":128.443,"T":7.942},{"t":"2023-02-23","H":128.42,"T":8.167},{"t":"2023-02-24","H":128.482,"T":7.746},{"t":"2023-02-25","H":128.506,"T":7.539},{"t":"2023-02-26","H":128.438,"T":5.973},{"t":"2023-02-27","H":128.631,"T":5.26},{"t":"2023-02-28","H":128.757,"T":5.424},{"t":"2023-03-01","H":128.982,"T":5.162},{"t":"2023-03-02","H":128.674,"T":6.246},{"t":"2023-03-03","H":128.595,"T":6.278},{"t":"2023-03-04","H":128.956,"T":6.397},{"t":"2023-03-05","H":128.761,"T":6.156},{"t":"2023-03-06","H":128.443,"T":6.329},{"t":"2023-03-07","H":128.64,"T":6.446},{"t":"2023-03-08","H":128.57,"T":6.807},{"t":"2023-03-09","H":128.22,"T":8.003},{"t":"2023-03-10","H":128.659,"T":7.93},{"t":"2023-03-11","H":128.977,"T":7.596},{"t":"2023-03-12","H":128.923,"T":7.429},{"t":"2023-03-13","H":128.906,"T":7.697},{"t":"2023-03-14","H":122.196,"T":8.914},{"t":"2023-03-15","H":125.872,"T":6.747},{"t":"2023-03-16","H":127.368,"T":5.908},{"t":"2023-03-17","H":127.837,"T":6.343},{"t":"2023-03-18","H":127.894,"T":6.743},{"t":"2023-03-19","H":127.799,"T":7.343},{"t":"2023-03-20","H":127.837,"T":8.407},{"t":"2023-03-21","H":127.87,"T":8.599},{"t":"2023-03-22","H":127.87,"T":8.867},{"t":"2023-03-23","H":127.774,"T":8.93},{"t":"2023-03-24","H":127.868,"T":9.306},{"t":"2023-03-25","H":128.195,"T":9.476},{"t":"2023-03-26","H":128.229,"T":7.868},{"t":"2023-03-27","H":128.57,"T":7.0},{"t":"2023-03-28","H":128.755,"T":6.033},{"t":"2023-03-29","H":128.704,"T":6.787},{"t":"2023-03-30","H":128.455,"T":8.378},{"t":"2023-03-31","H":128.307,"T":8.609},{"t":"2023-04-01","H":128.538,"T":8.044},{"t":"2023-04-02","H":128.556,"T":8.107},{"t":"2023-04-03","H":128.691,"T":8.179},{"t":"2023-04-04","H":128.805,"T":7.673},{"t":"2023-04-05","H":129.239,"T":6.521},{"t":"2023-04-06","H":129.173,"T":6.272},{"t":"2023-04-07","H":129.206,"T":6.685},{"t":"2023-04-08","H":129.015,"T":7.417},{"t":"2023-04-09","H":128.889,"T":8.174},{"t":"2023-04-10","H":128.995,"T":8.533},{"t":"2023-04-11","H":128.921,"T":8.996},{"t":"2023-04-12","H":128.359,"T":9.411},{"t":"2023-04-13","H":124.313,"T":8.635},{"t":"2023-04-14","H":125.511,"T":8.072},{"t":"2023-04-15","H":126.736,"T":8.226},{"t":"2023-04-16","H":127.01,"T":8.836},{"t":"2023-04-17","H":127.075,"T":9.025},{"t":"2023-04-18","H":127.272,"T":9.511},{"t":"2023-04-19","H":126.793,"T":9.723},{"t":"2023-04-20","H":124.387,"T":9.504},{"t":"2023-04-21","H":111.696,"T":9.327},{"t":"2023-04-22","H":119.168,"T":9.98},{"t":"2023-04-23","H":121.713,"T":10.66},{"t":"2023-04-24","H":119.898,"T":10.43},{"t":"2023-04-25","H":121.334,"T":9.666},{"t":"2023-04-26","H":122.868,"T":9.15},{"t":"2023-04-27","H":124.033,"T":9.608},{"t":"2023-04-28","H":124.665,"T":10.119},{"t":"2023-04-29","H":124.836,"T":11.14},{"t":"2023-04-30","H":124.73,"T":11.363},{"t":"2023-05-01","H":123.966,"T":10.893},{"t":"2023-05-02","H":120.395,"T":10.897},{"t":"2023-05-03","H":121.621,"T":11.043},{"t":"2023-05-04","H":122.899,"T":11.486},{"t":"2023-05-05","H":123.248,"T":11.795},{"t":"2023-05-06","H":123.93,"T":12.125},{"t":"2023-05-07","H":122.48,"T":12.385},{"t":"2023-05-08","H":121.301,"T":11.922},{"t":"2023-05-09","H":121.575,"T":11.775},{"t":"2023-05-10","H":102.562,"T":10.752},{"t":"2023-05-11","H":108.989,"T":10.468},{"t":"2023-05-12","H":106.013,"T":10.31},{"t":"2023-05-13","H":107.064,"T":10.216},{"t":"2023-05-14","H":108.794,"T":10.248},{"t":"2023-05-15","H":113.69,"T":10.673},{"t":"2023-05-16","H":117.095,"T":10.4},{"t":"2023-05-17","H":119.171,"T":10.721},{"t":"2023-05-18","H":120.562,"T":10.784},{"t":"2023-05-19","H":121.295,"T":10.851},{"t":"2023-05-20","H":121.614,"T":10.856},{"t":"2023-05-21","H":121.558,"T":11.432},{"t":"2023-05-22","H":122.075,"T":11.987},{"t":"2023-05-23","H":122.566,"T":12.318},{"t":"2023-05-24","H":122.507,"T":12.051},{"t":"2023-05-25","H":118.879,"T":11.948},{"t":"2023-05-26","H":120.883,"T":12.02},{"t":"2023-05-27","H":121.639,"T":12.577},{"t":"2023-05-28","H":120.616,"T":12.593},{"t":"2023-05-29","H":121.527,"T":12.204},{"t":"2023-05-30","H":122.063,"T":12.463},{"t":"2023-05-31","H":122.413,"T":12.495},{"t":"2023-06-01","H":122.95,"T":12.436},{"t":"2023-06-02","H":123.523,"T":12.637},{"t":"2023-06-03","H":122.906,"T":12.694},{"t":"2023-06-04","H":113.553,"T":12.236},{"t":"2023-06-05","H":117.443,"T":11.877},{"t":"2023-06-06","H":120.069,"T":12.496},{"t":"2023-06-07","H":120.837,"T":12.681},{"t":"2023-06-08","H":120.533,"T":12.715},{"t":"2023-06-09","H":121.557,"T":12.939},{"t":"2023-06-10","H":122.172,"T":13.062},{"t":"2023-06-11","H":122.799,"T":13.286},{"t":"2023-06-12","H":123.167,"T":13.406},{"t":"2023-06-13","H":123.247,"T":13.056},{"t":"2023-06-14","H":123.486,"T":13.198},{"t":"2023-06-15","H":122.511,"T":13.385},{"t":"2023-06-16","H":123.779,"T":13.313},{"t":"2023-06-17","H":124.49,"T":12.729},{"t":"2023-06-18","H":124.761,"T":13.361},{"t":"2023-06-19","H":124.828,"T":14.063},{"t":"2023-06-20","H":125.128,"T":14.604},{"t":"2023-06-21","H":125.388,"T":14.499},{"t":"2023-06-22","H":125.369,"T":15.11},{"t":"2023-06-23","H":124.991,"T":15.008},{"t":"2023-06-24","H":125.412,"T":13.968},{"t":"2023-06-25","H":125.612,"T":14.247},{"t":"2023-06-26","H":125.489,"T":14.784},{"t":"2023-06-27","H":125.609,"T":15.346},{"t":"2023-06-28","H":125.983,"T":14.643},{"t":"2023-06-29","H":125.88,"T":14.37},{"t":"2023-06-30","H":124.077,"T":13.969},{"t":"2023-07-01","H":124.752,"T":14.284},{"t":"2023-07-02","H":125.68,"T":14.96},{"t":"2023-07-03","H":124.229,"T":15.023},{"t":"2023-07-04","H":111.399,"T":13.642},{"t":"2023-07-05","H":117.483,"T":13.439},{"t":"2023-07-06","H":112.207,"T":12.706},{"t":"2023-07-07","H":115.378,"T":12.429},{"t":"2023-07-08","H":120.8,"T":13.472},{"t":"2023-07-09","H":122.497,"T":14.208},{"t":"2023-07-10","H":123.228,"T":14.809},{"t":"2023-07-11","H":123.191,"T":15.435},{"t":"2023-07-12","H":121.386,"T":15.169},{"t":"2023-07-13","H":111.661,"T":13.826},{"t":"2023-07-14","H":119.347,"T":13.479},{"t":"2023-07-15","H":121.02,"T":14.403},{"t":"2023-07-16","H":121.794,"T":15.064},{"t":"2023-07-17","H":122.381,"T":15.435},{"t":"2023-07-18","H":122.987,"T":15.729},{"t":"2023-07-19","H":122.94,"T":16.101},{"t":"2023-07-20","H":123.568,"T":15.588},{"t":"2023-07-21","H":122.199,"T":14.336},{"t":"2023-07-22","H":123.333,"T":14.834},{"t":"2023-07-23","H":123.619,"T":14.877},{"t":"2023-07-24","H":123.352,"T":14.409},{"t":"2023-07-25","H":119.421,"T":14.399},{"t":"2023-07-26","H":122.76,"T":13.419},{"t":"2023-07-27","H":123.904,"T":12.789},{"t":"2023-07-28","H":124.378,"T":13.779},{"t":"2023-07-29","H":124.366,"T":14.585},{"t":"2023-07-30","H":124.375,"T":15.128},{"t":"2023-07-31","H":124.648,"T":15.038},{"t":"2023-08-01","H":124.544,"T":15.081},{"t":"2023-08-02","H":124.877,"T":14.868},{"t":"2023-08-03","H":124.513,"T":15.354},{"t":"2023-08-04","H":124.901,"T":14.499},{"t":"2023-08-05","H":125.1,"T":14.197},{"t":"2023-08-06","H":125.661,"T":13.644},{"t":"2023-08-07","H":125.847,"T":12.281},{"t":"2023-08-08","H":125.96,"T":12.108},{"t":"2023-08-09","H":125.717,"T":12.918},{"t":"2023-08-10","H":125.757,"T":13.809},{"t":"2023-08-11","H":125.625,"T":14.624},{"t":"2023-08-12","H":125.273,"T":14.936},{"t":"2023-08-13","H":125.207,"T":15.482},{"t":"2023-08-14","H":125.463,"T":15.616},{"t":"2023-08-15","H":126.061,"T":15.737},{"t":"2023-08-16","H":125.496,"T":16.184},{"t":"2023-08-17","H":125.884,"T":15.341},{"t":"2023-08-18","H":126.257,"T":15.31},{"t":"2023-08-19","H":126.547,"T":16.087},{"t":"2023-08-20","H":126.727,"T":16.905},{"t":"2023-08-21","H":126.768,"T":17.331},{"t":"2023-08-22","H":126.125,"T":16.976},{"t":"2023-08-23","H":126.749,"T":17.032},{"t":"2023-08-24","H":126.943,"T":17.083},{"t":"2023-08-25","H":127.003,"T":16.874},{"t":"2023-08-26","H":126.898,"T":16.409},{"t":"2023-08-27","H":124.236,"T":15.266},{"t":"2023-08-28","H":108.207,"T":14.253},{"t":"2023-08-29","H":116.785,"T":12.819},{"t":"2023-08-30","H":123.091,"T":13.12},{"t":"2023-08-31","H":124.279,"T":12.955},{"t":"2023-09-01","H":125.1,"T":13.236},{"t":"2023-09-02","H":125.353,"T":13.748},{"t":"2023-09-03","H":125.677,"T":13.952},{"t":"2023-09-04","H":125.73,"T":14.505},{"t":"2023-09-05","H":125.478,"T":14.24},{"t":"2023-09-06","H":125.942,"T":13.631},{"t":"2023-09-07","H":126.128,"T":13.85},{"t":"2023-09-08","H":126.222,"T":14.172},{"t":"2023-09-09","H":126.45,"T":14.232},{"t":"2023-09-10","H":126.514,"T":14.592},{"t":"2023-09-11","H":126.216,"T":14.876},{"t":"2023-09-12","H":126.364,"T":14.805},{"t":"2023-09-13","H":126.033,"T":14.545},{"t":"2023-09-14","H":125.315,"T":14.042},{"t":"2023-09-15","H":125.646,"T":14.251},{"t":"2023-09-16","H":125.988,"T":14.1},{"t":"2023-09-17","H":123.592,"T":14.501},{"t":"2023-09-18","H":124.525,"T":14.318},{"t":"2023-09-19","H":123.08,"T":14.148},{"t":"2023-09-20","H":125.673,"T":13.906},{"t":"2023-09-21","H":124.513,"T":13.744},{"t":"2023-09-22","H":110.633,"T":13.505},{"t":"2023-09-23","H":102.285,"T":11.769},{"t":"2023-09-24","H":114.464,"T":10.876},{"t":"2023-09-25","H":120.426,"T":11.135},{"t":"2023-09-26","H":122.617,"T":11.614},{"t":"2023-09-27","H":123.432,"T":12.346},{"t":"2023-09-28","H":122.785,"T":12.441},{"t":"2023-09-29","H":122.234,"T":12.339},{"t":"2023-09-30","H":123.023,"T":12.703},{"t":"2023-10-01","H":122.974,"T":12.775},{"t":"2023-10-02","H":123.237,"T":12.899},{"t":"2023-10-03","H":123.049,"T":12.904},{"t":"2023-10-04","H":123.318,"T":13.272},{"t":"2023-10-05","H":122.773,"T":13.295},{"t":"2023-10-06","H":123.419,"T":12.767},{"t":"2023-10-07","H":124.008,"T":12.505},{"t":"2023-10-08","H":123.425,"T":12.453},{"t":"2023-10-09","H":122.542,"T":12.347},{"t":"2023-10-10","H":123.028,"T":12.312},{"t":"2023-10-11","H":124.214,"T":12.531},{"t":"2023-10-12","H":124.691,"T":12.549},{"t":"2023-10-13","H":124.794,"T":12.913},{"t":"2023-10-14","H":124.389,"T":12.416},{"t":"2023-10-15","H":121.865,"T":11.765},{"t":"2023-10-16","H":120.012,"T":10.265},{"t":"2023-10-17","H":122.08,"T":9.536},{"t":"2023-10-18","H":124.784,"T":9.713},{"t":"2023-10-19","H":125.135,"T":10.695},{"t":"2023-10-20","H":114.736,"T":11.973},{"t":"2023-10-21","H":117.426,"T":11.696},{"t":"2023-10-22","H":100.954,"T":11.113},{"t":"2023-10-23","H":114.318,"T":11.045},{"t":"2023-10-24","H":108.468,"T":11.482},{"t":"2023-10-25","H":105.538,"T":11.16},{"t":"2023-10-26","H":111.058,"T":10.877},{"t":"2023-10-27","H":95.302,"T":11.442},{"t":"2023-10-28","H":104.367,"T":10.41},{"t":"2023-10-29","H":112.269,"T":10.655},{"t":"2023-10-30","H":111.94,"T":11.238},{"t":"2023-10-31","H":87.891,"T":11.347},{"t":"2023-11-01","H":99.339,"T":10.131},{"t":"2023-11-02","H":88.982,"T":10.873},{"t":"2023-11-03","H":83.704,"T":10.513},{"t":"2023-11-04","H":94.294,"T":9.508},{"t":"2023-11-05","H":96.871,"T":9.728},{"t":"2023-11-06","H":100.905,"T":9.443},{"t":"2023-11-07","H":105.303,"T":9.615},{"t":"2023-11-08","H":109.69,"T":8.548},{"t":"2023-11-09","H":112.514,"T":8.51},{"t":"2023-11-10","H":113.12,"T":9.053},{"t":"2023-11-11","H":111.856,"T":7.945},{"t":"2023-11-12","H":109.616,"T":7.884},{"t":"2023-11-13","H":113.705,"T":8.008},{"t":"2023-11-14","H":115.336,"T":8.703},{"t":"2023-11-15","H":116.201,"T":8.811}],"prec":[{"t":"2023-01-31","mm":0.0},{"t":"2023-02-01","mm":0.0},{"t":"2023-02-02","mm":0.0},{"t":"2023-02-03","mm":0.0},{"t":"2023-02-04","mm":0.0},{"t":"2023-02-05","mm":0.0},{"t":"2023-02-06","mm":0.0},{"t":"2023-02-07","mm":1.6},{"t":"2023-02-08","mm":0.0},{"t":"2023-02-09","mm":0.0},{"t":"2023-02-10","mm":0.0},{"t":"2023-02-11","mm":0.0},{"t":"2023-02-12","mm":0.0},{"t":"2023-02-13","mm":0.0},{"t":"2023-02-14","mm":0.0},{"t":"2023-02-15","mm":0.0},{"t":"2023-02-16","mm":0.0},{"t":"2023-02-17","mm":0.0},{"t":"2023-02-18","mm":0.0},{"t":"2023-02-19","mm":0.0},{"t":"2023-02-20","mm":0.0},{"t":"2023-02-21","mm":0.0},{"t":"2023-02-22","mm":0.0},{"t":"2023-02-23","mm":0.0},{"t":"2023-02-24","mm":3.4},{"t":"2023-02-25","mm":0.2},{"t":"2023-02-26","mm":0.0},{"t":"2023-02-27","mm":4.6},{"t":"2023-02-28","mm":1.4},{"t":"2023-03-01","mm":0.6},{"t":"2023-03-02","mm":0.0},{"t":"2023-03-03","mm":0.0},{"t":"2023-03-04","mm":0.0},{"t":"2023-03-05","mm":0.0},{"t":"2023-03-06","mm":5.0},{"t":"2023-03-07","mm":0.8},{"t":"2023-03-08","mm":0.0},{"t":"2023-03-09","mm":3.4},{"t":"2023-03-10","mm":0.0},{"t":"2023-03-11","mm":0.0},{"t":"2023-03-12","mm":0.0},{"t":"2023-03-13","mm":0.2},{"t":"2023-03-14","mm":35.0},{"t":"2023-03-15","mm":0.0},{"t":"2023-03-16","mm":0.0},{"t":"2023-03-17","mm":0.0},{"t":"2023-03-18","mm":0.0},{"t":"2023-03-19","mm":0.0},{"t":"2023-03-20","mm":0.0},{"t":"2023-03-21","mm":0.0},{"t":"2023-03-22","mm":0.0},{"t":"2023-03-23","mm":0.0},{"t":"2023-03-24","mm":0.0},{"t":"2023-03-25","mm":0.8},{"t":"2023-03-26","mm":5.0},{"t":"2023-03-27","mm":0.0},{"t":"2023-03-28","mm":0.0},{"t":"2023-03-29","mm":0.0},{"t":"2023-03-30","mm":1.0},{"t":"2023-03-31","mm":2.2},{"t":"2023-04-01","mm":0.2},{"t":"2023-04-02","mm":0.0},{"t":"2023-04-03","mm":0.0},{"t":"2023-04-04","mm":0.0},{"t":"2023-04-05","mm":0.0},{"t":"2023-04-06","mm":0.0},{"t":"2023-04-07","mm":0.0},{"t":"2023-04-08","mm":0.0},{"t":"2023-04-09","mm":0.0},{"t":"2023-04-10","mm":0.0},{"t":"2023-04-11","mm":0.0},{"t":"2023-04-12","mm":2.0},{"t":"2023-04-13","mm":25.0},{"t":"2023-04-14","mm":0.0},{"t":"2023-04-15","mm":0.0},{"t":"2023-04-16","mm":0.0},{"t":"2023-04-17","mm":0.0},{"t":"2023-04-18","mm":0.0},{"t":"2023-04-19","mm":4.4},{"t":"2023-04-20","mm":40.4},{"t":"2023-04-21","mm":9.0},{"t":"2023-04-22","mm":0.0},{"t":"2023-04-23","mm":5.6},{"t":"2023-04-24","mm":9.8},{"t":"2023-04-25","mm":0.0},{"t":"2023-04-26","mm":0.0},{"t":"2023-04-27","mm":0.0},{"t":"2023-04-28","mm":0.0},{"t":"2023-04-29","mm":0.0},{"t":"2023-04-30","mm":14.2},{"t":"2023-05-01","mm":6.6},{"t":"2023-05-02","mm":13.0},{"t":"2023-05-03","mm":0.0},{"t":"2023-05-04","mm":0.0},{"t":"2023-05-05","mm":0.0},{"t":"2023-05-06","mm":0.0},{"t":"2023-05-07","mm":23.6},{"t":"2023-05-08","mm":9.8},{"t":"2023-05-09","mm":10.8},{"t":"2023-05-10","mm":31.4},{"t":"2023-05-11","mm":15.2},{"t":"2023-05-12","mm":23.0},{"t":"2023-05-13","mm":9.8},{"t":"2023-05-14","mm":3.4},{"t":"2023-05-15","mm":0.2},{"t":"2023-05-16","mm":0.0},{"t":"2023-05-17","mm":0.0},{"t":"2023-05-18","mm":1.4},{"t":"2023-05-19","mm":10.8},{"t":"2023-05-20","mm":5.4},{"t":"2023-05-21","mm":0.6},{"t":"2023-05-22","mm":5.0},{"t":"2023-05-23","mm":0.0},{"t":"2023-05-24","mm":7.8},{"t":"2023-05-25","mm":15.2},{"t":"2023-05-26","mm":0.2},{"t":"2023-05-27","mm":20.8},{"t":"2023-05-28","mm":0.6},{"t":"2023-05-29","mm":0.0},{"t":"2023-05-30","mm":5.0},{"t":"2023-05-31","mm":3.4},{"t":"2023-06-01","mm":0.8},{"t":"2023-06-02","mm":0.2},{"t":"2023-06-03","mm":10.8},{"t":"2023-06-04","mm":19.2},{"t":"2023-06-05","mm":3.0},{"t":"2023-06-06","mm":3.8},{"t":"2023-06-07","mm":11.0},{"t":"2023-06-08","mm":4.2},{"t":"2023-06-09","mm":0.0},{"t":"2023-06-10","mm":0.0},{"t":"2023-06-11","mm":11.8},{"t":"2023-06-12","mm":2.0},{"t":"2023-06-13","mm":10.8},{"t":"2023-06-14","mm":5.8},{"t":"2023-06-15","mm":0.8},{"t":"2023-06-16","mm":0.2},{"t":"2023-06-17","mm":0.0},{"t":"2023-06-18","mm":0.0},{"t":"2023-06-19","mm":0.0},{"t":"2023-06-20","mm":0.0},{"t":"2023-06-21","mm":0.0},{"t":"2023-06-22","mm":0.0},{"t":"2023-06-23","mm":2.4},{"t":"2023-06-24","mm":0.0},{"t":"2023-06-25","mm":0.0},{"t":"2023-06-26","mm":0.0},{"t":"2023-06-27","mm":0.0},{"t":"2023-06-28","mm":0.0},{"t":"2023-06-29","mm":0.0},{"t":"2023-06-30","mm":29.0},{"t":"2023-07-01","mm":2.4},{"t":"2023-07-02","mm":0.0},{"t":"2023-07-03","mm":17.4},{"t":"2023-07-04","mm":13.8},{"t":"2023-07-05","mm":15.8},{"t":"2023-07-06","mm":14.8},{"t":"2023-07-07","mm":0.0},{"t":"2023-07-08","mm":3.6},{"t":"2023-07-09","mm":0.0},{"t":"2023-07-10","mm":0.0},{"t":"2023-07-11","mm":0.0},{"t":"2023-07-12","mm":67.8},{"t":"2023-07-13","mm":8.0},{"t":"2023-07-14","mm":0.2},{"t":"2023-07-15","mm":0.0},{"t":"2023-07-16","mm":0.0},{"t":"2023-07-17","mm":0.0},{"t":"2023-07-18","mm":0.6},{"t":"2023-07-19","mm":5.2},{"t":"2023-07-20","mm":0.2},{"t":"2023-07-21","mm":35.2},{"t":"2023-07-22","mm":0.0},{"t":"2023-07-23","mm":0.0},{"t":"2023-07-24","mm":22.8},{"t":"2023-07-25","mm":15.0},{"t":"2023-07-26","mm":0.0},{"t":"2023-07-27","mm":0.0},{"t":"2023-07-28","mm":0.0},{"t":"2023-07-29","mm":2.8},{"t":"2023-07-30","mm":5.2},{"t":"2023-07-31","mm":0.0},{"t":"2023-08-01","mm":11.6},{"t":"2023-08-02","mm":7.0},{"t":"2023-08-03","mm":4.2},{"t":"2023-08-04","mm":3.6},{"t":"2023-08-05","mm":0.0},{"t":"2023-08-06","mm":0.0},{"t":"2023-08-07","mm":0.0},{"t":"2023-08-08","mm":0.0},{"t":"2023-08-09","mm":0.0},{"t":"2023-08-10","mm":0.0},{"t":"2023-08-11","mm":0.0},{"t":"2023-08-12","mm":0.0},{"t":"2023-08-13","mm":0.0},{"t":"2023-08-14","mm":0.0},{"t":"2023-08-15","mm":0.0},{"t":"2023-08-16","mm":3.0},{"t":"2023-08-17","mm":5.4},{"t":"2023-08-18","mm":0.0},{"t":"2023-08-19","mm":0.0},{"t":"2023-08-20","mm":0.0},{"t":"2023-08-21","mm":0.0},{"t":"2023-08-22","mm":0.0},{"t":"2023-08-23","mm":0.0},{"t":"2023-08-24","mm":0.0},{"t":"2023-08-25","mm":0.0},{"t":"2023-08-26","mm":17.8},{"t":"2023-08-27","mm":67.0},{"t":"2023-08-28","mm":86.6},{"t":"2023-08-29","mm":0.0},{"t":"2023-08-30","mm":0.8},{"t":"2023-08-31","mm":0.0},{"t":"2023-09-01","mm":0.0},{"t":"2023-09-02","mm":0.0},{"t":"2023-09-03","mm":0.0},{"t":"2023-09-04","mm":0.0},{"t":"2023-09-05","mm":0.0},{"t":"2023-09-06","mm":0.0},{"t":"2023-09-07","mm":0.0},{"t":"2023-09-08","mm":0.0},{"t":"2023-09-09","mm":0.0},{"t":"2023-09-10","mm":0.2},{"t":"2023-09-11","mm":0.0},{"t":"2023-09-12","mm":0.2},{"t":"2023-09-13","mm":13.6},{"t":"2023-09-14","mm":13.0},{"t":"2023-09-15","mm":4.0},{"t":"2023-09-16","mm":3.8},{"t":"2023-09-17","mm":13.6},{"t":"2023-09-18","mm":25.4},{"t":"2023-09-19","mm":0.2},{"t":"2023-09-20","mm":1.4},{"t":"2023-09-21","mm":12.4},{"t":"2023-09-22","mm":77.8},{"t":"2023-09-23","mm":0.4},{"t":"2023-09-24","mm":0.0},{"t":"2023-09-25","mm":0.0},{"t":"2023-09-26","mm":0.0},{"t":"2023-09-27","mm":0.2},{"t":"2023-09-28","mm":0.0},{"t":"2023-09-29","mm":0.0},{"t":"2023-09-30","mm":0.0},{"t":"2023-10-01","mm":0.0},{"t":"2023-10-02","mm":0.2},{"t":"2023-10-03","mm":0.0},{"t":"2023-10-04","mm":0.0},{"t":"2023-10-05","mm":0.0},{"t":"2023-10-06","mm":0.2},{"t":"2023-10-07","mm":0.0},{"t":"2023-10-08","mm":0.0},{"t":"2023-10-09","mm":0.0},{"t":"2023-10-10","mm":0.0},{"t":"2023-10-11","mm":0.0},{"t":"2023-10-12","mm":0.2},{"t":"2023-10-13","mm":0.0},{"t":"2023-10-14","mm":0.0},{"t":"2023-10-15","mm":0.0},{"t":"2023-10-16","mm":0.0},{"t":"2023-10-17","mm":0.0},{"t":"2023-10-18","mm":1.0},{"t":"2023-10-19","mm":19.0},{"t":"2023-10-20","mm":69.8},{"t":"2023-10-21","mm":35.8},{"t":"2023-10-22","mm":21.6},{"t":"2023-10-23","mm":1.4},{"t":"2023-10-24","mm":41.0},{"t":"2023-10-25","mm":0.0},{"t":"2023-10-26","mm":21.6},{"t":"2023-10-27","mm":30.2},{"t":"2023-10-28","mm":0.2},{"t":"2023-10-29","mm":8.4},{"t":"2023-10-30","mm":54.8},{"t":"2023-10-31","mm":29.6},{"t":"2023-11-01","mm":4.6},{"t":"2023-11-02","mm":84.0},{"t":"2023-11-03","mm":26.8},{"t":"2023-11-04","mm":13.6},{"t":"2023-11-05","mm":6.6},{"t":"2023-11-06","mm":0.0},{"t":"2023-11-07","mm":4.4},{"t":"2023-11-08","mm":0.2},{"t":"2023-11-09","mm":9.6},{"t":"2023-11-10","mm":0.6},{"t":"2023-11-11","mm":0.2},{"t":"2023-11-12","mm":0.0},{"t":"2023-11-13","mm":0.0},{"t":"2023-11-14","mm":0.0},{"t":"2023-11-15","mm":0.0}]};
+const CAMP    = [{"d":"27/10/2022","p2":35.06,"p4":44.5,"p5":40.3,"p6":43.2,"p8":35.05,"CeS_med":393,"T_med":10.3,"ces":{"P2":395,"P5":396,"P8":389},"uniacque":25.9,"Q_tot":66.2},{"d":"31/01/2023","p2":40.85,"p4":41.5,"p5":44.88,"p6":47.5,"p8":61.82,"CeS_med":394,"T_med":5.4,"ces":{"P2":396,"P5":396,"P8":392},"uniacque":17.8,"Q_tot":62.7},{"d":"22/05/2023","p2":97.54,"p4":105.7,"p5":129.0,"p6":94.1,"p8":128.31,"CeS_med":419,"T_med":10.8,"ces":{"P2":422,"P5":420,"P8":409},"uniacque":27.4,"Q_tot":156.4},{"d":"11/07/2023","p2":81.07,"p4":103.3,"p5":107.01,"p6":83.9,"p8":97.75,"CeS_med":405,"T_med":12.8,"ces":{"P2":407,"P5":410,"P8":403},"uniacque":26.8,"Q_tot":133.8},{"d":"20/09/2023","p2":74.92,"p4":79.1,"p5":82.76,"p6":69.4,"p8":77.39,"CeS_med":374,"T_med":12.0,"ces":{"P2":376,"P5":366,"P8":374},"uniacque":28.6,"Q_tot":111.4}];
+const PZ2RECS = [{"s":"2023-02-08","e":"2023-02-25","H0":113.6,"Hmin":111.4,"dH":2.2,"dur":17,"vals":[["2023-02-08",113.6],["2023-02-09",113.5],["2023-02-10",113.6],["2023-02-11",113.7],["2023-02-12",112.9],["2023-02-13",113.2],["2023-02-14",112.7],["2023-02-15",112.5],["2023-02-16",112.5],["2023-02-17",112.3],["2023-02-18",112.3],["2023-02-19",112.2],["2023-02-20",112.3],["2023-02-21",111.9],["2023-02-22",112.1],["2023-02-23",111.9],["2023-02-24",111.8],["2023-02-25",111.4]]},{"s":"2023-04-06","e":"2023-04-14","H0":112.3,"Hmin":108.3,"dH":4.0,"dur":8,"vals":[["2023-04-06",112.3],["2023-04-07",112.1],["2023-04-08",112.0],["2023-04-09",111.9],["2023-04-10",111.9],["2023-04-11",111.5],["2023-04-12",111.2],["2023-04-13",107.9],["2023-04-14",108.3]]},{"s":"2023-05-05","e":"2023-05-12","H0":105.4,"Hmin":86.6,"dH":18.8,"dur":7,"vals":[["2023-05-05",105.4],["2023-05-06",105.4],["2023-05-07",104.4],["2023-05-08",104.0],["2023-05-09",104.0],["2023-05-10",101.3],["2023-05-11",95.9],["2023-05-12",86.6]]},{"s":"2023-05-20","e":"2023-05-25","H0":105.0,"Hmin":101.9,"dH":3.1,"dur":5,"vals":[["2023-05-20",105.0],["2023-05-21",104.7],["2023-05-22",104.6],["2023-05-23",104.7],["2023-05-24",104.9],["2023-05-25",101.9]]},{"s":"2023-08-20","e":"2023-08-28","H0":106.7,"Hmin":91.3,"dH":15.4,"dur":8,"vals":[["2023-08-20",106.7],["2023-08-21",106.5],["2023-08-22",106.1],["2023-08-23",106.0],["2023-08-24",106.4],["2023-08-25",106.2],["2023-08-26",106.6],["2023-08-27",105.5],["2023-08-28",91.3]]},{"s":"2023-09-04","e":"2023-09-19","H0":106.3,"Hmin":103.9,"dH":2.4,"dur":15,"vals":[["2023-09-04",106.3],["2023-09-05",106.1],["2023-09-06",106.5],["2023-09-07",106.6],["2023-09-08",106.5],["2023-09-09",106.5],["2023-09-10",106.4],["2023-09-11",106.4],["2023-09-12",106.5],["2023-09-13",106.3],["2023-09-14",105.9],["2023-09-15",105.7],["2023-09-16",106.2],["2023-09-17",104.4],["2023-09-18",104.8],["2023-09-19",103.9]]}];
 
-async function init(){
-  try{
-    const [scada,campagne]=await Promise.all([fetchJ('boione_scada.json'),fetchJ('boione_campagne.json')]);
+const C={};
+function dc(id){if(C[id]){C[id].destroy();delete C[id];}};
+function avg(a){const v=a.filter(x=>x!=null&&!isNaN(x));return v.length?v.reduce((a,b)=>a+b)/v.length:null;}
+function pl(pos='top'){return{legend:{position:pos,labels:{color:'#e3eaf8',usePointStyle:true,font:{size:9.5}}},tooltip:{mode:'index',intersect:false}};}
+function sc(yL='',extra={}){return{
+  x:{type:'time',time:{unit:'month',displayFormats:{month:"MMM 'yy"}},
+     grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9},maxTicksLimit:14}},
+  y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+     title:{display:!!yL,text:yL,color:'#7a94b8',font:{size:9}},...extra}
+};}
 
-    // Bilancio idrico
-    dc('cBilancio');
-    const Qs=[40,60,80,100,120,140,160,200,250];
-    const S=1005/1000,Ic=0.622,T=365.25*86400;
-    const areas=Qs.map(q=>Math.round(q/1000*T/(S*Ic)/1e6*100)/100);
-    new Chart(document.getElementById('cBilancio'),{type:'line',data:{
-      labels:Qs.map(q=>q+' l/s'),
-      datasets:[
-        {label:'Area bacino idrogeologico (km²)',data:areas,borderColor:'#4caf82',
-          backgroundColor:'rgba(76,175,130,.1)',borderWidth:2.5,pointRadius:5,fill:true},
-        {label:'Bacino superficiale Borlezza (4.5 km²)',data:Qs.map(()=>4.5),
-          borderColor:'rgba(255,179,71,.6)',borderWidth:1.5,borderDash:[5,5],pointRadius:0},
-        {label:'Borlezza+Alino (6.3 km²)',data:Qs.map(()=>6.3),
-          borderColor:'rgba(179,157,219,.6)',borderWidth:1.5,borderDash:[3,3],pointRadius:0},
-      ]},options:{responsive:true,maintainAspectRatio:false,
-      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
-        y:{min:2,max:14,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
-           title:{display:true,text:'Area km²',color:'#7a94b8',font:{size:9}}}},
-      plugins:pl()}});
+// ── 1. BILANCIO IDRICO ────────────────────────────────────────────
+dc('cBilancio');
+(()=>{
+  const S=1005/1000, Ic=0.622, Ts=365.25*86400;
+  const Qs=Array.from({length:30},(_,i)=>40+i*6);
+  const areas=Qs.map(q=>Math.round(q/1000*Ts/(S*Ic)/1e6*100)/100);
+  const camps=CAMP.map(c=>c.Q_tot);
+  new Chart(document.getElementById('cBilancio'),{type:'line',data:{
+    labels:Qs.map(q=>q+' l/s'),
+    datasets:[
+      {label:'Area bacino idrogeo. (km²)',data:areas,borderColor:'#4caf82',
+        backgroundColor:'rgba(76,175,130,.1)',borderWidth:2.5,pointRadius:3,fill:true},
+      {label:'Bacino superficiale Borlezza (4.5 km²)',data:Qs.map(()=>4.5),
+        borderColor:'rgba(255,179,71,.5)',borderWidth:1.5,borderDash:[6,4],pointRadius:0},
+      {label:'Borlezza+Alino (6.3 km²)',data:Qs.map(()=>6.3),
+        borderColor:'rgba(179,157,219,.4)',borderWidth:1.5,borderDash:[3,3],pointRadius:0},
+      {label:'5 campagne Idrogea',
+        data:Qs.map((q,i)=>{
+          const close=camps.reduce((a,b)=>Math.abs(a-q)<Math.abs(b-q)?a:b);
+          return close===camps[i%camps.length]?areas[i]:null;
+        }),
+        borderColor:'#4caf82',backgroundColor:'#4caf82',
+        borderWidth:0,pointRadius:0,showLine:false}
+    ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+         title:{display:true,text:'Area km²',color:'#7a94b8',font:{size:9}},min:2,max:13}},
+    plugins:pl()}});
+})();
 
-    // Livello H recessione
-    dc('cRecH');
-    const bo2h=(scada['BO-2']||[]).filter(d=>d.H!=null);
-    const bo5h=(scada['BO-5']||[]).filter(d=>d.H!=null);
-    new Chart(document.getElementById('cRecH'),{type:'line',data:{datasets:[
-      {label:'BO-2 (623m) — H',data:bo2h.map(d=>{return{x:d.t,y:d.H}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
-      {label:'BO-5 (521m) — H',data:bo5h.map(d=>{return{x:d.t,y:d.H}}),borderColor:'#ffd080',borderWidth:2,pointRadius:0,fill:false},
-    ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('Livello (m)'),plugins:pl()}});
+// ── 2. RECESSION ANALYSIS ────────────────────────────────────────
+// Livelli continui (tutti)
+dc('cRecAll');
+(()=>{
+  const bo2h=SCADA['BO-2'].filter(d=>d.H!=null);
+  const bo5h=SCADA['BO-5'].filter(d=>d.H!=null);
+  const pz2 =DIVER.pz2.filter(d=>d.H!=null);
+  new Chart(document.getElementById('cRecAll'),{type:'line',data:{datasets:[
+    {label:'Pz2 (Idrogea 2023, cm/10)',data:pz2.map(d=>{return{x:d.t,y:d.H/10}}),
+      borderColor:'#4fc3f7',borderWidth:2,pointRadius:0,fill:false,
+      borderDash:[],yAxisID:'yPz2'},
+    {label:'BO-2 SCADA (m)',data:bo2h.map(d=>{return{x:d.t,y:d.H}}),
+      borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+    {label:'BO-5 SCADA (m)',data:bo5h.map(d=>{return{x:d.t,y:d.H}}),
+      borderColor:'#ffd080',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[3,2]},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:{
+      x:sc().x,
+      y:{grid:{color:'#1e3050'},ticks:{color:'#ffb347',font:{size:9}},
+        title:{display:true,text:'SCADA H (m)',color:'#ffb347',font:{size:9}},position:'left'},
+      yPz2:{grid:{display:false},position:'right',
+        ticks:{color:'#4fc3f7',font:{size:9}},
+        title:{display:true,text:'Pz2 H/10 (cm÷10)',color:'#4fc3f7',font:{size:9}}},
+    },plugins:pl()}});
+})();
 
-    // Periodi recessione (BO-5)
-    dc('cRecPer');
-    const rec=[];let start=null,min=null;
-    bo5h.forEach((d,i)=>{
-      if(i===0)return;
-      const prev=bo5h[i-1];
-      if(d.H<prev.H){if(!start){start=prev.t;min=prev.H;}if(d.H<min)min=d.H;}
-      else if(start){rec.push({s:start,e:prev.t,dH:Math.round((bo5h.find(x=>x.t===start)?.H||0)-min)*1000/1000});start=null;min=null;}
-    });
-    const top5=rec.sort((a,b)=>b.dH-a.dH).slice(0,8);
-    new Chart(document.getElementById('cRecPer'),{type:'bar',data:{
-      labels:top5.map(r=>r.s.slice(0,7)),
-      datasets:[{label:'Abbassamento H (m)',data:top5.map(r=>r.dH),
-        backgroundColor:'rgba(79,195,247,.6)',borderRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,
-      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
-        y:{beginAtZero:true,grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}}},
-      plugins:pl()}});
+// Periodi recessione Pz2
+dc('cRecPeriods');
+(()=>{
+  const labels=PZ2RECS.map(r=>r.s.slice(0,7));
+  const dH=PZ2RECS.map(r=>r.dH);
+  const dur=PZ2RECS.map(r=>r.dur);
+  new Chart(document.getElementById('cRecPeriods'),{type:'bar',data:{
+    labels,
+    datasets:[
+      {label:'ΔH abbassamento (cm)',data:dH,backgroundColor:'rgba(79,195,247,.65)',borderRadius:4,yAxisID:'y1'},
+      {label:'Durata (giorni)',data:dur,backgroundColor:'rgba(255,179,71,.55)',borderRadius:4,type:'bar',yAxisID:'y2'},
+    ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:{
+      x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+      y1:{grid:{color:'#1e3050'},ticks:{color:'#4fc3f7',font:{size:9}},
+           title:{display:true,text:'ΔH (cm)',color:'#4fc3f7',font:{size:9}},position:'left',beginAtZero:true},
+      y2:{grid:{display:false},position:'right',
+           ticks:{color:'#ffb347',font:{size:9}},
+           title:{display:true,text:'Durata (gg)',color:'#ffb347',font:{size:9}},beginAtZero:true},
+    },plugins:pl()}});
+})();
 
-    // Curva esaurimento teorica
-    dc('cRecTeo');
-    const days=Array.from({length:120},(_,i)=>i);
-    const a1=0.05,a2=0.008,Q0=1;
-    new Chart(document.getElementById('cRecTeo'),{type:'line',data:{
-      labels:days,
-      datasets:[
-        {label:'Q totale (α₁+α₂)',data:days.map(t=>Q0*0.4*Math.exp(-a1*t)+Q0*0.6*Math.exp(-a2*t)),
-          borderColor:'#4caf82',borderWidth:2.5,pointRadius:0,fill:false},
-        {label:'Quickflow (α₁=0.05)',data:days.map(t=>Q0*0.4*Math.exp(-a1*t)),
-          borderColor:'#4fc3f7',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,3]},
-        {label:'Baseflow (α₂=0.008)',data:days.map(t=>Q0*0.6*Math.exp(-a2*t)),
-          borderColor:'#ffb347',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,3]},
-      ]},options:{responsive:true,maintainAspectRatio:false,
-      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'Giorni dalla piena',color:'#7a94b8',font:{size:9}}},
-        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'Q/Q₀',color:'#7a94b8',font:{size:9}}}},
-      plugins:pl()}});
-
-    // CeS mensile tutti i punti
-    dc('cCesMens');
-    const byM={};
-    ['BO-0','BO-2','BO-5','BO-8','AL-100'].forEach(s=>{
-      (scada[s]||[]).forEach(d=>{if(d.CeS==null)return;const m=d.t.slice(0,7);if(!byM[m])byM[m]={};if(!byM[m][s])byM[m][s]=[];byM[m][s].push(d.CeS);});
-    });
-    const mks=Object.keys(byM).sort();
-    const clrs={'BO-0':'#ff8c42','BO-2':'#ffb347','BO-5':'#ffd080','BO-8':'#e06020','AL-100':'#b39ddb'};
-    new Chart(document.getElementById('cCesMens'),{type:'line',data:{datasets:
-      Object.entries(clrs).map(([s,c])=>{
-        return{label:s,data:mks.map(k=>{const v=byM[k]?.[s];return v?.length?Math.round(avg(v)):null;}),
-               borderColor:c,borderWidth:2,pointRadius:3,fill:false,spanGaps:true};
-      })},
+// Recessioni normalizzate Pz2
+dc('cRecNorm');
+(()=>{
+  const colors=['#4fc3f7','#4caf82','#ffb347','#ef5350','#b39ddb','#80cbc4'];
+  const datasets=PZ2RECS.map((r,i)=>{
+    const H0=r.H0, Hmin=r.Hmin, denom=H0-Hmin;
+    const pts=r.vals.map((v,j)=>{return{x:j,y:denom>0?(v[1]-Hmin)/denom:1};});
+    return{label:`${r.s.slice(0,7)} (ΔH=${r.dH}cm, ${r.dur}gg)`,data:pts,
+      borderColor:colors[i%colors.length],borderWidth:2,pointRadius:0,fill:false};
+  });
+  new Chart(document.getElementById('cRecNorm'),{type:'line',data:{datasets},
     options:{responsive:true,maintainAspectRatio:false,
-      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
-        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
-      plugins:pl()}});
+    scales:{
+      x:{type:'linear',grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+         title:{display:true,text:'Giorni dall'inizio recessione',color:'#7a94b8',font:{size:9}}},
+      y:{grid:{color:'#1e3050'},min:0,max:1,
+         ticks:{color:'#7a94b8',font:{size:9}},
+         title:{display:true,text:'H normalizzato (H-Hmin)/(H0-Hmin)',color:'#7a94b8',font:{size:9}}},
+    },plugins:pl('right')}});
+})();
 
-    // Gradiente CeS lungo asta
-    dc('cCesGrad');
-    const sOrder=['BO-0','BO-2','BO-5','BO-8'];
-    const quote={  'BO-0':648,'BO-2':623,'BO-5':521,'BO-8':366};
-    const cesmed=sOrder.map(s=>{const v=(scada[s]||[]).map(d=>d.CeS).filter(x=>x!=null);return v.length?Math.round(avg(v)):null;});
-    new Chart(document.getElementById('cCesGrad'),{type:'line',data:{
-      labels:sOrder.map(s=>s+' ('+quote[s]+'m)'),
-      datasets:[
-        {label:'CeS media (μS/cm)',data:cesmed,borderColor:'#4caf82',
-          backgroundColor:'rgba(76,175,130,.15)',borderWidth:2.5,pointRadius:7,fill:true},
-        {label:'AL-100 — T. Alino (bacino separato)',
-          data:[null,null,null,Math.round(avg((scada['AL-100']||[]).map(d=>d.CeS).filter(x=>x!=null)))],
-          borderColor:'#b39ddb',borderWidth:0,pointRadius:10,pointStyle:'triangle',fill:false},
-      ]},options:{responsive:true,maintainAspectRatio:false,
-      scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
-        y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
-      plugins:pl()}});
+// Curva esaurimento Q reale da campagne
+dc('cRecTeo');
+(()=>{
+  const qpts=CAMP.map(c=>{return{d:c.d,Q:c.Q_tot,p5:c.p5,Qu:c.uniacque};});
+  // Ordina per stagione
+  const sOrder={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const qSorted=qpts.slice().sort((a,b)=>{const ap=a.d.split('/'),bp=b.d.split('/');return(parseInt(ap[2])*12+parseInt(ap[1]))-(parseInt(bp[2])*12+parseInt(bp[1]));});
+  
+  // Curva esaurimento teorica a due componenti calibrata sui range campagne
+  const days=Array.from({length:150},(_,i)=>i);
+  const Qmax=Math.max(...qpts.map(q=>q.Q)), Qmin=Math.min(...qpts.map(q=>q.Q));
+  const Qmed=qpts.reduce((s,q)=>s+q.Q,0)/qpts.length;
+  
+  const a1=0.3, a2=0.015; // α stime da Pz2 e modello
+  const Q0best=Qmax*0.9, Q0low=Qmin*0.8, Q0high=Qmax*1.1;
+  
+  new Chart(document.getElementById('cRecTeo'),{type:'line',data:{datasets:[
+    {label:'Curva best-estimate (Q₀='+Math.round(Q0best)+' l/s)',
+      data:days.map(t=>Q0best*(0.4*Math.exp(-a1*t)+0.6*Math.exp(-a2*t))),
+      borderColor:'#4caf82',borderWidth:2.5,pointRadius:0,fill:false},
+    {label:'Limite sup. confidenza',
+      data:days.map(t=>Q0high*(0.5*Math.exp(-a1*t)+0.6*Math.exp(-a2*t))),
+      borderColor:'rgba(76,175,130,.35)',borderWidth:1,pointRadius:0,
+      fill:'+1',backgroundColor:'rgba(76,175,130,.08)'},
+    {label:'Limite inf. confidenza',
+      data:days.map(t=>Q0low*(0.3*Math.exp(-a1*t)+0.6*Math.exp(-a2*t))),
+      borderColor:'rgba(76,175,130,.35)',borderWidth:1,pointRadius:0,fill:false},
+    {label:'Q misurate campagne (l/s)',
+      data:qSorted.map((q,i)=>{return{x:i*30,y:q.Q};}),
+      borderColor:'#ffb347',backgroundColor:'#ffb347',
+      borderWidth:0,pointRadius:8,pointStyle:'circle',showLine:false,
+      type:'scatter'},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:{
+      x:{type:'linear',grid:{color:'#1e3050'},
+         ticks:{color:'#7a94b8',font:{size:9}},
+         title:{display:true,text:'Giorni (scala indicativa)',color:'#7a94b8',font:{size:9}}},
+      y:{grid:{color:'#1e3050'},min:0,
+         ticks:{color:'#7a94b8',font:{size:9}},
+         title:{display:true,text:'Q totale Boione (l/s)',color:'#7a94b8',font:{size:9}}},
+    },plugins:{
+      legend:{labels:{color:'#e3eaf8',font:{size:9.5}}},
+      tooltip:{callbacks:{label:i=>i.dataset.label+': '+Math.round(i.parsed.y)+' l/s'}}
+    }}});
+})();
 
-    // Temperatura comparativa
-    dc('cTempComp');
-    new Chart(document.getElementById('cTempComp'),{type:'line',data:{datasets:[
-      {label:'BO-2 (Borlezza)',data:(scada['BO-2']||[]).filter(d=>d.T!=null).map(d=>{return{x:d.t,y:d.T}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
-      {label:'AL-100 (Alino)',data:(scada['AL-100']||[]).filter(d=>d.T!=null).map(d=>{return{x:d.t,y:d.T}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
-    ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('°C'),plugins:pl()}});
+// ── 3. CeS ────────────────────────────────────────────────────────
+// Famiglia 1: SCADA continuo
+dc('cCesScada');
+(()=>{
+  const pts={'BO-0':{c:'#ff8c42',dash:[]},
+             'BO-2':{c:'#ffb347',dash:[]},
+             'BO-5':{c:'#ffd080',dash:[3,2]},
+             'BO-8':{c:'#e06020',dash:[5,4]},
+             'AL-100':{c:'#b39ddb',dash:[]}};
+  new Chart(document.getElementById('cCesScada'),{type:'line',data:{datasets:
+    Object.entries(pts).map(([s,p])=>{
+      const d=(SCADA[s]||[]).filter(x=>x.CeS!=null);
+      return{label:s,data:d.map(x=>{return{x:x.t,y:x.CeS}}),
+             borderColor:p.c,borderDash:p.dash,borderWidth:2,pointRadius:0,fill:false};
+    })},options:{responsive:true,maintainAspectRatio:false,
+    scales:sc('CeS (μS/cm)'),plugins:pl()}});
+})();
 
-    // CeS comparativa
-    dc('cCesComp');
-    new Chart(document.getElementById('cCesComp'),{type:'line',data:{datasets:[
-      {label:'BO-2 (Borlezza)',data:(scada['BO-2']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
-      {label:'AL-100 (Alino)',data:(scada['AL-100']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
-    ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('μS/cm'),plugins:pl()}});
+// Famiglia 2: campagne
+dc('cCesCamp');
+(()=>{
+  const pts=[['P2','#4fc3f7'],['P5','#4caf82'],['P8','#ffb347']];
+  new Chart(document.getElementById('cCesCamp'),{type:'line',data:{datasets:
+    pts.map(([p,c])=>{
+      return{label:'CeS '+p,data:CAMP.map(cp=>{return{x:cp.d,y:cp.ces?.[p]};}).filter(d=>d.y!=null),
+             borderColor:c,borderWidth:2,pointRadius:6,pointStyle:'circle',fill:false,tension:.3};
+    })},options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+             y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+               title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
+    plugins:pl()}});
+})();
 
-    // Temperatura serie
-    dc('cTemp');
-    new Chart(document.getElementById('cTemp'),{type:'line',data:{datasets:
-      [['BO-2','#ffb347'],['BO-5','#ffd080'],['AL-100','#b39ddb']].map(([s,c])=>{
-        const d=(scada[s]||[]).filter(x=>x.T!=null);
-        return{label:s,data:d.map(x=>{return{x:x.t,y:x.T}}),borderColor:c,borderWidth:1.5,pointRadius:0,fill:false};
-      })},options:{responsive:true,maintainAspectRatio:false,scales:sc('°C'),plugins:pl()}});
+// CeS mensile SCADA
+dc('cCesMens');
+(()=>{
+  const byM={};
+  ['BO-0','BO-2','BO-5','BO-8','AL-100'].forEach(s=>{
+    (SCADA[s]||[]).forEach(d=>{
+      if(!d.CeS)return; const k=d.t.slice(0,7);
+      if(!byM[k])byM[k]={};
+      if(!byM[k][s])byM[k][s]=[];
+      byM[k][s].push(d.CeS);
+    });
+  });
+  const mks=Object.keys(byM).sort();
+  const styles={'BO-0':{c:'#ff8c42',d:[]}, 'BO-2':{c:'#ffb347',d:[]},
+                'BO-5':{c:'#ffd080',d:[3,2]}, 'BO-8':{c:'#e06020',d:[5,4]},
+                'AL-100':{c:'#b39ddb',d:[]}};
+  new Chart(document.getElementById('cCesMens'),{type:'line',data:{datasets:
+    Object.entries(styles).map(([s,st])=>{
+      return{label:s,borderColor:st.c,borderDash:st.d,borderWidth:2,pointRadius:3,fill:false,spanGaps:true,
+             data:mks.map(k=>{const v=byM[k]?.[s];return{x:k+'-15',y:v?.length?Math.round(avg(v)):null};})};
+    })},options:{responsive:true,maintainAspectRatio:false,
+    scales:sc('μS/cm'),plugins:pl()}});
+})();
 
-  } catch(e){
-    document.getElementById('loadMsg').textContent='Errore: '+e.message;
-    console.error(e);
-  }
-  document.getElementById('loading').style.display='none';
-}
-init();
+// CeS vs H isteresi
+dc('cCesH');
+(()=>{
+  const d=(SCADA['BO-2']||[]).filter(x=>x.H!=null&&x.CeS!=null);
+  const n=d.length;
+  new Chart(document.getElementById('cCesH'),{type:'scatter',data:{datasets:[
+    {label:'BO-2: CeS vs H',data:d.map((x,i)=>{return{x:x.H,y:x.CeS,_t:x.t};}).slice(0,n),
+      backgroundColor:d.map((_,i)=>{const t=i/n;return `hsl(${120*(1-t)+220*t},70%,55%)`;})  ,
+      pointRadius:3,borderWidth:0},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+               title:{display:true,text:'H (m)',color:'#7a94b8',font:{size:9}}},
+             y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+               title:{display:true,text:'CeS (μS/cm)',color:'#7a94b8',font:{size:9}}}},
+    plugins:{legend:{labels:{color:'#e3eaf8',font:{size:9.5}}},
+             tooltip:{callbacks:{label:i=>i.raw._t+' — H:'+i.raw.x+'m CeS:'+i.raw.y+' μS/cm'}}}}});
+})();
+
+// ── 4. TEMPERATURA ────────────────────────────────────────────────
+// SCADA Borlezza
+dc('cTempScada');
+(()=>{
+  const s=[['BO-2','#ffb347',[]], ['BO-5','#ffd080',[3,2]], ['AL-100','#b39ddb',[]]];
+  new Chart(document.getElementById('cTempScada'),{type:'line',data:{datasets:
+    s.map(([n,c,d])=>{
+      return{label:n,data:(SCADA[n]||[]).filter(x=>x.T!=null).map(x=>{return{x:x.t,y:x.T}}),
+             borderColor:c,borderDash:d,borderWidth:2,pointRadius:0,fill:false};
+    })},options:{responsive:true,maintainAspectRatio:false,
+    scales:sc('°C'),plugins:pl()}});
+})();
+
+// SCADA Idrogea Pz2
+dc('cTempIdrogea');
+(()=>{
+  const pz=[['pz2','#4fc3f7',[]], ['pz6','#4caf82',[3,2]], ['pz9','#ffb347',[5,3]]];
+  const campT=CAMP.map(c=>{return{x:c.d,y:c.T_med};});
+  new Chart(document.getElementById('cTempIdrogea'),{type:'line',data:{datasets:[
+    ...pz.map(([n,c,d])=>{
+      return{label:'Idrogea '+n,data:(DIVER[n]||[]).filter(x=>x.T!=null).map(x=>{return{x:x.t,y:x.T}}),
+             borderColor:c,borderDash:d,borderWidth:2,pointRadius:0,fill:false};
+    }),
+    {label:'T campagne Idrogea (punta)',data:campT,
+      borderColor:'#ef5350',borderWidth:0,pointRadius:7,pointStyle:'triangle',
+      backgroundColor:'#ef5350',showLine:false,type:'scatter'},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}}},
+             y:{grid:{color:'#1e3050'},ticks:{color:'#7a94b8',font:{size:9}},
+               title:{display:true,text:'°C',color:'#7a94b8',font:{size:9}}}},
+    plugins:pl()}});
+})();
+
+// Tutti insieme
+dc('cTempAll');
+(()=>{
+  new Chart(document.getElementById('cTempAll'),{type:'line',data:{datasets:[
+    {label:'Pz2 Idrogea 2023',data:(DIVER.pz2||[]).filter(x=>x.T!=null).map(x=>{return{x:x.t,y:x.T}}),borderColor:'#4fc3f7',borderWidth:2,pointRadius:0,fill:false},
+    {label:'BO-2 SCADA 2025-26',data:(SCADA['BO-2']||[]).filter(x=>x.T!=null).map(x=>{return{x:x.t,y:x.T}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+    {label:'BO-5 SCADA 2025-26',data:(SCADA['BO-5']||[]).filter(x=>x.T!=null).map(x=>{return{x:x.t,y:x.T}}),borderColor:'#ffd080',borderWidth:1.5,borderDash:[3,2],pointRadius:0,fill:false},
+    {label:'AL-100 SCADA 2025-26',data:(SCADA['AL-100']||[]).filter(x=>x.T!=null).map(x=>{return{x:x.t,y:x.T}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    scales:sc('°C'),plugins:pl()}});
+})();
+
+// ── 5. CONFRONTO BORLEZZA/ALINO ───────────────────────────────────
+dc('cCesComp');
+(()=>{
+  new Chart(document.getElementById('cCesComp'),{type:'line',data:{datasets:[
+    {label:'BO-2 (Borlezza)',data:(SCADA['BO-2']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+    {label:'AL-100 (Alino)',data:(SCADA['AL-100']||[]).filter(d=>d.CeS!=null).map(d=>{return{x:d.t,y:d.CeS}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('μS/cm'),plugins:pl()}});
+})();
+
+dc('cTempComp');
+(()=>{
+  new Chart(document.getElementById('cTempComp'),{type:'line',data:{datasets:[
+    {label:'BO-2 (Borlezza)',data:(SCADA['BO-2']||[]).filter(d=>d.T!=null).map(d=>{return{x:d.t,y:d.T}}),borderColor:'#ffb347',borderWidth:2,pointRadius:0,fill:false},
+    {label:'AL-100 (Alino)',data:(SCADA['AL-100']||[]).filter(d=>d.T!=null).map(d=>{return{x:d.t,y:d.T}}),borderColor:'#b39ddb',borderWidth:2,pointRadius:0,fill:false},
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:sc('°C'),plugins:pl()}});
+})();
+
+document.getElementById('loading').style.display='none';
 </script>
 </main>
 </body>
