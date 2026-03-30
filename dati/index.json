@@ -1,6 +1,18 @@
 {
   "stazioni": [
     {
+      "id": "boione",
+      "nome": "Sorgente Boione · Rio Borlezza",
+      "lat": 45.84249,
+      "lon": 9.64552,
+      "quota": 639,
+      "comune": "San Pellegrino Terme",
+      "rete": "boione",
+      "colore": "#4caf82",
+      "pagina": "boione.html",
+      "tipo": "sorgente_carsica"
+    },
+    {
       "id": "cornalita",
       "nome": "Cornalita – San Giovanni Bianco",
       "lat": 45.8697,
