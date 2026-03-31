@@ -320,7 +320,7 @@ function isBad(t){const d=PORTATE.find(x=>x.t===t);return d?!!d.inv:false;}
     scales:{x:{stacked:true,grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}}},
       y:{stacked:true,beginAtZero:true,grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}},title:{display:true,text:"l/s",color:"#7a94b8",font:{size:9}}}},
     plugins:pl()}});
-  document.getElementById("qtotTbody").innerHTML=CAMPAGNE.map(c=>"<tr><td style="font-weight:700">"+c.d+"</td><td>"+c.p5+"</td><td>"+c.uniacque+"</td><td style="font-weight:700;color:var(--acc)">"+c.Q_tot+"</td><td style="color:var(--muted)">"+Math.round(c.uniacque/c.Q_tot*100)+"%</td><td style="color:var(--blue)">"+c.CeS_med+"</td><td>"+c.T_med+"</td></tr>").join("");
+  document.getElementById("qtotTbody").innerHTML=CAMPAGNE.map(c=>"<tr><td style='font-weight:700'>"+c.d+"</td><td>"+c.p5+"</td><td>"+c.uniacque+"</td><td style='font-weight:700;color:var(--acc)'>"+c.Q_tot+"</td><td style='color:var(--muted)'>"+Math.round(c.uniacque/c.Q_tot*100)+"%</td><td style='color:var(--blue)'>"+c.CeS_med+"</td><td>"+c.T_med+"</td></tr>").join("");
 
   dc("cQmens");
   const byM={};
@@ -555,7 +555,7 @@ dc("cNTUserie");
       if(!d.length)return null;
       const Hmin=Math.min(...d.map(x=>x.H)),Hmax=Math.max(...d.map(x=>x.H)),n=d.length;
       return{label:s,data:d.map((x,i)=>({x:(x.H-Hmin)/Math.max(Hmax-Hmin,0.01),y:x.CeS})),
-        backgroundColor:d.map((_,i)=>`hsl(${30+200*(i/n)},70%,50%)`),pointRadius:3,borderWidth:0};
+        backgroundColor:d.map((_,i)=>"hsl("+(30+200*(i/n))+",70%,50%)"),pointRadius:3,borderWidth:0};
     }).filter(Boolean)},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{x:{grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}},min:0,max:1,title:{display:true,text:"H normalizzato (0=magra, 1=piena)",color:"#7a94b8",font:{size:9}}},y:{grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}},title:{display:true,text:"CeS (uS/cm)",color:"#7a94b8",font:{size:9}}}},
