@@ -48,6 +48,13 @@ section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
   border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loadMsg{color:var(--muted);font-size:12px;font-family:monospace}
+
+/* Modello concettuale */
+.model-wrap{background:var(--card);border-radius:10px;padding:12px;overflow-x:auto}
+.model-svg{width:100%;min-width:680px;max-width:900px;display:block;margin:0 auto}
+.model-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:10.5px}
+.ml-item{display:flex;align-items:center;gap:5px}
+.ml-swatch{width:16px;height:12px;border-radius:2px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -68,12 +75,12 @@ section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
 <main>
 
 <div class="kpi-row">
-  <div class="kpi"><span class="v" style="color:var(--blue)">1750</span><span class="l">Pioggia zona ricarica (mm/a)</span></div>
-  <div class="kpi"><span class="v" style="color:var(--orange)">745</span><span class="l">ETP Hargreaves-Samani (mm/a)</span></div>
-  <div class="kpi"><span class="v" style="color:var(--acc)">1005</span><span class="l">Surplus idrico P-ETP (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--blue)">1750</span><span class="l">Precipitazione ricarica (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--orange)">630</span><span class="l">ETR Hargreaves-Samani, 900m (mm/a)</span></div>
+  <div class="kpi"><span class="v" style="color:var(--acc)">980</span><span class="l">Infiltrazione efficace P-ETR-Ro (mm/a)</span></div>
   <div class="kpi"><span class="v" style="color:var(--orange)">~0.40/d</span><span class="l">Alpha mediana (t&frac12;~1.7gg)</span></div>
   <div class="kpi"><span class="v" style="color:var(--acc)">35</span><span class="l">Recessioni identificate</span></div>
-  <div class="kpi"><span class="v" style="color:var(--purple)">~9 km&sup2;</span><span class="l">Bacino idrogeo. stimato</span></div>
+  <div class="kpi"><span class="v" style="color:var(--purple)">3–5 km&sup2;</span><span class="l">Bacino idrogeo. rivisto (Q reali)</span></div>
 </div>
 
 <div class="card" style="border-color:var(--acc)">
@@ -83,7 +90,7 @@ section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
       <table class="dtbl">
         <tr><td style="color:var(--muted)">Acquifero</td><td><strong>Dolomia Principale (Norico)</strong></td></tr>
         <tr><td style="color:var(--muted)">Acquiclude</td><td><strong>Argilliti di Riva di Solto</strong></td></tr>
-        <tr><td style="color:var(--muted)">Zona di ricarica</td><td><strong>750&ndash;1260m</strong> &mdash; Sussia, Catremerio, Crosnello, Pizzo Cerro</td></tr>
+        <tr><td style="color:var(--muted)">Zona di ricarica</td><td><strong>750&ndash;1260m</strong> &mdash; Sussia (~880m), Catremerio (~950m), Crosnello (~1050m), Pizzo Cerro (~1260m)</td></tr>
         <tr><td style="color:var(--muted)">Bacino superficiale</td><td>Borlezza 4.5 km&sup2; + Alino 1.8 km&sup2;</td></tr>
         <tr><td style="color:var(--muted)">Bacino idrogeo. stima</td><td>~9 km&sup2; (bilancio inverso Q=200 l/s)</td></tr>
       </table>
@@ -105,12 +112,281 @@ section h2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
   </div>
 </div>
 
+<!-- MODELLO CONCETTUALE -->
+<section>
+<h2>&#127770; 0. Modello concettuale idrogeologico &mdash; Sorgente Boione</h2>
+<div class="ins" style="border-color:var(--blue)">
+  <strong>Limiti del modello:</strong> La sezione si ferma alla <em>base dell&apos;acquifero dolomitico</em>,
+  corrispondente al tetto delle <strong>Argilliti di Riva di Solto</strong> (acquiclude, Norico superiore).
+  Le formazioni sottostanti (Calcare di Zorzino, Dolomia di San Giovanni Bianco) non vengono considerate
+  perché idraulicamente separate dall&apos;acquifero in oggetto.
+  Il modello rappresenta la sezione verticale schematica N-S attraverso il bacino del Borlezza.
+</div>
+
+<div class="card">
+  <h3>&#128200; Schema idrogeologico concettuale &mdash; sezione verticale (quota vs. profondità)</h3>
+  <div class="model-wrap">
+    <svg class="model-svg" viewBox="0 0 820 480" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sfondo -->
+      <rect width="820" height="480" fill="#0a1628"/>
+
+      <!-- ── STRATI GEOLOGICI ────────────────────────────── -->
+      <!-- Cielo / atmosfera -->
+      <defs>
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0a2040"/>
+          <stop offset="100%" stop-color="#0a1628"/>
+        </linearGradient>
+        <linearGradient id="doloGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3a4a6a"/>
+          <stop offset="100%" stop-color="#2a3a5a"/>
+        </linearGradient>
+        <linearGradient id="argilGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#5a3a2a"/>
+          <stop offset="100%" stop-color="#3a2a1a"/>
+        </linearGradient>
+        <linearGradient id="epiGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a4a3a" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#1a3a2a" stop-opacity="0.5"/>
+        </linearGradient>
+        <pattern id="dotPat" width="6" height="6" patternUnits="userSpaceOnUse">
+          <circle cx="3" cy="3" r="1" fill="#4fc3f7" fill-opacity="0.3"/>
+        </pattern>
+        <pattern id="argilPat" width="8" height="4" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="2" x2="8" y2="2" stroke="#8b6040" stroke-width="1.5"/>
+        </pattern>
+        <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#4fc3f7"/>
+        </marker>
+        <marker id="arrowCyan" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#4caf82"/>
+        </marker>
+        <marker id="arrowOr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#ffb347"/>
+        </marker>
+      </defs>
+
+      <!-- Topografia semplificata (Nord = sinistra, Sud = destra) -->
+      <!-- Montagna N (zona ricarica 900-1260m) -->
+      <polygon points="30,60 120,15 200,45 260,30 320,55 380,80 430,60 480,75 520,85"
+               fill="#2a3a2a" stroke="#3a5a3a" stroke-width="1"/>
+      <!-- Valle (Borlezza) con sorgente Boione a 639m -->
+      <polygon points="520,85 570,95 620,100 670,105 720,110 770,115 820,120"
+               fill="#1a2a1a" stroke="#2a4a2a" stroke-width="1"/>
+
+      <!-- Linea superficiale (terreno) -->
+      <polyline points="30,60 120,15 200,45 260,30 320,55 380,80 430,60 480,75 520,85 570,95 620,100 670,105 720,110 770,115 820,120"
+                fill="none" stroke="#4caf82" stroke-width="2.5"/>
+
+      <!-- STRATO: Epicarso (zona di alterazione superficiale) -->
+      <polyline points="30,80 120,35 200,65 260,50 320,75 380,100 430,80 480,95 520,105 570,115 620,120"
+                fill="none" stroke="#4caf82" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+
+      <!-- STRATO: Tetto Dolomia Principale (~700-750m sl) = base epicarso -->
+      <!-- In sezione: linea che taglia la topografia -->
+      <line x1="80" y1="105" x2="820" y2="195" stroke="#7a94b8" stroke-width="1.5" stroke-dasharray="6,3"/>
+
+      <!-- CORPO ACQUIFERO: Dolomia Principale (tra superfice e argilliti) -->
+      <polygon points="80,105 820,195 820,330 80,270" fill="url(#doloGrad)" opacity="0.7"/>
+      <!-- Pattern puntini acqua nell'acquifero -->
+      <polygon points="80,105 820,195 820,330 80,270" fill="url(#dotPat)" opacity="0.6"/>
+
+      <!-- ACQUICLUDE: Argilliti di Riva di Solto (LIMITE INFERIORE MODELLO) -->
+      <polygon points="30,275 820,330 820,380 30,330" fill="url(#argilGrad)"/>
+      <polygon points="30,275 820,330 820,380 30,330" fill="url(#argilPat)" opacity="0.5"/>
+
+      <!-- Etichetta limite inferiore modello -->
+      <line x1="30" y1="276" x2="820" y2="330" stroke="#c62828" stroke-width="2.5"/>
+      <text x="410" y="328" fill="#ef5350" font-size="10" text-anchor="middle" font-weight="bold">
+        ━━ BASE MODELLO = BASE DOLOMIA PRINCIPALE ≡ TETTO ARGILLITI DI RIVA DI SOLTO ━━
+      </text>
+
+      <!-- FORMAZIONI SOTTO (fuori modello) -->
+      <rect x="30" y="381" width="790" height="85" fill="#1a1020" opacity="0.8"/>
+      <text x="410" y="415" fill="#7a94b8" font-size="10.5" text-anchor="middle" font-style="italic" opacity="0.6">
+        Calcare di Zorzino / Dolomia di San Giovanni Bianco (Norico inf.) — fuori dal modello
+      </text>
+      <text x="410" y="432" fill="#7a94b8" font-size="9.5" text-anchor="middle" opacity="0.5">
+        (formazioni idraulicamente separate dall&apos;acquifero Dolomia Principale)
+      </text>
+
+      <!-- ── LEVEL PIEZ. (zona satura) ────────────────────── -->
+      <!-- Livello piezometrico ~630m sl = circa a -9m rispetto al terreno presso la sorgente -->
+      <polyline points="90,185 200,170 320,165 430,168 520,175 620,180 680,182"
+                fill="none" stroke="#4fc3f7" stroke-width="2" stroke-dasharray="8,4" opacity="0.8"/>
+
+      <!-- ── SORGENTE BOIONE ────────────────────────────── -->
+      <!-- Posizione sorgente: ~640m quota (a circa X=590) -->
+      <!-- Punto sorgente -->
+      <circle cx="590" cy="96" r="9" fill="#4caf82" stroke="#fff" stroke-width="2" opacity="0.9"/>
+      <text x="590" y="100" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">B</text>
+      <!-- Etichetta sorgente -->
+      <text x="650" y="88" fill="#4caf82" font-size="10.5" font-weight="bold">Sorgente Boione 639m</text>
+      <text x="650" y="100" fill="#7a94b8" font-size="9">Contatto Dolomia / Argilliti</text>
+      <!-- Freccia flusso sorgente -->
+      <line x1="590" y1="96" x2="680" y2="106" stroke="#4caf82" stroke-width="2"
+            marker-end="url(#arrowCyan)" opacity="0.8"/>
+
+      <!-- ── ZONA DI RICARICA ────────────────────────────── -->
+      <!-- Pioggia -->
+      <text x="50" y="12" fill="#4fc3f7" font-size="10" font-weight="bold">Zona ricarica</text>
+      <text x="50" y="24" fill="#7a94b8" font-size="9">P=1750mm · ETR=630 · Ro=140 · Ie=980mm/a</text>
+      <!-- Frecce pioggia -->
+      <line x1="90" y1="5" x2="90" y2="58" stroke="#4fc3f7" stroke-width="1.5" stroke-dasharray="3,2"
+            marker-end="url(#arrowBlue)" opacity="0.7"/>
+      <line x1="180" y1="5" x2="180" y2="42" stroke="#4fc3f7" stroke-width="1.5" stroke-dasharray="3,2"
+            marker-end="url(#arrowBlue)" opacity="0.7"/>
+      <line x1="270" y1="5" x2="270" y2="28" stroke="#4fc3f7" stroke-width="1.5" stroke-dasharray="3,2"
+            marker-end="url(#arrowBlue)" opacity="0.7"/>
+      <line x1="360" y1="5" x2="360" y2="78" stroke="#4fc3f7" stroke-width="1.5" stroke-dasharray="3,2"
+            marker-end="url(#arrowBlue)" opacity="0.7"/>
+
+      <!-- Frecce infiltrazione nell'acquifero -->
+      <line x1="130" y1="48" x2="130" y2="120" stroke="#4fc3f7" stroke-width="1.2" stroke-dasharray="2,2"
+            marker-end="url(#arrowBlue)" opacity="0.5"/>
+      <line x1="230" y1="58" x2="230" y2="130" stroke="#4fc3f7" stroke-width="1.2" stroke-dasharray="2,2"
+            marker-end="url(#arrowBlue)" opacity="0.5"/>
+      <line x1="310" y1="68" x2="310" y2="140" stroke="#4fc3f7" stroke-width="1.2" stroke-dasharray="2,2"
+            marker-end="url(#arrowBlue)" opacity="0.5"/>
+
+      <!-- Runoff superficiale -->
+      <polyline points="120,40 170,65 240,80 310,90"
+                fill="none" stroke="#ffb347" stroke-width="1.5"
+                marker-end="url(#arrowOr)" stroke-dasharray="5,3" opacity="0.7"/>
+      <text x="150" y="50" fill="#ffb347" font-size="9">Ro=140mm</text>
+
+      <!-- ── FLUSSO SOTTERRANEO (frecce all'interno dolomia) ─ -->
+      <line x1="200" y1="180" x2="380" y2="195" stroke="#4fc3f7" stroke-width="1.5"
+            marker-end="url(#arrowBlue)" opacity="0.5"/>
+      <line x1="380" y1="195" x2="510" y2="200" stroke="#4fc3f7" stroke-width="1.5"
+            marker-end="url(#arrowBlue)" opacity="0.5"/>
+      <line x1="510" y1="200" x2="585" y2="185" stroke="#4fc3f7" stroke-width="1.5"
+            marker-end="url(#arrowBlue)" opacity="0.5"/>
+      <!-- Freccia verso sorgente (risalita) -->
+      <line x1="585" y1="185" x2="590" y2="100" stroke="#4caf82" stroke-width="2"
+            marker-end="url(#arrowCyan)" opacity="0.8"/>
+      <text x="595" y="150" fill="#4caf82" font-size="9.5" font-style="italic">quickflow</text>
+      <text x="595" y="162" fill="#4fc3f7" font-size="9.5" font-style="italic">+ baseflow</text>
+
+      <!-- ── PIEZOMETRI IDROGEA ──────────────────────────── -->
+      <!-- Pz2 (~620m, vicino sorgente) -->
+      <rect x="615" y="98" width="4" height="80" fill="#4fc3f7" opacity="0.7"/>
+      <text x="622" y="115" fill="#4fc3f7" font-size="9">Pz2 (H_corr)</text>
+      <!-- Pz6 (~610m, a valle) -->
+      <rect x="680" y="103" width="4" height="75" fill="#4caf82" opacity="0.7"/>
+      <text x="687" y="120" fill="#4caf82" font-size="9">Pz6</text>
+      <!-- Pz9 (~600m, valle) -->
+      <rect x="730" y="108" width="4" height="72" fill="#81c784" opacity="0.7"/>
+      <text x="737" y="125" fill="#81c784" font-size="9">Pz9</text>
+
+      <!-- ── SCADA BORLEZZA ─────────────────────────────── -->
+      <!-- BO-2 (623m) - post sorgente -->
+      <circle cx="620" cy="99" r="5" fill="#ffb347" stroke="#fff" stroke-width="1.5"/>
+      <text x="625" y="96" fill="#ffb347" font-size="8">BO-2</text>
+      <!-- BO-5 (521m) -->
+      <circle cx="700" cy="107" r="5" fill="#ffd080" stroke="#fff" stroke-width="1.5"/>
+      <text x="705" y="104" fill="#ffd080" font-size="8">BO-5</text>
+
+      <!-- ── EPICARSO ────────────────────────────────────── -->
+      <rect x="80" y="60" width="500" height="45" fill="url(#epiGrad)" rx="2" opacity="0.5"/>
+      <text x="150" y="88" fill="#4caf82" font-size="9.5" font-style="italic">Epicarso (zona non satura)</text>
+
+      <!-- ── ETICHETTE STRATI ──────────────────────────── -->
+      <!-- Dolomia -->
+      <text x="45" y="200" fill="#9db8d8" font-size="11" font-weight="bold">Dolomia</text>
+      <text x="45" y="215" fill="#9db8d8" font-size="11" font-weight="bold">Principale</text>
+      <text x="45" y="228" fill="#7a94b8" font-size="9">(Norico)</text>
+      <text x="45" y="242" fill="#4fc3f7" font-size="9">ACQUIFERO</text>
+      <!-- Zona satura + insatura -->
+      <text x="200" y="215" fill="#7a94b8" font-size="8.5" font-style="italic">Zona satura</text>
+      <text x="200" y="160" fill="#7a94b8" font-size="8.5" font-style="italic">Zona</text>
+      <text x="200" y="170" fill="#7a94b8" font-size="8.5" font-style="italic">non satura</text>
+      <!-- Argilliti -->
+      <text x="45" y="315" fill="#c8a070" font-size="11" font-weight="bold">Argilliti di</text>
+      <text x="45" y="330" fill="#c8a070" font-size="11" font-weight="bold">Riva di Solto</text>
+      <text x="45" y="343" fill="#a08050" font-size="9">(Norico sup.)</text>
+      <text x="45" y="357" fill="#ef5350" font-size="9">ACQUICLUDE</text>
+
+      <!-- ── ASSE QUOTE ─────────────────────────────────── -->
+      <!-- Asse Y a sinistra (quote s.l.m.) -->
+      <line x1="25" y1="10" x2="25" y2="460" stroke="#7a94b8" stroke-width="1" opacity="0.5"/>
+      <text x="8" y="14" fill="#7a94b8" font-size="8.5" transform="rotate(-90,15,100)">Quota (m s.l.m.)</text>
+      <!-- Tacche quota -->
+      <line x1="20" y1="60" x2="30" y2="60" stroke="#7a94b8"/>
+      <text x="3" y="63" fill="#7a94b8" font-size="8">1260</text>
+      <line x1="20" y1="100" x2="30" y2="100" stroke="#7a94b8"/>
+      <text x="8" y="103" fill="#7a94b8" font-size="8">~800</text>
+      <line x1="20" y1="175" x2="30" y2="175" stroke="#7a94b8"/>
+      <text x="8" y="178" fill="#7a94b8" font-size="8">~630</text>
+      <line x1="20" y1="275" x2="30" y2="275" stroke="#7a94b8"/>
+      <text x="8" y="278" fill="#7a94b8" font-size="8">~400</text>
+
+      <!-- ── NOTE ────────────────────────────────────────── -->
+      <!-- Frecce N/S -->
+      <text x="40" y="470" fill="#4caf82" font-size="9.5" font-weight="bold">← N (Sussia/Catremerio/Crosnello/Pizzo Cerro)</text>
+      <text x="600" y="470" fill="#ffb347" font-size="9.5" font-weight="bold">S → (Val Brembana/Brembo)</text>
+
+    </svg>
+  </div>
+  <div class="model-legend">
+    <div class="ml-item"><div class="ml-swatch" style="background:#3a4a6a;border:1px solid #4fc3f7"></div><span>Dolomia Principale (acquifero)</span></div>
+    <div class="ml-item"><div class="ml-swatch" style="background:#5a3a2a;border:1px solid #c8a070"></div><span>Argilliti di Riva di Solto (acquiclude — base modello)</span></div>
+    <div class="ml-item"><div class="ml-swatch" style="background:#2a4a3a;border:1px dashed #4caf82"></div><span>Epicarso (zona di alterazione non satura)</span></div>
+    <div class="ml-item"><div class="ml-swatch" style="background:none;border:2px dashed #4fc3f7"></div><span>Livello piezometrico</span></div>
+    <div class="ml-item"><span>&#9679;</span><div class="ml-swatch" style="background:#4caf82;border-radius:50%"></div><span>Sorgente Boione</span></div>
+    <div class="ml-item"><div class="ml-swatch" style="background:none;border-top:2px solid #4fc3f7"></div><span>Flusso sotterraneo</span></div>
+    <div class="ml-item"><div class="ml-swatch" style="background:none;border-top:2px dashed #ffb347"></div><span>Runoff superficiale</span></div>
+  </div>
+  <div class="ins" style="margin-top:8px;font-size:9.5px">
+    <strong>Schema semplificato (non in scala).</strong>
+    La sorgente Boione emerge al contatto tra la Dolomia Principale e le Argilliti di Riva di Solto a ~639m s.l.m.,
+    dove l&apos;acquiclude intercetta il flusso sotterraneo proveniente dalla zona di ricarica.
+    Il modello si ferma alla base della Dolomia Principale (= tetto delle Argilliti).
+    La zona non satura (epicarso) e il sito preferenziale di ingresso del quickflow;
+    la zona satura (sottolivello piezometrico) e dove si accumula il baseflow.
+    Pz2, Pz6, Pz9 = piezometri Idrogea 2023. BO-2, BO-5 = sensori SCADA 2025-26.
+  </div>
+</div>
+
+</section>
+
 <!-- 1. BILANCIO -->
 <section>
 <h2>&#128167; 1. Bilancio idrico e stima bacino di ricarica</h2>
+<div class="ins" style="border-color:var(--orange)">
+  <strong>Correzioni apportate rispetto alla versione precedente:</strong>
+  <em>(1) ETR corretta:</em> 745 mm/a era calcolata per la quota di stazione (622m).
+  Corretta a <strong>630 mm/a</strong> per la quota media della zona di ricarica (~900m, T_med=5.5&deg;C, HS mensile).
+  <em>(2) Runoff aggiunto:</em> mancava il termine Ro.
+  Adottato <strong>Ro = 140 mm/a</strong> (8% di P, coefficiente per carsismo dolomitico da letteratura).
+  <em>Risultato:</em> Ie = P &minus; ETR &minus; Ro = <strong>980 mm/a</strong> (56% di P, Ic=0.560).
+  Il bacino stimato si riduce a <strong>3&ndash;5 km&sup2;</strong> con le portate misurate (62&ndash;156 l/s),
+  risultando compatibile con il bacino superficiale del Borlezza (4.5 km&sup2;).
+</div>
+
 <div class="card">
-  <h3>&#128202; Area bacino idrogeologico vs portata media</h3>
+  <h3>&#128202; Schema bilancio idrico corretto</h3>
+  <table class="dtbl">
+    <thead><tr><th>Termine</th><th>Valore</th><th>Metodo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>P (precipitazione zona ricarica ~900m)</td><td style="color:var(--blue);font-weight:700">1750 mm/a</td><td>Media pesata Cornalita+Vettarola</td><td>Gradiente +70mm/100m altimetrico</td></tr>
+      <tr><td>ETR (evapotraspirazione reale)</td><td style="color:var(--orange);font-weight:700">630 mm/a</td><td>Hargreaves-Samani mensile, T=5.5&deg;C, Ra FAO-46&deg;N</td><td><em>Corretta</em> (era 745mm/a per quota sbagliata)</td></tr>
+      <tr><td>Ro (deflusso superficiale)</td><td style="color:var(--blue);font-weight:700">140 mm/a</td><td>8% P, coeff. carsismo dolomitico (Goldscheider 2002)</td><td><em>Aggiunto</em> (era mancante)</td></tr>
+      <tr><td>Ie = P &minus; ETR &minus; Ro (infiltrazione efficace)</td><td style="color:var(--acc);font-weight:700">980 mm/a</td><td>Bilancio</td><td>56% di P · Ic=0.560 su P totale</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>&#128202; Area bacino idrogeologico vs portata media — formula: A = Q &times; T_sec / Ie</h3>
   <div class="ch"><canvas id="cBil"></canvas></div>
+  <div class="ins">
+    <strong>Interpretazione:</strong> Con le portate reali delle 5 campagne Idrogea (62&ndash;156 l/s),
+    il bacino idrogeologico stimato e di <em>2&ndash;5 km&sup2;</em>, compatibile con il bacino superficiale
+    del Borlezza (4.5 km&sup2;). La stima precedente di ~9 km&sup2; era basata su una portata ipotetica di 200 l/s.
+    La "discrasia" tra bacino superficiale e idrogeologico e quindi <em>molto minore del previsto</em>,
+    e potrebbe essere spiegata dalla normale variabilita stagionale delle campagne.
+  </div>
 </div>
 </section>
 
@@ -248,21 +524,28 @@ function scT(yL,ex){return{
   y:{grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}},title:{display:!!yL,text:yL||"",color:"#7a94b8",font:{size:9}},...(ex||{})}
 };}
 
-// 1. BILANCIO
+// 1. BILANCIO CORRETTO (P=1750, ETR=630, Ro=140, Ie=980 mm/a)
 (function(){
   dc("cBil");
-  const S=1005/1000,Ic=0.622,Ts=365.25*86400;
+  const Ie=980/1000; // m/a infiltrazione efficace
+  const Ts=365.25*86400;
   const Qs=Array.from({length:30},(_,i)=>40+i*6);
-  const areas=Qs.map(q=>Math.round(q/1000*Ts/(S*Ic)/1e6*100)/100);
+  const areas=Qs.map(q=>Math.round(q/1000*Ts/Ie/1e6*100)/100);
+  // Punti campagne Idrogea
+  const campQ=[62.7,111.4,133.8,156.4]; // Q_tot misurate
+  const campA=campQ.map(q=>Math.round(q/1000*Ts/Ie/1e6*100)/100);
   new Chart(document.getElementById("cBil"),{type:"line",data:{
     labels:Qs.map(q=>q+" l/s"),
     datasets:[
-      {label:"Area bacino idrogeo. (km2)",data:areas,borderColor:"#4caf82",backgroundColor:"rgba(76,175,130,.1)",borderWidth:2.5,pointRadius:3,fill:true},
-      {label:"Bacino superficiale Borlezza 4.5 km2",data:Qs.map(()=>4.5),borderColor:"rgba(255,179,71,.5)",borderWidth:1.5,borderDash:[6,4],pointRadius:0},
-      {label:"Borlezza+Alino 6.3 km2",data:Qs.map(()=>6.3),borderColor:"rgba(179,157,219,.4)",borderWidth:1.5,borderDash:[3,3],pointRadius:0},
+      {label:"Area bacino idrogeo. A=Q*Ts/Ie (km2)",data:areas,borderColor:"#4caf82",backgroundColor:"rgba(76,175,130,.1)",borderWidth:2.5,pointRadius:3,fill:true},
+      {label:"Bacino superficiale Borlezza 4.5 km2",data:Qs.map(()=>4.5),borderColor:"rgba(255,179,71,.6)",borderWidth:2,borderDash:[6,4],pointRadius:0},
+      {label:"Borlezza+Alino 6.3 km2",data:Qs.map(()=>6.3),borderColor:"rgba(179,157,219,.5)",borderWidth:1.5,borderDash:[3,3],pointRadius:0},
+      {label:"Q campagne Idrogea",type:"scatter",
+       data:campQ.map((q,i)=>({x:q+" l/s",y:campA[i]})),
+       backgroundColor:"#ffb347",pointRadius:9,pointStyle:"triangle",borderWidth:0,showLine:false},
     ]},options:{responsive:true,maintainAspectRatio:false,
     scales:{x:{grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}}},
-      y:{grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}},title:{display:true,text:"km2",color:"#7a94b8",font:{size:9}},min:2,max:13}},
+      y:{grid:{color:"#1e3050"},ticks:{color:"#7a94b8",font:{size:9}},title:{display:true,text:"km2",color:"#7a94b8",font:{size:9}},min:0,max:8}},
     plugins:pl()}});
 })();
 

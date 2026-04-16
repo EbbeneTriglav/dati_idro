@@ -58,6 +58,48 @@ main{max-width:1280px;margin:0 auto;padding:18px}
 .hm-cell{padding:5px 2px;text-align:center;transition:filter .15s}
 .hm-cell:hover{filter:brightness(1.3)}
 .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
+
+/* Time navigator */
+.time-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  background:var(--card2);border:1px solid var(--border);border-radius:8px;
+  padding:8px 12px;margin-bottom:12px;font-size:11.5px}
+.time-nav label{color:var(--muted);font-weight:600}
+.dec-btn{padding:3px 10px;border-radius:5px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:10.5px;cursor:pointer;transition:.15s}
+.dec-btn:hover,.dec-btn.on{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+.yr-inp{width:52px;background:var(--card2);color:var(--text);border:1px solid var(--border);
+  border-radius:4px;padding:3px 6px;font-size:11px;text-align:center}
+.apply-btn{padding:3px 12px;border-radius:5px;background:linear-gradient(135deg,#1b5e3b,#2e7d52);
+  color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer}
+
+/* SPI forecast */
+.spi-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin:2px}
+.spi-ew{background:#1565c0;color:#fff}
+.spi-sw{background:#1976d2;color:#fff}
+.spi-mw{background:#42a5f5;color:#fff}
+.spi-n{background:#546e7a;color:#fff}
+.spi-md{background:#ffa726;color:#000}
+.spi-sd{background:#ef6c00;color:#fff}
+.spi-ed{background:#c62828;color:#fff}
+.fc-matrix{width:100%;border-collapse:collapse;font-size:11px}
+.fc-matrix th{background:#162340;color:var(--muted);padding:6px 8px;text-align:center;border:1px solid var(--border);font-weight:600}
+.fc-matrix td{padding:5px 8px;border:1px solid var(--border);text-align:center;vertical-align:top}
+.fc-matrix .row-label{text-align:left;font-weight:700;background:#0d1a2e;color:var(--text)}
+.fc-green{background:rgba(76,175,130,.15);color:#4caf82}
+.fc-blue{background:rgba(79,195,247,.12);color:#4fc3f7}
+.fc-yellow{background:rgba(255,179,71,.15);color:#ffb347}
+.fc-red{background:rgba(239,83,80,.15);color:#ef5350}
+.fc-grey{background:rgba(122,148,184,.1);color:#7a94b8}
+.gauge-wrap{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0}
+.gauge{background:var(--card2);border-radius:10px;padding:14px;text-align:center;flex:1;min-width:140px;border:1px solid var(--border)}
+.gauge .big{font-size:2.2rem;font-weight:800;line-height:1.1}
+.gauge .lbl{font-size:10px;color:var(--muted);margin-top:4px}
+.gauge .cls{font-size:12px;font-weight:700;margin-top:4px}
+.outlook-box{border-radius:8px;padding:12px;margin:8px 0;border-left:4px solid}
+.ol-wet{border-color:#42a5f5;background:rgba(66,165,245,.06)}
+.ol-dry{border-color:#ef6c00;background:rgba(239,108,0,.06)}
+.ol-norm{border-color:#546e7a;background:rgba(84,110,122,.06)}
+.ol-vdry{border-color:#c62828;background:rgba(198,40,40,.07)}
 </style>
 </head>
 <body>
@@ -94,9 +136,26 @@ main{max-width:1280px;margin:0 auto;padding:18px}
         <option value="max1">Max giornaliero annuale</option>
         <option value="wetdays">Giorni piovosi/anno</option>
       </select>
-      <button class="btn btn-green" onclick="runAllAnalyses()" id="btnRun">▶ Analizza</button>
-      <span id="serInfo" style="font-size:11px;color:var(--muted)"></span>
+      <button class="btn btn-green" onclick="runAllAnalyses()" id="btnRun">&#9654; Analizza</button>
+      <span id="serInfo" style="font-size:11px;color:var(--muted)" id="serInfo"></span>
     </div>
+  </div>
+
+  <!-- Time navigator -->
+  <div class="time-nav" id="timeNavBar">
+    <label>Periodo:</label>
+    <button class="dec-btn on" data-range="all" onclick="setDecade(this,'all')">Tutto</button>
+    <button class="dec-btn" data-range="2020s" onclick="setDecade(this,'2020s')">2020s</button>
+    <button class="dec-btn" data-range="2010s" onclick="setDecade(this,'2010s')">2010s</button>
+    <button class="dec-btn" data-range="2000s" onclick="setDecade(this,'2000s')">2000s</button>
+    <button class="dec-btn" data-range="1990s" onclick="setDecade(this,'1990s')">1990s</button>
+    <button class="dec-btn" data-range="1980s" onclick="setDecade(this,'1980s')">1980s</button>
+    <button class="dec-btn" data-range="1960s" onclick="setDecade(this,'1960s')">1960s &amp; prima</button>
+    <span style="margin-left:8px;color:var(--muted)">|</span>
+    <label>Da:</label><input class="yr-inp" id="yrFrom" type="number" min="1900" max="2030" placeholder="1951">
+    <label>A:</label><input class="yr-inp" id="yrTo" type="number" min="1900" max="2030" placeholder="2025">
+    <button class="apply-btn" onclick="applyCustomRange()">&#10003; Applica</button>
+    <span id="rangeInfo" style="font-size:10px;color:var(--muted);margin-left:8px"></span>
   </div>
 
   <div class="tabs">
@@ -106,6 +165,7 @@ main{max-width:1280px;margin:0 auto;padding:18px}
     <button class="tab" data-p="decomp">📉 Decomposizione STL</button>
     <button class="tab" data-p="changepoint">📍 Change-Point (SQMK)</button>
     <button class="tab" data-p="confronto">⚖️ Confronto Stazioni</button>
+    <button class="tab" data-p="spiforecast">🔮 SPI Forecast Acque Sotterranee</button>
   </div>
 
   <!-- SPETTRO DI POTENZA -->
@@ -118,6 +178,17 @@ main{max-width:1280px;margin:0 auto;padding:18px}
         Picchi netti nello spettro indicano cicli ricorrenti significativi.
         <br>Per serie non stazionarie (con trend o varianza cambiante) la FFT può essere fuorviante —
         in quel caso preferire la <em>Wavelet Transform</em> nel tab successivo.
+        <br><br>
+        <b>Cosa è lo SPI (Standardized Precipitation Index)?</b><br>
+        Lo SPI misura il deficit/surplus pluviometrico rispetto alla norma storica su una finestra temporale
+        (3, 6 o 12 mesi). Un valore <em>SPI &gt; +1</em> indica condizioni più umide della media;
+        <em>SPI &lt; -1</em> indica siccità. <b>SPI-6</b> riflette l'umidità dei mesi recenti (ricarica a breve termine);
+        <b>SPI-12</b> integra un anno intero e descrive lo stato delle riserve idriche a scala stagionale-annuale.
+        <span class="nota">&#128204; Per le acque sotterranee, SPI-12 è il predittore più affidabile:
+        le sorgenti carsiche e i pozzi profondi rispondono all'accumulo/deficit pluviometrico su scala annuale
+        con ritardi di 2-12 mesi a seconda del tipo di acquifero e delle dimensioni del bacino
+        (Bloomfield &amp; Marchant 2013; Staudinger et al. 2011; Lorenzo-Lacruz et al. 2013).
+        Vai al tab <em>🔮 SPI Forecast</em> per la previsione applicata alle acque sotterranee.</span>
         <span class="nota">🔴 Linea rossa = soglia di significatività al 95% (rumore rosso AR1).
         Picchi sopra la soglia indicano periodicità statisticamente significative.</span>
       </div>
@@ -258,6 +329,160 @@ main{max-width:1280px;margin:0 auto;padding:18px}
       <div id="confNote" class="insight" style="margin-top:10px"></div>
     </div>
   </div>
+
+
+  <!-- SPI FORECAST ACQUE SOTTERRANEE -->
+  <div class="panel" id="p-spiforecast">
+    <div class="card" style="border-color:var(--accent)">
+      <div class="card-title">🔮 Forecast risorse idriche sotterranee da SPI-6 e SPI-12</div>
+      <div class="card-sub">
+        <b>Principio:</b> Lo SPI integra il deficit/surplus pluviometrico su finestre di 6 e 12 mesi.
+        I diversi tipi di captazione (sorgente, pozzo) rispondono all'SPI con <em>lag diversi</em>
+        in funzione del tipo di acquifero e della dimensione del bacino.
+        <br>
+        <b>Fonti:</b> Bloomfield &amp; Marchant (2013) WRR; Staudinger et al. (2011) HP;
+        Lorenzo-Lacruz et al. (2013) JH; Kuss &amp; Gurdak (2014) GRL; Malard et al. (2018) HP.
+        <span class="nota">&#9888;&#65039; Il forecast è probabilistico: indica la direzione attesa, non un valore preciso.
+        L'inerzia del sistema dipende da litologia, quota, e stato iniziale delle riserve.
+        Per il Boione (sorgente carsica ~9 km²): usare la riga "Sorgente profonda / 5-50 km²".</span>
+      </div>
+    </div>
+
+    <!-- Stato SPI corrente -->
+    <div class="card">
+      <div class="card-title">📊 Stato SPI attuale — stazione selezionata</div>
+      <div class="gauge-wrap" id="spiGauges">
+        <div class="warn">Clicca ▶ Analizza per calcolare lo SPI corrente.</div>
+      </div>
+      <div id="spiStateText"></div>
+    </div>
+
+    <!-- Tabella classificazione SPI con significato idrogeologico -->
+    <div class="card">
+      <div class="card-title">📋 Classificazione SPI e significato per le risorse idriche sotterranee</div>
+      <div class="card-sub" style="margin-bottom:10px">
+        Tabella aggiornata basata su letteratura recente (2013-2024) sull'uso dell'SPI
+        come strumento di early warning per la gestione delle risorse idriche sotterranee.
+      </div>
+      <div style="overflow-x:auto">
+      <table class="dtbl" style="min-width:900px">
+        <thead>
+          <tr>
+            <th style="min-width:80px">Valore SPI-12</th>
+            <th>Categoria</th>
+            <th>Significato scala 12 mesi</th>
+            <th>Sorgenti / Acquiferi carsici</th>
+            <th>Acquiferi superficiali</th>
+            <th>Acquiferi profondi</th>
+            <th>Qualità dell'acqua</th>
+            <th>Azione raccomandata</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="spi-badge spi-ew">&gt; +2.0</span></td>
+            <td style="color:#42a5f5;font-weight:700">Eccezionalmente Umido</td>
+            <td>Ricarica eccezionale e sostenuta</td>
+            <td>Portata alta/record; rischio colate e frane in aree carsiche</td>
+            <td>Risalita rapida della falda; possibile emergenza a superficie</td>
+            <td>Ricarica significativa e prolungata; risposta ritardata 6-18 mesi</td>
+            <td>⚠️ Possibile aumento NTU e CeS in carsismo; rischio contaminazione da dilavamento</td>
+            <td>Monitorare qualità; verificare piene sorgenti e aree di overflow</td>
+          </tr>
+          <tr style="background:rgba(25,118,210,.05)">
+            <td><span class="spi-badge spi-sw">+1.5 a +1.99</span></td>
+            <td style="color:#64b5f6;font-weight:700">Severo Umido</td>
+            <td>Piogge significativamente sopra la norma</td>
+            <td>Portata alta e stabile; ricarica dell'epicarso completata</td>
+            <td>Falda in risalita attiva; buona restituzione pozzi superficiali</td>
+            <td>Ricarica notevole (ritardata 4-10 mesi per acquiferi &gt; 50 km²)</td>
+            <td>Possibile variazione CeS per diluizione; NTU elevato in eventi intensi</td>
+            <td>Monitoraggio standard; buon periodo per test pompaggio</td>
+          </tr>
+          <tr>
+            <td><span class="spi-badge spi-mw">+1.0 a +1.49</span></td>
+            <td style="color:#90caf9;font-weight:700">Moderatamente Umido</td>
+            <td>Condizioni più umide della norma</td>
+            <td>Portata aumentata e stabile; ricarica efficiente</td>
+            <td>Buona ricarica; livelli in aumento</td>
+            <td>Miglioramento graduale riserve (lag 3-8 mesi)</td>
+            <td>Sistema stabile; qualità nella norma</td>
+            <td>Nessuna azione urgente; aggiornare modelli di bilancio</td>
+          </tr>
+          <tr style="background:rgba(84,110,122,.08)">
+            <td><span class="spi-badge spi-n">-0.99 a +0.99</span></td>
+            <td style="color:#90a4ae;font-weight:700">Nella norma</td>
+            <td>Variabilità tipica del regime</td>
+            <td>Portata nella norma stagionale</td>
+            <td>Livelli stabili; ricarica normale</td>
+            <td>Riserve stabili; nessuna tendenza significativa</td>
+            <td>Sistema stabile</td>
+            <td>Monitoraggio di routine; nessuna allerta</td>
+          </tr>
+          <tr>
+            <td><span class="spi-badge spi-md">-1.0 a -1.49</span></td>
+            <td style="color:#ffa726;font-weight:700">Moderata Siccità</td>
+            <td>Deficit pluviometrico significativo</td>
+            <td>Portata ridotta; rischio abbassamento soglia sorgente in estate</td>
+            <td>Livello falda in calo; pozzi poco profondi a rischio</td>
+            <td>Lieve declino (lag 6-12 mesi prima dell'effetto)</td>
+            <td>Possibile aumento CeS per concentrazione; qualità nella norma</td>
+            <td>Pre-allerta; verificare riserve; limitare prelievi non essenziali</td>
+          </tr>
+          <tr style="background:rgba(239,108,0,.06)">
+            <td><span class="spi-badge spi-sd">-1.5 a -1.99</span></td>
+            <td style="color:#ef6c00;font-weight:700">Severa Siccità</td>
+            <td>Siccità prolungata</td>
+            <td>Sorgenti in indebolimento; portata ai minimi storici; rischio intermittenza</td>
+            <td>Abbassamento marcato della falda; pozzi a rischio crisi</td>
+            <td>Ricarica ridotta; tendenza al calo nelle riserve profonde</td>
+            <td>⚠️ CeS anomala (concentrazione); possibile peggioramento qualità</td>
+            <td>Allerta; ridurre prelievi; attivare fonti alternative; comunicare ai gestori</td>
+          </tr>
+          <tr>
+            <td><span class="spi-badge spi-ed">&lt; -2.0</span></td>
+            <td style="color:#ef5350;font-weight:700">Siccità Eccezionale</td>
+            <td>Siccità storica</td>
+            <td>Sorgenti intermittenti o asciutte; carsismo a rischio collasso ricarica</td>
+            <td>Falda critica; molti pozzi superficiali non eroganti</td>
+            <td>Depauperamento riserve pluriennale in corso</td>
+            <td>❌ Qualità alterata (aumento concentrazioni, eutrofizzazione in pozzi)</td>
+            <td>Emergenza idrica; attivare piano di crisi; comunicazione urgente stakeholder</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- Matrici forecast per tipo captazione × bacino -->
+    <div class="card">
+      <div class="card-title">🗺️ Forecast 6 mesi — per tipo di captazione × dimensione bacino</div>
+      <div class="card-sub">
+        Il lag di risposta dipende dal tipo di acquifero e dalla dimensione del bacino idrogeologico.
+        La matrice mostra la risposta attesa nei prossimi 6 mesi in base allo stato SPI-6 corrente.
+        Per bacini grandi usare SPI-12 (colonna a destra). <em>Boione → "Sorgente carsica / 1-10 km²"</em>.
+      </div>
+      <div style="overflow-x:auto"><table class="fc-matrix" id="fcMatrix6"></table></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🗺️ Forecast 12 mesi — per tipo di captazione × dimensione bacino</div>
+      <div class="card-sub">
+        Proiezione a 12 mesi basata su SPI-12 corrente. I sistemi profondi e i grandi bacini
+        rispondono su scale temporali più lunghe — questo forecast è più affidabile per acquiferi
+        con rilascio lento (acquiferi in sabbia, calcari fratturati, grandi bacini carsici).
+      </div>
+      <div style="overflow-x:auto"><table class="fc-matrix" id="fcMatrix12"></table></div>
+    </div>
+
+    <!-- Impatto pratico e comunicazione stakeholder -->
+    <div class="card">
+      <div class="card-title">📢 Comunicazione ai portatori di interesse — linguaggio semplice</div>
+      <div id="stakeholderMsg" class="insight" style="min-height:60px">
+        <em style="color:var(--muted)">Eseguire l'analisi per generare il messaggio stakeholder...</em>
+      </div>
+    </div>
+  </div>
+
 
 </main>
 
@@ -1106,6 +1331,230 @@ function renderConfronto(){
     Picchi presenti in una sola stazione possono essere artefatti locali, errori di misura o microclimatologia locale.`;
 }
 
+
+// ═══════════════════════════════════════════
+// TIME NAVIGATION
+// ═══════════════════════════════════════════
+let timeRange = {from: null, to: null}; // null = tutto
+
+function setDecade(btn, range) {
+  document.querySelectorAll('.dec-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const CY = new Date().getFullYear();
+  if (range === 'all') {
+    timeRange = {from: null, to: null};
+    document.getElementById('rangeInfo').textContent = '';
+  } else if (range === '2020s') {
+    timeRange = {from: 2020, to: CY};
+  } else if (range === '2010s') {
+    timeRange = {from: 2010, to: 2019};
+  } else if (range === '2000s') {
+    timeRange = {from: 2000, to: 2009};
+  } else if (range === '1990s') {
+    timeRange = {from: 1990, to: 1999};
+  } else if (range === '1980s') {
+    timeRange = {from: 1980, to: 1989};
+  } else if (range === '1960s') {
+    timeRange = {from: 1900, to: 1979};
+  }
+  if (range !== 'all') {
+    document.getElementById('rangeInfo').textContent =
+      `Filtro: ${timeRange.from}–${timeRange.to}`;
+  }
+  runAllAnalyses();
+}
+
+function applyCustomRange() {
+  const f = parseInt(document.getElementById('yrFrom').value);
+  const t = parseInt(document.getElementById('yrTo').value);
+  if (!isNaN(f) && !isNaN(t) && f <= t) {
+    timeRange = {from: f, to: t};
+    document.querySelectorAll('.dec-btn').forEach(b => b.classList.remove('on'));
+    document.getElementById('rangeInfo').textContent = `Filtro personalizzato: ${f}–${t}`;
+    runAllAnalyses();
+  } else {
+    alert('Intervallo non valido. Inserisci anni nel formato YYYY.');
+  }
+}
+
+// Funzione per filtrare i valori della serie in base al timeRange
+function filterByTimeRange(values, labels) {
+  if (!timeRange.from && !timeRange.to) return {values, labels};
+  const fv = [], fl = [];
+  labels.forEach((l, i) => {
+    const yr = parseInt(l.slice(0, 4));
+    if ((!timeRange.from || yr >= timeRange.from) &&
+        (!timeRange.to   || yr <= timeRange.to)) {
+      fv.push(values[i]);
+      fl.push(l);
+    }
+  });
+  return {values: fv, labels: fl};
+}
+
+// ═══════════════════════════════════════════
+// SPI FORECAST ENGINE
+// ═══════════════════════════════════════════
+function spiCategory(v) {
+  if (v === null || isNaN(v)) return {cls: 'spi-n', label: 'N/D', color: '#546e7a', short: 'nd'};
+  if (v >= 2.0)  return {cls:'spi-ew', label:'Eccezionalmente Umido',  color:'#1565c0', short:'ew'};
+  if (v >= 1.5)  return {cls:'spi-sw', label:'Severamente Umido',      color:'#1976d2', short:'sw'};
+  if (v >= 1.0)  return {cls:'spi-mw', label:'Moderatamente Umido',    color:'#42a5f5', short:'mw'};
+  if (v >= -0.99)return {cls:'spi-n',  label:'Nella norma',            color:'#546e7a', short:'n'};
+  if (v >= -1.5) return {cls:'spi-md', label:'Moderata siccità',       color:'#ffa726', short:'md'};
+  if (v >= -2.0) return {cls:'spi-sd', label:'Severa siccità',         color:'#ef6c00', short:'sd'};
+  return              {cls:'spi-ed', label:'Siccità eccezionale',       color:'#c62828', short:'ed'};
+}
+
+// Definizione tipi captazione × lag
+const CAPTURE_TYPES = [
+  {id:'sorgente_sup',   label:'Sorgente / Emergenza',        icon:'💧',
+   lag6: 0, lag12: 1,  note:'Risposta rapida a SPI-1/3; SPI-6 descrive bene il regime attuale'},
+  {id:'sorgente_carsica',label:'Sorgente carsica / Carsismo', icon:'🏔️',
+   lag6: 1, lag12: 2,  note:'Risposta a SPI-3/6; lag 1-3 mesi; per Boione usare SPI-6 + SPI-12'},
+  {id:'sorgente_prof',  label:'Sorgente profonda / Fratturato',icon:'⛰️',
+   lag6: 2, lag12: 3,  note:'Risposta a SPI-6/12; lag 3-6 mesi; riserve plurimensili'},
+  {id:'pozzo_sup',      label:'Pozzo superficiale (<15m)',    icon:'🪣',
+   lag6: 0, lag12: 1,  note:'Alta dipendenza da SPI recente; molto sensibile a siccità breve'},
+  {id:'pozzo_medio',    label:'Pozzo medio (15-50m)',         icon:'🔩',
+   lag6: 1, lag12: 2,  note:'Risposta moderata; SPI-6 è indicatore principale'},
+  {id:'pozzo_prof',     label:'Pozzo profondo (>50m)',        icon:'⚙️',
+   lag6: 3, lag12: 4,  note:'Risposta lenta; SPI-12 è il predittore dominante; lag 6-18 mesi'},
+];
+
+const BASIN_SIZES = [
+  {id:'xs', label:'< 1 km²',   resp_mult: 0.7,  note:'Risposta rapida; molto dipendente da piogge locali'},
+  {id:'s',  label:'1–10 km²',  resp_mult: 1.0,  note:'Risposta media; buon equilibrio quickflow/baseflow'},
+  {id:'m',  label:'10–50 km²', resp_mult: 1.4,  note:'Risposta smorzata; forte componente baseflow'},
+  {id:'l',  label:'> 50 km²',  resp_mult: 2.0,  note:'Risposta molto lenta; inerzia plurimensile'},
+];
+
+// Previsione: dato SPI corrente e lag → stato atteso
+function forecastState(spiVal, lagMonths, basinMult, spiType) {
+  // Il sistema risponde con ritardo → l'SPI di N mesi fa è lo stato attuale
+  // La direzione dipende dal trend SPI
+  if (spiVal === null) return 'nd';
+  const lagged = spiVal * Math.exp(-0.15 * lagMonths * basinMult);
+  const cat = spiCategory(lagged);
+  return cat.short;
+}
+
+function fcastLabel(short, horizon) {
+  const MAP = {
+    'ew': {h:'fc-green', t:'🔵 Eccellente — Disponibilità abbondante'},
+    'sw': {h:'fc-green', t:'🔵 Buona — Disponibilità elevata'},
+    'mw': {h:'fc-blue',  t:'🔵 Nella norma — Buona disponibilità'},
+    'n':  {h:'fc-grey',  t:'⚪ Nella norma — Situazione stabile'},
+    'md': {h:'fc-yellow',t:'🟡 Attenzione — Riduzione attesa'},
+    'sd': {h:'fc-red',   t:'🔴 Allerta — Disponibilità ridotta significativamente'},
+    'ed': {h:'fc-red',   t:'🔴 Emergenza — Disponibilità criticamente bassa'},
+    'nd': {h:'fc-grey',  t:'— Dati insufficienti'},
+  };
+  return MAP[short] || MAP['nd'];
+}
+
+function buildForecastMatrix(spi6, spi12, horizonMonths) {
+  const useSPI = horizonMonths <= 6 ? spi6 : spi12;
+  let rows = '<thead><tr><th class="row-label">Tipo captazione</th>';
+  BASIN_SIZES.forEach(b => rows += `<th>${b.label}<br><small style="color:var(--muted);font-weight:400">${b.note}</small></th>`);
+  rows += '</tr></thead><tbody>';
+
+  CAPTURE_TYPES.forEach(ct => {
+    rows += `<tr><td class="row-label">${ct.icon} ${ct.label}<br><small style="color:var(--muted);font-weight:400">${ct.note}</small></td>`;
+    BASIN_SIZES.forEach(bs => {
+      const lag = horizonMonths <= 6 ? ct.lag6 : ct.lag12;
+      const state = forecastState(useSPI, lag, bs.resp_mult, horizonMonths <= 6 ? 6 : 12);
+      const {h, t} = fcastLabel(state, horizonMonths);
+      rows += `<td class="${h}" style="font-size:10.5px">${t}</td>`;
+    });
+    rows += '</tr>';
+  });
+  rows += '</tbody>';
+  return rows;
+}
+
+function renderSPIForecast(spi6Val, spi12Val) {
+  const cat6  = spiCategory(spi6Val);
+  const cat12 = spiCategory(spi12Val);
+
+  // Gauge
+  document.getElementById('spiGauges').innerHTML = `
+    <div class="gauge" style="border-color:${cat6.color}">
+      <div class="big" style="color:${cat6.color}">${spi6Val !== null ? spi6Val.toFixed(2) : 'N/D'}</div>
+      <div class="lbl">SPI-6 (6 mesi)</div>
+      <div class="cls"><span class="spi-badge ${cat6.cls}">${cat6.label}</span></div>
+    </div>
+    <div class="gauge" style="border-color:${cat12.color}">
+      <div class="big" style="color:${cat12.color}">${spi12Val !== null ? spi12Val.toFixed(2) : 'N/D'}</div>
+      <div class="lbl">SPI-12 (12 mesi)</div>
+      <div class="cls"><span class="spi-badge ${cat12.cls}">${cat12.label}</span></div>
+    </div>
+    <div class="gauge">
+      <div class="big" style="color:var(--muted);font-size:1rem">
+        SPI-6: ${cat6.label}<br>SPI-12: ${cat12.label}
+      </div>
+      <div class="lbl">Confronto scale temporali</div>
+      <div class="cls" style="font-size:10px;color:var(--muted)">
+        SPI-6 = condizioni recenti (6 mesi)<br>SPI-12 = riserve annuali
+      </div>
+    </div>`;
+
+  // Matrice 6 mesi
+  document.getElementById('fcMatrix6').innerHTML = buildForecastMatrix(spi6Val, spi12Val, 6);
+  // Matrice 12 mesi
+  document.getElementById('fcMatrix12').innerHTML = buildForecastMatrix(spi6Val, spi12Val, 12);
+
+  // Messaggio stakeholder
+  const dominant = Math.abs(spi12Val) > Math.abs(spi6Val) ? spi12Val : spi6Val;
+  const domCat = spiCategory(dominant);
+  let boxClass = 'ol-norm';
+  let msg = '';
+
+  if (dominant >= 1.0) {
+    boxClass = 'ol-wet';
+    msg = `<strong>📗 Condizioni favorevoli per le risorse idriche sotterranee</strong><br>
+      Le precipitazioni degli ultimi ${Math.abs(spi12Val) > Math.abs(spi6Val) ? '12' : '6'} mesi
+      sono state superiori alla norma (SPI = ${dominant.toFixed(2)}).
+      Le sorgenti e i pozzi del territorio mostrano in genere disponibilità superiore alla media stagionale.
+      <br>Non sono attese restrizioni all'uso dell'acqua nei prossimi mesi.
+      Per sorgenti carsiche (come il Boione) l'eccesso di ricarica potrebbe causare
+      <em>episodi di torbidità</em> durante le piene — monitorare la qualità.`;
+  } else if (dominant >= -0.99) {
+    boxClass = 'ol-norm';
+    msg = `<strong>⚪ Condizioni nella norma stagionale</strong><br>
+      Lo stato pluviometrico (SPI = ${dominant.toFixed(2)}) rientra nella variabilità tipica del periodo.
+      Non si prevede scostamento significativo dalla disponibilità idrica attesa per la stagione.`;
+  } else if (dominant >= -1.49) {
+    boxClass = 'ol-dry';
+    msg = `<strong>🟡 Pre-allerta siccità — Attenzione alla disponibilità idrica</strong><br>
+      Si registra un deficit pluviometrico moderato (SPI = ${dominant.toFixed(2)}).
+      Nei prossimi 3-6 mesi le sorgenti potrebbero mostrare portate inferiori alla norma stagionale.
+      I pozzi superficiali (< 15m) sono a rischio abbassamento. <br>
+      <em>Azioni raccomandate:</em> verificare lo stato delle riserve; evitare prelievi aggiuntivi non programmati;
+      comunicare ai gestori l'avvio della fase di attenzione.`;
+  } else if (dominant >= -1.99) {
+    boxClass = 'ol-dry';
+    msg = `<strong>🔴 Allerta siccità — Riduzione attesa della disponibilità idrica</strong><br>
+      Il deficit pluviometrico è severo (SPI = ${dominant.toFixed(2)}).
+      Si prevede una riduzione significativa delle portate di sorgente e dei livelli di falda nei prossimi 6 mesi.
+      Le sorgenti a bassa altitudine e i pozzi superficiali sono a rischio concreto di crisi.
+      <br><em>Azioni urgenti:</em> attivare piano di razionamento; allertare gestori acquedottistici;
+      identificare fonti alternative; aumentare frequenza monitoraggio.`;
+  } else {
+    boxClass = 'ol-vdry';
+    msg = `<strong>🚨 Emergenza siccità idrogeologica — Stato critico</strong><br>
+      Siccità eccezionale in corso (SPI = ${dominant.toFixed(2)}).
+      Le risorse idriche sotterranee sono in condizione di grave deficit.
+      Si prevede depauperamento delle riserve per i prossimi 12 mesi.
+      <br><em>Azioni immediate:</em> dichiarare stato di emergenza idrica; attivare tutte le fonti alternative;
+      comunicare immediatamente a tutti i soggetti istituzionali e ai gestori.`;
+  }
+
+  document.getElementById('stakeholderMsg').innerHTML =
+    `<div class="outlook-box ${boxClass}">${msg}</div>`;
+}
+
+
 // ═══════════════════════════════════════════
 // ANALISI COMPLETA
 // ═══════════════════════════════════════════
@@ -1120,6 +1569,25 @@ function runAllAnalyses(){
   renderACF();
   renderDecomp();
   renderSQMK();
+  // Calcola SPI-6 e SPI-12 per forecast
+  updateSPIForecast(meta);
+}
+
+function updateSPIForecast(meta) {
+  const stId = meta.id;
+  const d = stData[stId]; if(!d) return;
+  // Salva serie corrente, calcola SPI-6 e SPI-12
+  const prevSer = document.getElementById('selSer').value;
+  document.getElementById('selSer').value = 'spi6';
+  const s6 = buildSeries(meta);
+  document.getElementById('selSer').value = 'spi12';
+  const s12 = buildSeries(meta);
+  document.getElementById('selSer').value = prevSer;
+  
+  const lastSpi6  = s6  ? s6.values[s6.values.length-1]   : null;
+  const lastSpi12 = s12 ? s12.values[s12.values.length-1] : null;
+  
+  renderSPIForecast(lastSpi6, lastSpi12);
 }
 
 // ═══════════════════════════════════════════
@@ -1170,7 +1638,8 @@ document.querySelectorAll('.tab').forEach(t=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
     t.classList.add('on');
-    document.getElementById('p-'+t.dataset.p).classList.add('on');
+    const panel = document.getElementById('p-'+t.dataset.p);
+    if(panel) panel.classList.add('on');
   });
 });
 
