@@ -66,6 +66,76 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM P
   border-radius:0 6px 6px 0;padding:10px 14px;margin:10px 0;font-size:12px;
   line-height:1.7;color:var(--text);}
 .insight strong{color:var(--accent);}
+
+/* ── SPI Extended Styles ───────────────────────── */
+.ctrls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--muted);}
+.ctrls label{font-weight:600;}
+.ctrls select,.ctrls input[type=number]{background:var(--card2);color:var(--text);
+  border:1px solid var(--border);padding:5px 9px;border-radius:5px;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+
+/* Time navigator */
+.spi-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  background:var(--card2);border:1px solid var(--border);border-radius:8px;
+  padding:8px 12px;margin-bottom:12px;}
+.spi-nav label{font-size:11px;font-weight:700;color:var(--muted);}
+.dec-btn{padding:4px 11px;border-radius:5px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;font-family:'IBM Plex Sans',sans-serif;}
+.dec-btn:hover,.dec-btn.on{background:var(--accent);color:#0b1120;border-color:var(--accent);font-weight:700;}
+.yr-inp{width:56px!important;text-align:center;}
+.apply-btn{padding:4px 13px;border-radius:5px;background:linear-gradient(135deg,#1b5e3b,#2e7d52);
+  color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
+.apply-btn:hover{background:linear-gradient(135deg,#2e7d52,#4caf82);}
+#spiRangeInfo{font-size:10px;color:var(--accent);font-family:'IBM Plex Mono',monospace;}
+
+/* SPI category badges */
+.spi-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10.5px;font-weight:700;}
+.s-ew{background:#0d47a1;color:#fff;} .s-sw{background:#1565c0;color:#fff;}
+.s-mw{background:#1976d2;color:#fff;} .s-n{background:#455a64;color:#fff;}
+.s-md{background:#e65100;color:#fff;} .s-sd{background:#bf360c;color:#fff;}
+.s-ed{background:#b71c1c;color:#fff;}
+
+/* Gauge live */
+.spi-gauges{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0;}
+.spi-gauge{background:var(--card2);border:2px solid var(--border);border-radius:10px;
+  padding:14px 18px;flex:1;min-width:140px;text-align:center;transition:border-color .3s;}
+.spi-gauge .gv{font-size:2rem;font-weight:800;line-height:1.1;font-family:'IBM Plex Mono',monospace;}
+.spi-gauge .gl{font-size:9.5px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.07em;}
+.spi-gauge .gc{font-size:11px;font-weight:700;margin-top:5px;}
+
+/* Forecast table */
+.fc-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.fc-tbl th{background:var(--card2);color:var(--muted);padding:7px 9px;text-align:center;
+  border:1px solid var(--border);font-weight:700;font-size:10.5px;}
+.fc-tbl td{padding:6px 9px;border:1px solid var(--border);text-align:center;vertical-align:middle;line-height:1.4;}
+.fc-tbl .rl{text-align:left;font-weight:700;background:#0d1828;font-size:11px;white-space:nowrap;}
+.fc-tbl .rl small{display:block;font-weight:400;color:var(--muted);font-size:9.5px;white-space:normal;}
+.fc-ok  {background:rgba(76,175,130,.18);color:#4caf82;}
+.fc-good{background:rgba(79,195,247,.15);color:#4fc3f7;}
+.fc-norm{background:rgba(69,90,100,.25); color:#90a4ae;}
+.fc-att {background:rgba(255,179,71,.18);color:#ffb347;}
+.fc-warn{background:rgba(239,83,80,.18); color:#ef5350;}
+.fc-crit{background:rgba(183,28,28,.25); color:#ef9a9a;}
+
+/* Heatmap calendar */
+.hm-wrap{display:grid;gap:2px;font-size:8.5px;font-family:'IBM Plex Mono',monospace;}
+.hm-cell{border-radius:2px;cursor:default;transition:filter .15s;}
+.hm-cell:hover{filter:brightness(1.35);}
+
+/* Stakeholder box */
+.stake-box{border-radius:8px;padding:14px 16px;margin:6px 0;border-left:4px solid;}
+.sk-ok  {background:rgba(76,175,130,.08);border-color:#4caf82;}
+.sk-good{background:rgba(79,195,247,.08);border-color:#4fc3f7;}
+.sk-norm{background:rgba(69,90,100,.15); border-color:#546e7a;}
+.sk-att {background:rgba(255,152,0,.09); border-color:#ff9800;}
+.sk-warn{background:rgba(244,67,54,.09); border-color:#f44336;}
+.sk-crit{background:rgba(183,28,28,.15); border-color:#b71c1c;}
+
+/* Classification table */
+.cls-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.cls-tbl th{background:var(--card2);color:var(--accent);padding:7px 9px;text-align:left;
+  border-bottom:1px solid var(--border);font-weight:700;font-size:10.5px;position:sticky;top:0;z-index:1;}
+.cls-tbl td{padding:6px 9px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5;}
+.cls-tbl tr:hover td{background:var(--card2);}
 </style>
 </head>
 <body>
@@ -404,18 +474,33 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM P
     </div>
   </div>
 
-  <!-- SPI / SICCITÀ -->
+  <!-- SPI / SICCITÀ — esteso con forecast acque sotterranee -->
   <div class="panel" id="p-spi">
+
+    <!-- ── Descrizione migliorata ───────────────────────────── -->
     <div class="card">
-      <div class="card-title" id="spi-title">🌵 Standardized Precipitation Index (SPI) — Analisi Siccità</div>
+      <div class="card-title" id="spi-title">🌵 Standardized Precipitation Index (SPI) — Analisi Siccità e Previsione Risorse Idriche</div>
       <div class="card-sub" id="spi-desc">
-        Lo <b>SPI</b> (McKee et al., 1993) è l'indice standard WMO per caratterizzare la siccità meteorologica.
-        Si calcola standardizzando la precipitazione cumulata su una finestra temporale rispetto alla distribuzione
-        storica (adattamento gamma).
-        <br>• SPI &lt; -1.0: siccità moderata · &lt; -1.5: severa · &lt; -2.0: estrema
-        <br>• SPI &gt; +1.0: umidità moderata · &gt; +2.0: estrema
-        <span class="nota">Finestre temporali: SPI-3 = siccità agricola · SPI-12 = siccità idrologica</span>
+        Lo <b>SPI</b> (McKee et al., 1993) è l'indice standard WMO per quantificare il deficit o surplus
+        pluviometrico rispetto alla norma storica. Si ottiene adattando la distribuzione gamma alle
+        precipitazioni cumulate su una finestra temporale e trasformando in unità di deviazione standard.
+        <b>Valore 0 = mediana storica; ogni unità = una deviazione standard.</b>
+        <br><br>
+        <b>Quale finestra usare?</b>
+        <br>• <em>SPI-3</em> — siccità agricola e superficiale: risponde in 1–3 mesi, utile per suoli e colture.
+        <br>• <em>SPI-6</em> — siccità a medio termine: ricarica epicarso, sorgenti a piccolo bacino, pozzi superficiali (&lt;15m). Lag risposta 1–4 mesi.
+        <br>• <em>SPI-12</em> — siccità idrogeologica e riserve annuali: sorgenti profonde, pozzi &gt;30m, grandi bacini carsici. Lag risposta 3–18 mesi.
+        <span class="nota">📌 <b>Letteratura recente:</b> Bloomfield &amp; Marchant (2013) WRR hanno dimostrato che
+        SPI-12 è il predittore più affidabile dei livelli piezometrici in acquiferi fratturati e carsici.
+        Lorenzo-Lacruz et al. (2013) JH hanno calibrato i lag in funzione del tipo di acquifero e della
+        dimensione del bacino. Staudinger et al. (2011) HP e Malard et al. (2018) HP confermano che acquiferi
+        profondi rispondono a SPI-12 con ritardi di 6–18 mesi. Kuss &amp; Gurdak (2014) GRL mostrano
+        variabilità interdecennale del segnale SPI–falda legata a ENSO/PDO.
+        Per il <b>Boione</b> (sorgente carsica, bacino ~3–5 km²): usare SPI-6 per risposta a 1–3 mesi,
+        SPI-12 per valutare lo stato delle riserve annuali.</span>
       </div>
+
+      <!-- Controlli stazione + finestra -->
       <div class="ctrls">
         <label id="spi-st-lbl">Stazione:</label>
         <select id="spiSt"></select>
@@ -426,15 +511,196 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM P
           <option value="12" selected>SPI-12 (annuale)</option>
         </select>
       </div>
+
+      <!-- Navigazione temporale -->
+      <div class="spi-nav">
+        <label>Periodo visualizzato:</label>
+        <button class="dec-btn on" data-range="all" onclick="setSPIRange(this,'all')">Tutto</button>
+        <button class="dec-btn" data-range="2020" onclick="setSPIRange(this,'2020')">2020s</button>
+        <button class="dec-btn" data-range="2010" onclick="setSPIRange(this,'2010')">2010s</button>
+        <button class="dec-btn" data-range="2000" onclick="setSPIRange(this,'2000')">2000s</button>
+        <button class="dec-btn" data-range="1990" onclick="setSPIRange(this,'1990')">1990s</button>
+        <button class="dec-btn" data-range="1980" onclick="setSPIRange(this,'1980')">1980s</button>
+        <button class="dec-btn" data-range="old" onclick="setSPIRange(this,'old')">Pre-1980</button>
+        <span style="color:var(--border);margin:0 4px">|</span>
+        <label>Da:</label>
+        <input class="yr-inp" id="spiYrFrom" type="number" min="1920" max="2030" placeholder="1960">
+        <label>A:</label>
+        <input class="yr-inp" id="spiYrTo" type="number" min="1920" max="2030" placeholder="2025">
+        <button class="apply-btn" onclick="applySPICustomRange()">✓ Applica</button>
+        <span id="spiRangeInfo"></span>
+      </div>
+
+      <!-- Grafico SPI principale con bande colorate -->
       <div class="ch-wrap" style="height:380px"><canvas id="cSPI"></canvas></div>
     </div>
-    <div class="card">
-      <div class="card-title" id="spi-stat-title">📊 Statistiche siccità per decennio</div>
-      <div class="card-sub" id="spi-stat-desc">Frequenza e durata media degli episodi siccitosi (SPI &lt; -1) per decennio.</div>
-      <div class="ch-wrap" style="height:280px"><canvas id="cSPIdec"></canvas></div>
-      <div id="spiNote" class="insight" style="margin-top:10px"></div>
+
+    <!-- ── Heatmap calendario + statistiche decennio ─────────── -->
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">📊 Statistiche siccità per decennio</div>
+        <div class="card-sub" id="spi-stat-desc">% mesi con siccità (SPI&lt;-1) e umidità (SPI&gt;+1) per decennio.</div>
+        <div class="ch-wrap" style="height:260px"><canvas id="cSPIdec"></canvas></div>
+        <div id="spiNote" class="insight" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗓 Heatmap SPI — Anno × Mese</div>
+        <div class="card-sub">Ogni cella = valore SPI mensile. Rosso = siccità, Blu = surplus. Scorrere per la serie completa.</div>
+        <div id="spiHeatmap" style="overflow-x:auto;overflow-y:auto;max-height:260px;padding:4px"></div>
+      </div>
     </div>
-  </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- SEZIONE FORECAST ACQUE SOTTERRANEE                    -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div class="card" style="border-color:var(--green)">
+      <div class="card-title" style="color:var(--green)">🔮 Forecast risorse idriche sotterranee — da SPI-6 e SPI-12</div>
+      <div class="card-sub">
+        Gli indici SPI-6 e SPI-12 correnti permettono di stimare lo stato atteso delle risorse idriche
+        sotterranee nei prossimi 6–12 mesi, tenendo conto del <b>lag di risposta</b> specifico per ogni
+        tipo di captazione e dimensione del bacino idrogeologico.
+        <span class="nota">⚙️ Il forecast viene ricalcolato automaticamente al cambio di stazione o finestra.
+        È basato sull'ultimo valore SPI disponibile nella serie storica della stazione selezionata.
+        Carattere probabilistico: indica la <em>direzione attesa</em>, non un valore preciso.</span>
+      </div>
+
+      <!-- Gauge SPI-6 e SPI-12 live -->
+      <div class="spi-gauges" id="spiGauges">
+        <div class="warn">Seleziona una stazione e clicca su ▶ oppure cambia la finestra per calcolare.</div>
+      </div>
+    </div>
+
+    <!-- Tabella classificazione SPI con significato idrogeologico -->
+    <div class="card">
+      <div class="card-title">📋 Classificazione SPI e impatto sulle acque sotterranee</div>
+      <div class="card-sub">
+        Tabella di riferimento operativo per la comunicazione ai portatori di interesse.
+        Aggiornata con letteratura recente (Bloomfield &amp; Marchant 2013; Lorenzo-Lacruz et al. 2013;
+        Staudinger et al. 2011; Malard et al. 2018; Kumar et al. 2021; He et al. 2022).
+      </div>
+      <div class="tbl-wrap" style="max-height:none">
+      <table class="cls-tbl">
+        <thead>
+          <tr>
+            <th style="min-width:90px">SPI-12</th>
+            <th>Categoria</th>
+            <th>Significato (12 mesi)</th>
+            <th>Sorgenti / Carsismo</th>
+            <th>Acquiferi superficiali</th>
+            <th>Acquiferi profondi</th>
+            <th>Qualità acqua</th>
+            <th>Azione</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="spi-badge s-ew">&gt; +2.0</span></td>
+            <td style="color:#42a5f5;font-weight:700">Eccez. Umido</td>
+            <td>Ricarica record e sostenuta</td>
+            <td>Portata eccezionale; rischio piene e colate carsiche</td>
+            <td>Risalita rapida; possibile overflow in aree basse</td>
+            <td>Ricarica significativa (lag 6–18 mesi per bacini grandi)</td>
+            <td>⚠️ Aumento NTU in carsismo; diluizione CeS; rischio contaminazione</td>
+            <td>Monitorare qualità; verificare overflow sorgenti</td>
+          </tr>
+          <tr style="background:rgba(25,118,210,.04)">
+            <td><span class="spi-badge s-sw">+1.5 a +1.99</span></td>
+            <td style="color:#64b5f6;font-weight:700">Sev. Umido</td>
+            <td>P significativamente sopra norma</td>
+            <td>Portata alta e stabile; epicarso saturo</td>
+            <td>Falda in risalita; buona restituzione pozzi sup.</td>
+            <td>Ricarica notevole (lag 4–10 mesi)</td>
+            <td>Possibile calo CeS per diluizione; NTU elevato in eventi</td>
+            <td>Monitoraggio standard; buon periodo per test pompaggio</td>
+          </tr>
+          <tr>
+            <td><span class="spi-badge s-mw">+1.0 a +1.49</span></td>
+            <td style="color:#90caf9;font-weight:700">Mod. Umido</td>
+            <td>Condizioni più umide della norma</td>
+            <td>Portata aumentata e stabile</td>
+            <td>Livelli in aumento; ricarica efficiente</td>
+            <td>Miglioramento graduale riserve (lag 3–8 mesi)</td>
+            <td>Sistema stabile; qualità nella norma</td>
+            <td>Nessuna azione urgente</td>
+          </tr>
+          <tr style="background:rgba(84,110,122,.08)">
+            <td><span class="spi-badge s-n">-0.99 a +0.99</span></td>
+            <td style="color:#90a4ae;font-weight:700">Nella norma</td>
+            <td>Variabilità tipica del regime</td>
+            <td>Portata stagionale nella norma</td>
+            <td>Livelli stabili; ricarica normale</td>
+            <td>Riserve stabili; nessuna tendenza</td>
+            <td>Stabile</td>
+            <td>Routine; nessuna allerta</td>
+          </tr>
+          <tr>
+            <td><span class="spi-badge s-md">-1.0 a -1.49</span></td>
+            <td style="color:#ffa726;font-weight:700">Mod. Siccità</td>
+            <td>Deficit pluviometrico significativo</td>
+            <td>Portata ridotta; rischio abbassamento soglia sorgente in estate</td>
+            <td>Falda in calo; pozzi poco profondi a rischio</td>
+            <td>Lieve declino (lag 6–12 mesi)</td>
+            <td>Possibile aumento CeS per concentrazione</td>
+            <td>⚠️ Pre-allerta; ridurre prelievi non essenziali</td>
+          </tr>
+          <tr style="background:rgba(239,108,0,.06)">
+            <td><span class="spi-badge s-sd">-1.5 a -1.99</span></td>
+            <td style="color:#ef6c00;font-weight:700">Sev. Siccità</td>
+            <td>Siccità prolungata</td>
+            <td>Sorgenti in indebolimento; rischio intermittenza</td>
+            <td>Abbassamento marcato; pozzi a rischio crisi</td>
+            <td>Ricarica ridotta; calo riserve profonde</td>
+            <td>⚠️ CeS anomala; possibile peggioramento qualità</td>
+            <td>🔴 Allerta; attivare fonti alternative</td>
+          </tr>
+          <tr>
+            <td><span class="spi-badge s-ed">&lt; -2.0</span></td>
+            <td style="color:#ef5350;font-weight:700">Eccez. Siccità</td>
+            <td>Siccità storica</td>
+            <td>Sorgenti intermittenti o asciutte</td>
+            <td>Falda critica; molti pozzi non eroganti</td>
+            <td>Depauperamento riserve pluriennale</td>
+            <td>❌ Qualità alterata; rischio eutrofizzazione pozzi</td>
+            <td>🚨 Emergenza idrica; piano di crisi</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- Matrici forecast 6 mesi -->
+    <div class="card">
+      <div class="card-title">📊 Matrice Forecast 6 mesi — tipo captazione × bacino idrogeologico</div>
+      <div class="card-sub">
+        Stato atteso nei <b>prossimi 6 mesi</b> basato sull'SPI-6 corrente e sul lag di risposta
+        specifico per ciascuna combinazione tipo-captazione / dimensione bacino.
+        <em>Per il Boione → riga "Sorgente carsica", colonna "1–10 km²".</em>
+      </div>
+      <div style="overflow-x:auto"><table class="fc-tbl" id="fcTbl6"></table></div>
+    </div>
+
+    <!-- Matrici forecast 12 mesi -->
+    <div class="card">
+      <div class="card-title">📊 Matrice Forecast 12 mesi — tipo captazione × bacino idrogeologico</div>
+      <div class="card-sub">
+        Stato atteso nei <b>prossimi 12 mesi</b> basato sull'SPI-12 corrente.
+        Gli acquiferi profondi e i grandi bacini rispondono su scale temporali più lunghe:
+        questo forecast è più affidabile per pozzi &gt;30m e bacini &gt;50 km².
+      </div>
+      <div style="overflow-x:auto"><table class="fc-tbl" id="fcTbl12"></table></div>
+    </div>
+
+    <!-- Messaggio stakeholder -->
+    <div class="card">
+      <div class="card-title">📢 Comunicazione operativa — messaggio per portatori di interesse</div>
+      <div class="card-sub">
+        Traduzione automatica dello stato SPI in linguaggio operativo per gestori di acquedotti,
+        enti locali e stakeholder non specialisti. Aggiornato al cambio di stazione.
+      </div>
+      <div id="spiStakeMsg"><em style="color:var(--muted)">In attesa dei dati SPI…</em></div>
+    </div>
+
+  </div><!-- end #p-spi -->
 
 </div>
 
@@ -1553,8 +1819,8 @@ const TRANSLATIONS = {
                       en:'📈 Extreme Value Analysis — Return Periods (GEV)'},
   'gev-comp-title': {it:'📊 Confronto tempi di ritorno tra stazioni',
                       en:'📊 Return period comparison across stations'},
-  'spi-title':      {it:'🌵 Standardized Precipitation Index (SPI) — Analisi Siccità',
-                      en:'🌵 Standardized Precipitation Index (SPI) — Drought Analysis'},
+  'spi-title':      {it:'🌵 SPI — Analisi Siccità e Previsione Risorse Idriche',
+                      en:'🌵 SPI — Drought Analysis & Groundwater Forecast'},
   'spi-stat-title': {it:'📊 Statistiche siccità per decennio', en:'📊 Drought statistics by decade'},
   'mk-var-lbl':     {it:'Variabile:', en:'Variable:'},
   'gev-st-lbl':     {it:'Stazione:', en:'Station:'},
@@ -2016,100 +2282,497 @@ function computeSPI(ppYM, windowMonths, years) {
   return spi;
 }
 
+
+// ════════════════════════════════════════════════════════
+// SPI RANGE FILTER
+// ════════════════════════════════════════════════════════
+let spiYrRange = {from: null, to: null};
+
+function setSPIRange(btn, range) {
+  document.querySelectorAll('.dec-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const now = new Date().getFullYear();
+  if (range === 'all')  spiYrRange = {from: null, to: null};
+  else if (range === '2020') spiYrRange = {from: 2020, to: now};
+  else if (range === '2010') spiYrRange = {from: 2010, to: 2019};
+  else if (range === '2000') spiYrRange = {from: 2000, to: 2009};
+  else if (range === '1990') spiYrRange = {from: 1990, to: 1999};
+  else if (range === '1980') spiYrRange = {from: 1980, to: 1989};
+  else if (range === 'old')  spiYrRange = {from: 1900, to: 1979};
+  document.getElementById('spiRangeInfo').textContent =
+    spiYrRange.from ? `Filtro: ${spiYrRange.from}–${spiYrRange.to}` : '';
+  renderSPI();
+}
+
+function applySPICustomRange() {
+  const f = parseInt(document.getElementById('spiYrFrom').value);
+  const t = parseInt(document.getElementById('spiYrTo').value);
+  if (!isNaN(f) && !isNaN(t) && f <= t && f >= 1900 && t <= 2030) {
+    spiYrRange = {from: f, to: t};
+    document.querySelectorAll('.dec-btn').forEach(b => b.classList.remove('on'));
+    document.getElementById('spiRangeInfo').textContent = `Filtro: ${f}–${t}`;
+    renderSPI();
+  } else {
+    alert('Intervallo non valido. Inserisci anni tra 1900 e 2030.');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// SPI CATEGORY
+// ════════════════════════════════════════════════════════
+function spiCat(v) {
+  if (v === null || isNaN(v)) return {cls:'s-n',  label:'N/D',                  color:'#546e7a', short:'nd'};
+  if (v >= 2.0)  return {cls:'s-ew', label:'Eccez. Umido',         color:'#1565c0', short:'ew'};
+  if (v >= 1.5)  return {cls:'s-sw', label:'Sev. Umido',           color:'#1976d2', short:'sw'};
+  if (v >= 1.0)  return {cls:'s-mw', label:'Mod. Umido',           color:'#1e88e5', short:'mw'};
+  if (v >= -0.99)return {cls:'s-n',  label:'Nella norma',          color:'#546e7a', short:'n'};
+  if (v >= -1.5) return {cls:'s-md', label:'Mod. Siccità',         color:'#e65100', short:'md'};
+  if (v >= -2.0) return {cls:'s-sd', label:'Sev. Siccità',         color:'#bf360c', short:'sd'};
+  return              {cls:'s-ed', label:'Eccez. Siccità',         color:'#b71c1c', short:'ed'};
+}
+
+function spiColor(v) {
+  if (v >= 2.0)  return 'rgba(13,71,161,.85)';
+  if (v >= 1.5)  return 'rgba(21,101,192,.75)';
+  if (v >= 1.0)  return 'rgba(30,136,229,.65)';
+  if (v >= 0.5)  return 'rgba(79,195,247,.5)';
+  if (v >= -0.5) return 'rgba(84,110,122,.4)';
+  if (v >= -1.0) return 'rgba(255,179,71,.55)';
+  if (v >= -1.5) return 'rgba(239,108,0,.75)';
+  if (v >= -2.0) return 'rgba(191,54,12,.85)';
+  return 'rgba(183,28,28,.9)';
+}
+
+// ════════════════════════════════════════════════════════
+// RENDER SPI (principale)
+// ════════════════════════════════════════════════════════
 function renderSPI() {
-  const stId=document.getElementById('spiSt').value;
-  const win=Number(document.getElementById('spiWin').value);
-  const meta=STAZIONI_META.find(m=>m.id===stId);
-  const d=stData[stId];
-  if(!meta||!d)return;
+  const stId = document.getElementById('spiSt').value;
+  const win  = Number(document.getElementById('spiWin').value);
+  const meta = STAZIONI_META.find(m => m.id === stId);
+  const d    = stData[stId];
+  if (!meta || !d) return;
 
-  const CY=new Date().getFullYear();
-  const years=Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
-  if(years.length<5){document.getElementById('cSPI').parentElement.innerHTML='<div class="warn">Dati insufficienti per SPI.</div>';return;}
+  const CY = new Date().getFullYear();
+  const allYears = Object.keys(d.ppYM).map(Number).filter(y => y < CY).sort();
+  if (allYears.length < 5) {
+    document.getElementById('cSPI').parentElement.innerHTML =
+      '<div class="warn">Dati insufficienti per SPI (minimo 5 anni).</div>';
+    return;
+  }
 
-  const spi=computeSPI(d.ppYM,win,years);
-  const labels=spi.map(p=>`${p.y}-${String(p.m+1).padStart(2,'0')}`);
-  const spiVals=spi.map(p=>p.spi);
+  // Calcola SPI su tutta la serie (serve per il forecast)
+  const spiAll = computeSPI(d.ppYM, win, allYears);
 
+  // Filtra per range temporale
+  const spiView = spiYrRange.from
+    ? spiAll.filter(p => p.y >= spiYrRange.from && p.y <= (spiYrRange.to || CY))
+    : spiAll;
+
+  if (spiView.length < 3) {
+    document.getElementById('cSPI').parentElement.innerHTML =
+      '<div class="warn">Dati insufficienti nel periodo selezionato.</div>';
+    return;
+  }
+
+  const labels  = spiView.map(p => `${p.y}-${String(p.m+1).padStart(2,'0')}`);
+  const spiVals = spiView.map(p => p.spi);
+
+  // ── Grafico principale ─────────────────────────────
   dc('cSPI');
-  charts['cSPI']=new Chart(document.getElementById('cSPI'),{
-    type:'bar',
-    data:{labels,datasets:[{
-      label:`SPI-${win} — ${meta.nome}`,
-      data:spiVals,
-      backgroundColor:spiVals.map(v=>v>1.5?'rgba(79,195,247,.9)':v>0.5?'rgba(79,195,247,.5)':
-        v<-1.5?'rgba(239,83,80,.9)':v<-0.5?'rgba(239,83,80,.5)':'rgba(122,148,184,.4)'),
-      borderRadius:1
-    }]},
-    options:{responsive:true,maintainAspectRatio:false,
-      scales:{
-        x:{grid:{color:'#1e3050'},ticks:{maxTicksLimit:24,
-           callback:(v,i)=>labels[i]?.endsWith('-01')||labels[i]?.endsWith('-06')?labels[i].slice(0,4):''}},
-        y:{grid:{color:'#1e3050'},title:{display:true,text:`SPI-${win}`,color:'#7a94b8'},
-           ticks:{callback:v=>v}}
-      },
-      plugins:{
-        legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
-        annotation:{annotations:{
-          l0:{type:'line',yMin:0,yMax:0,borderColor:'rgba(122,148,184,.4)',borderWidth:1},
-          l1:{type:'line',yMin:-1,yMax:-1,borderColor:'rgba(255,179,71,.5)',borderWidth:1,borderDash:[4,4]},
-          l2:{type:'line',yMin:-1.5,yMax:-1.5,borderColor:'rgba(239,83,80,.5)',borderWidth:1,borderDash:[4,4]},
-          l3:{type:'line',yMin:1,yMax:1,borderColor:'rgba(76,175,130,.4)',borderWidth:1,borderDash:[4,4]},
-        }},
-        tooltip:{callbacks:{
-          label:i=>{
-            const v=i.raw;
-            const cl=v<-2?'Siccità estrema':v<-1.5?'Siccità severa':v<-1?'Siccità moderata':
-                     v>2?'Umidità estrema':v>1.5?'Umidità severa':v>1?'Umidità moderata':'Normale';
-            return ` SPI=${v} — ${cl}`;
+  charts['cSPI'] = new Chart(document.getElementById('cSPI'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: `SPI-${win} — ${meta.nome}`,
+          data:  spiVals,
+          backgroundColor: spiVals.map(v => spiColor(v)),
+          borderRadius: 1,
+          barPercentage: 0.95,
+        },
+        // Media mobile 12 mesi
+        {
+          label: 'Media mobile 12m',
+          type:  'line',
+          data:  spiVals.map((_, i, a) => {
+            if (i < 11) return null;
+            const s = a.slice(i-11, i+1).filter(v => v !== null);
+            return s.length ? Math.round(s.reduce((x,y)=>x+y)/s.length*100)/100 : null;
+          }),
+          borderColor: 'rgba(255,215,0,.85)',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.4,
+          spanGaps: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          grid: {color: '#1e3050'},
+          ticks: {
+            maxTicksLimit: 20,
+            callback: (v, i) => {
+              const l = labels[i];
+              return (l?.endsWith('-01') || l?.endsWith('-06')) ? l.slice(0,4) : '';
+            }
           }
-        }}
+        },
+        y: {
+          grid: {color: '#1e3050'},
+          title: {display: true, text: `SPI-${win}`, color: '#7a94b8'},
+          ticks: {callback: v => v.toFixed(1)}
+        }
+      },
+      plugins: {
+        legend: {labels: {color: '#e3eaf8', usePointStyle: true, font: {size: 11}}},
+        tooltip: {
+          callbacks: {
+            label: i => {
+              const v = i.raw;
+              if (v === null) return ` ${i.dataset.label}: —`;
+              const cat = spiCat(v);
+              return ` SPI=${v?.toFixed ? v.toFixed(2) : v} — ${cat.label}`;
+            }
+          }
+        },
+        annotation: {
+          annotations: {
+            z0:  {type:'line',yMin:0,    yMax:0,    borderColor:'rgba(144,164,174,.35)',borderWidth:1},
+            ln1: {type:'line',yMin:-1,   yMax:-1,   borderColor:'rgba(255,152,0,.45)',  borderWidth:1,borderDash:[4,4]},
+            ln15:{type:'line',yMin:-1.5, yMax:-1.5, borderColor:'rgba(244,67,54,.45)',  borderWidth:1,borderDash:[4,4]},
+            ln2: {type:'line',yMin:-2,   yMax:-2,   borderColor:'rgba(183,28,28,.55)',  borderWidth:2,borderDash:[6,3]},
+            lp1: {type:'line',yMin:1,    yMax:1,    borderColor:'rgba(30,136,229,.4)',  borderWidth:1,borderDash:[4,4]},
+            lp2: {type:'line',yMin:2,    yMax:2,    borderColor:'rgba(13,71,161,.55)',  borderWidth:2,borderDash:[6,3]},
+            // Bande colorate di sfondo
+            bDry:{type:'box',yMin:-2,yMax:-1,backgroundColor:'rgba(230,81,0,.05)',borderWidth:0},
+            bVDry:{type:'box',yMin:-4,yMax:-2,backgroundColor:'rgba(183,28,28,.07)',borderWidth:0},
+            bWet:{type:'box',yMin:1, yMax:2,  backgroundColor:'rgba(30,136,229,.05)',borderWidth:0},
+            bVWet:{type:'box',yMin:2,yMax:4,  backgroundColor:'rgba(13,71,161,.08)', borderWidth:0},
+          }
+        }
       }
     }
   });
 
-  // Statistiche per decennio
-  const decades=[...new Set(spi.map(p=>Math.floor(p.y/10)*10))].sort();
-  const droughtFreq=decades.map(d=>{
-    const decSpi=spi.filter(p=>p.y>=d&&p.y<d+10);
-    return{d,n:decSpi.length,nDry:decSpi.filter(p=>p.spi<-1).length,
-           nWet:decSpi.filter(p=>p.spi>1).length,
-           minSpi:decSpi.length?Math.min(...decSpi.map(p=>p.spi)):0};
+  // ── Heatmap calendario ─────────────────────────────
+  renderSPIHeatmap(spiAll);
+
+  // ── Statistiche per decennio ───────────────────────
+  renderSPIDecStats(spiAll, win, meta);
+
+  // ── Forecast acque sotterranee ─────────────────────
+  renderSPIForecast(d, meta, win);
+}
+
+// ════════════════════════════════════════════════════════
+// HEATMAP SPI (Anno × Mese)
+// ════════════════════════════════════════════════════════
+function renderSPIHeatmap(spiData) {
+  const years = [...new Set(spiData.map(p => p.y))].sort();
+  const MO = ['G','F','M','A','M','G','L','A','S','O','N','D'];
+
+  // Filtro stesso range
+  const yrs = spiYrRange.from
+    ? years.filter(y => y >= spiYrRange.from && y <= (spiYrRange.to || 9999))
+    : years;
+
+  const cellW = 18, cellH = 14;
+  const wrap = document.getElementById('spiHeatmap');
+  if (!wrap) return;
+
+  // Build table-style heatmap with HTML divs
+  let html = `<div style="display:flex;align-items:flex-start;gap:0">
+    <div style="display:flex;flex-direction:column;gap:2px;margin-right:4px;padding-top:18px">`;
+  yrs.forEach(y => {
+    html += `<div style="height:${cellH}px;line-height:${cellH}px;font-size:9px;color:#7a94b8;
+      white-space:nowrap;text-align:right;padding-right:4px">${y}</div>`;
+  });
+  html += `</div><div>
+    <div style="display:flex;gap:2px;margin-bottom:3px">`;
+  MO.forEach(m => {
+    html += `<div style="width:${cellW}px;text-align:center;font-size:9px;color:#7a94b8">${m}</div>`;
+  });
+  html += `</div>`;
+  yrs.forEach(y => {
+    html += `<div style="display:flex;gap:2px;margin-bottom:2px">`;
+    for (let m = 0; m < 12; m++) {
+      const pt = spiData.find(p => p.y === y && p.m === m);
+      const v  = pt ? pt.spi : null;
+      let bg = '#1e3050';
+      if (v !== null) {
+        if (v >= 2.0)       bg = '#0d47a1';
+        else if (v >= 1.5)  bg = '#1565c0';
+        else if (v >= 1.0)  bg = '#1976d2';
+        else if (v >= 0.5)  bg = '#42a5f5';
+        else if (v >= -0.5) bg = '#455a64';
+        else if (v >= -1.0) bg = '#e65100';
+        else if (v >= -1.5) bg = '#bf360c';
+        else if (v >= -2.0) bg = '#b71c1c';
+        else                bg = '#7f0000';
+      }
+      const tt = v !== null ? `SPI=${v.toFixed(2)} (${y}/${m+1})` : '—';
+      html += `<div class="hm-cell" title="${tt}"
+        style="width:${cellW}px;height:${cellH}px;background:${bg};border-radius:2px;"></div>`;
+    }
+    html += `</div>`;
+  });
+  html += `</div></div>`;
+  wrap.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════
+// STATISTICHE DECENNIO
+// ════════════════════════════════════════════════════════
+function renderSPIDecStats(spiAll, win, meta) {
+  const decades = [...new Set(spiAll.map(p => Math.floor(p.y/10)*10))].sort();
+  const freq = decades.map(d => {
+    const ds = spiAll.filter(p => p.y >= d && p.y < d+10);
+    return {d, n:ds.length,
+      nDry: ds.filter(p => p.spi < -1).length,
+      nWet: ds.filter(p => p.spi > 1).length,
+      nXDry:ds.filter(p => p.spi < -2).length,
+      minSpi: ds.length ? Math.min(...ds.map(p=>p.spi)) : 0};
   });
 
   dc('cSPIdec');
-  charts['cSPIdec']=new Chart(document.getElementById('cSPIdec'),{
-    type:'bar',
-    data:{labels:decades.map(d=>d+'s'),datasets:[
-      {label:'Mesi siccità (SPI<-1)',
-       data:droughtFreq.map(r=>Math.round(r.nDry/r.n*100)),
-       backgroundColor:'rgba(239,83,80,.65)',borderRadius:4},
-      {label:'Mesi umidi (SPI>+1)',
-       data:droughtFreq.map(r=>Math.round(r.nWet/r.n*100)),
-       backgroundColor:'rgba(79,195,247,.65)',borderRadius:4},
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      scales:{y:{beginAtZero:true,max:60,grid:{color:'#1e3050'},
-                 title:{display:true,text:'% dei mesi',color:'#7a94b8'},
-                 ticks:{callback:v=>v+'%'}},
-              x:{grid:{color:'#1e3050'}}},
-      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
-               tooltip:{mode:'index',intersect:false,
-                 callbacks:{label:i=>` ${i.dataset.label}: ${i.raw}% (${droughtFreq[i.dataIndex][i.datasetIndex?'nWet':'nDry']} mesi)`}}}}
+  charts['cSPIdec'] = new Chart(document.getElementById('cSPIdec'), {
+    type: 'bar',
+    data: {
+      labels: decades.map(d => d+"s"),
+      datasets: [
+        {label:'% mesi siccità (SPI<-1)',
+         data: freq.map(r => Math.round(r.nDry/r.n*100)),
+         backgroundColor:'rgba(239,83,80,.7)', borderRadius:3},
+        {label:'% mesi umidi (SPI>+1)',
+         data: freq.map(r => Math.round(r.nWet/r.n*100)),
+         backgroundColor:'rgba(79,195,247,.65)', borderRadius:3},
+        {label:'% siccità estrema (SPI<-2)',
+         data: freq.map(r => Math.round(r.nXDry/r.n*100)),
+         backgroundColor:'rgba(183,28,28,.8)', borderRadius:3},
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: {beginAtZero:true, max:60, grid:{color:'#1e3050'},
+            title:{display:true,text:'% mesi',color:'#7a94b8'},
+            ticks:{callback: v=>v+'%'}},
+        x: {grid:{color:'#1e3050'}}
+      },
+      plugins: {
+        legend: {labels:{color:'#e3eaf8',usePointStyle:true,font:{size:10}}},
+        tooltip: {mode:'index', intersect:false,
+          callbacks:{label: i=>`  ${i.dataset.label}: ${i.raw}%`}}
+      }
+    }
   });
 
-  // Nota siccità
-  const totalDry=spi.filter(p=>p.spi<-1).length;
-  const totalMo=spi.length;
-  const pctDry=Math.round(totalDry/totalMo*100);
-  const minYr=spi.reduce((a,b)=>b.spi<a.spi?b:a);
-  document.getElementById('spiNote').innerHTML=`
-    <strong>${meta.nome} SPI-${win}:</strong> ${pctDry}% dei mesi con siccità moderata o peggiore.
-    Evento più secco: <em>${minYr.y}-${String(minYr.m+1).padStart(2,'0')}</em> (SPI=${minYr.spi}).
-    ${pctDry>20?'La frequenza di siccità è <em>relativamente elevata</em> per il contesto prealpino.':
-     pctDry<10?'La frequenza di siccità è <em>bassa</em> — regime pluviometrico favorevole.':
-     'La frequenza di siccità è <em>nella norma</em> per il contesto climatico prealpino.'}`;
+  const totalDry = spiAll.filter(p => p.spi < -1).length;
+  const pctDry   = Math.round(totalDry/spiAll.length*100);
+  const minPt    = spiAll.reduce((a,b) => b.spi < a.spi ? b : a);
+  const maxPt    = spiAll.reduce((a,b) => b.spi > a.spi ? b : a);
+  document.getElementById('spiNote').innerHTML = `
+    <strong>${meta.nome} SPI-${win}:</strong>
+    ${pctDry}% dei mesi con siccità moderata o peggiore (SPI&lt;-1).
+    Mese più secco: <em>${minPt.y}-${String(minPt.m+1).padStart(2,'0')}</em> (SPI=${minPt.spi}).
+    Mese più umido: <em>${maxPt.y}-${String(maxPt.m+1).padStart(2,'0')}</em> (SPI=+${maxPt.spi}).
+    ${pctDry>22?'La frequenza di siccità è <em>relativamente elevata</em> per il contesto prealpino bergamasco.':
+      pctDry<10?'La frequenza di siccità è <em>bassa</em> — regime pluviometrico favorevole.':
+      'La frequenza di siccità rientra nella norma per il contesto climatico prealpino.'}`;
 }
+
+// ════════════════════════════════════════════════════════
+// FORECAST ACQUE SOTTERRANEE
+// ════════════════════════════════════════════════════════
+const FC_TYPES = [
+  {id:'sorg_sup',   icon:'💧', label:'Sorgente superficiale',    note:'Piccolo bacino, epicarso, risposta rapida',
+   lag6:0.5, lag12:1,   spiRef:6},
+  {id:'sorg_carsica',icon:'🏔️',label:'Sorgente carsica',         note:'Bacino 1–20 km², drenaggio canalizzato, lag 1–3 mesi',
+   lag6:1,   lag12:2,   spiRef:6},
+  {id:'sorg_prof',  icon:'⛰️', label:'Sorgente profonda / fratturato', note:'Acquifero fratturato, risposta lenta, lag 3–8 mesi',
+   lag6:2.5, lag12:3.5, spiRef:12},
+  {id:'pozzo_sup',  icon:'🪣', label:'Pozzo superficiale (<15m)',note:'Falda freatica, risposta rapida, molto sensibile',
+   lag6:0.5, lag12:1,   spiRef:6},
+  {id:'pozzo_med',  icon:'🔩', label:'Pozzo medio (15–50m)',     note:'Acquifero semiconfinato, lag 3–6 mesi',
+   lag6:1.5, lag12:2.5, spiRef:12},
+  {id:'pozzo_prof', icon:'⚙️', label:'Pozzo profondo (>50m)',    note:'Acquifero confinato, lag 6–18 mesi',
+   lag6:3.5, lag12:5,   spiRef:12},
+];
+
+const FC_BASINS = [
+  {id:'xs', label:'< 1 km²',   mult:0.6, note:'Resp. rapida'},
+  {id:'s',  label:'1–10 km²',  mult:1.0, note:'Resp. media — Boione'},
+  {id:'m',  label:'10–50 km²', mult:1.5, note:'Resp. smorzata'},
+  {id:'l',  label:'> 50 km²',  mult:2.2, note:'Resp. lenta'},
+];
+
+function forecastCell(spiVal, lagBase, basinMult, horizon) {
+  if (spiVal === null) return {cls:'fc-norm', txt:'— N/D'};
+  // Il lag effettivo modifica quanto del segnale attuale si "trasmette"
+  const lagEff = lagBase * basinMult;
+  // Attenuazione esponenziale: la risposta attesa è smorzata con il lag
+  const decay  = Math.exp(-0.12 * lagEff);
+  const signal = spiVal * decay;
+  // Per horizon > lag: l'effetto è già in arrivo
+  const s = horizon < lagEff ? signal * (horizon / lagEff) : signal;
+
+  if (s >= 1.2)  return {cls:'fc-ok',   txt:'🔵 Eccellente'};
+  if (s >= 0.5)  return {cls:'fc-good', txt:'🔵 Buona'};
+  if (s >= -0.5) return {cls:'fc-norm', txt:'⚪ Normale'};
+  if (s >= -1.0) return {cls:'fc-att',  txt:'🟡 Attenzione'};
+  if (s >= -1.5) return {cls:'fc-warn', txt:'🔴 Riduzione'};
+  return              {cls:'fc-crit', txt:'🚨 Critico'};
+}
+
+function buildFcTable(spi6, spi12, horizonMonths) {
+  const useSPI = h => h <= 6 ? spi6 : spi12;
+  let t = '<thead><tr><th class="rl">Tipo captazione</th>';
+  FC_BASINS.forEach(b => {
+    t += `<th>${b.label}<br><small style="font-weight:400;color:var(--muted)">${b.note}</small></th>`;
+  });
+  t += '</tr></thead><tbody>';
+
+  FC_TYPES.forEach(ct => {
+    const spiV = ct.spiRef === 6 ? spi6 : spi12;
+    t += `<tr><td class="rl">${ct.icon} ${ct.label}
+      <small>${ct.note}</small></td>`;
+    FC_BASINS.forEach(bs => {
+      const lagBase = horizonMonths <= 6 ? ct.lag6 : ct.lag12;
+      const cell    = forecastCell(spiV, lagBase, bs.mult, horizonMonths);
+      t += `<td class="${cell.cls}">${cell.txt}</td>`;
+    });
+    t += '</tr>';
+  });
+  t += '</tbody>';
+  return t;
+}
+
+function renderSPIForecast(d, meta, win) {
+  const CY  = new Date().getFullYear();
+  const yrs = Object.keys(d.ppYM).map(Number).filter(y=>y<CY).sort();
+
+  // Calcola SPI-6 e SPI-12 sull'intera serie
+  const spi6data  = computeSPI(d.ppYM, 6,  yrs);
+  const spi12data = computeSPI(d.ppYM, 12, yrs);
+
+  const last6  = spi6data.length  ? spi6data[spi6data.length-1].spi   : null;
+  const last12 = spi12data.length ? spi12data[spi12data.length-1].spi : null;
+
+  const cat6  = spiCat(last6);
+  const cat12 = spiCat(last12);
+
+  // ── Gauge ──────────────────────────────────────────
+  const lastLabel6  = spi6data.length  ?
+    `${spi6data[spi6data.length-1].y}-${String(spi6data[spi6data.length-1].m+1).padStart(2,'0')}` : '—';
+  const lastLabel12 = spi12data.length ?
+    `${spi12data[spi12data.length-1].y}-${String(spi12data[spi12data.length-1].m+1).padStart(2,'0')}` : '—';
+
+  document.getElementById('spiGauges').innerHTML = `
+    <div class="spi-gauge" style="border-color:${cat6.color}">
+      <div class="gv" style="color:${cat6.color}">${last6 !== null ? last6.toFixed(2) : 'N/D'}</div>
+      <div class="gl">SPI-6 · ${lastLabel6}</div>
+      <div class="gc"><span class="spi-badge ${cat6.cls}">${cat6.label}</span></div>
+      <div style="font-size:9px;color:var(--muted);margin-top:4px">6 mesi cumulati</div>
+    </div>
+    <div class="spi-gauge" style="border-color:${cat12.color}">
+      <div class="gv" style="color:${cat12.color}">${last12 !== null ? last12.toFixed(2) : 'N/D'}</div>
+      <div class="gl">SPI-12 · ${lastLabel12}</div>
+      <div class="gc"><span class="spi-badge ${cat12.cls}">${cat12.label}</span></div>
+      <div style="font-size:9px;color:var(--muted);margin-top:4px">12 mesi cumulati (riserve annuali)</div>
+    </div>
+    <div class="spi-gauge" style="flex:2;text-align:left">
+      <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px">Interpretazione confronto SPI</div>
+      <div style="font-size:11px;line-height:1.7;color:var(--muted)">
+        ${last6!==null&&last12!==null ? (
+          last6>0&&last12<0 ? '↗️ <b style="color:var(--text)">Inversione positiva:</b> i mesi recenti (SPI-6) mostrano miglioramento rispetto allo stato annuale (SPI-12). La ricarica a breve termine sta recuperando.' :
+          last6<0&&last12>0 ? '↘️ <b style="color:var(--text)">Deterioramento recente:</b> lo stato annuale è ancora positivo ma i mesi recenti (SPI-6) mostrano un peggioramento. Monitorare la tendenza.' :
+          last6>0&&last12>0 ? '✅ <b style="color:var(--text)">Condizioni favorevoli</b> su entrambe le scale temporali. Buona disponibilità attesa.' :
+          last6<0&&last12<0 ? '⚠️ <b style="color:var(--text)">Deficit su entrambe le scale.</b> Siccità persistente: impatto significativo atteso sulle risorse idriche.' :
+          '➡️ Condizioni nella norma su entrambe le scale.'
+        ) : 'Dati insufficienti per confronto.'}
+      </div>
+    </div>`;
+
+  // ── Matrici forecast ───────────────────────────────
+  const t6  = document.getElementById('fcTbl6');
+  const t12 = document.getElementById('fcTbl12');
+  if (t6)  t6.innerHTML  = buildFcTable(last6, last12, 6);
+  if (t12) t12.innerHTML = buildFcTable(last6, last12, 12);
+
+  // ── Messaggio stakeholder ─────────────────────────
+  const dominant = (Math.abs(last12||0) > Math.abs(last6||0)) ? last12 : last6;
+  const dc12 = spiCat(last12);
+  let cls = 'sk-norm', msg = '';
+
+  if (dominant >= 1.5) {
+    cls = 'sk-ok';
+    msg = `<strong>📗 Condizioni favorevoli per le risorse idriche sotterranee</strong><br>
+      Le precipitazioni degli ultimi ${Math.abs(last12||0)>Math.abs(last6||0)?'12':'6'} mesi
+      sono state superiori alla norma (SPI-12 = ${(last12||0).toFixed(2)},
+      SPI-6 = ${(last6||0).toFixed(2)}).
+      Le sorgenti e i pozzi del territorio mostrano in genere disponibilità superiore alla media stagionale.<br>
+      <em>Nessuna restrizione all'uso dell'acqua è attesa nei prossimi mesi.</em>
+      Per sorgenti carsiche, possibili episodi di torbidità durante piene intense — monitorare la qualità.`;
+  } else if (dominant >= 0.5) {
+    cls = 'sk-good';
+    msg = `<strong>🔵 Condizioni buone — disponibilità nella norma o superiore</strong><br>
+      Lo stato pluviometrico (SPI-12 = ${(last12||0).toFixed(2)}) indica precipitazioni
+      leggermente sopra la norma. Non si prevedono criticità nei prossimi mesi per la maggior parte delle sorgenti e pozzi.<br>
+      <em>Monitoraggio di routine raccomandato.</em>`;
+  } else if (dominant >= -0.5) {
+    cls = 'sk-norm';
+    msg = `<strong>⚪ Condizioni nella norma stagionale</strong><br>
+      Lo stato pluviometrico rientra nella variabilità tipica del periodo
+      (SPI-12 = ${(last12||0).toFixed(2)}, SPI-6 = ${(last6||0).toFixed(2)}).
+      Non si prevede scostamento significativo dalla disponibilità idrica attesa per la stagione.<br>
+      <em>Nessuna azione specifica richiesta.</em>`;
+  } else if (dominant >= -1.0) {
+    cls = 'sk-att';
+    msg = `<strong>🟡 Pre-allerta siccità — leggera riduzione attesa</strong><br>
+      Si registra un lieve deficit pluviometrico (SPI-12 = ${(last12||0).toFixed(2)}).
+      Nei prossimi 3–6 mesi le sorgenti più piccole e i pozzi superficiali (&lt;15m)
+      potrebbero mostrare livelli leggermente inferiori alla norma stagionale.<br>
+      <em>Azioni: verificare stato riserve; evitare prelievi aggiuntivi non programmati;
+      aggiornare i gestori sulla tendenza in atto.</em>`;
+  } else if (dominant >= -1.5) {
+    cls = 'sk-warn';
+    msg = `<strong>🔴 Allerta siccità moderata — riduzione della disponibilità idrica attesa</strong><br>
+      Il deficit pluviometrico è significativo (SPI-12 = ${(last12||0).toFixed(2)},
+      SPI-6 = ${(last6||0).toFixed(2)}).
+      Nei prossimi 6 mesi si prevede riduzione delle portate di sorgente e dei livelli di falda,
+      con rischio concreto per pozzi superficiali e sorgenti a piccolo bacino.<br>
+      <em>Azioni urgenti: attivare piano di monitoraggio intensificato; allertare gestori acquedottistici;
+      identificare fonti alternative; comunicare ai comuni la situazione.</em>`;
+  } else if (dominant >= -2.0) {
+    cls = 'sk-warn';
+    msg = `<strong>🔴 Allerta siccità severa — impatto significativo sulle acque sotterranee</strong><br>
+      Siccità severa in corso (SPI-12 = ${(last12||0).toFixed(2)}).
+      Riduzione marcata attesa per sorgenti e pozzi nei prossimi 6–12 mesi.
+      Rischio crisi idrica per captazioni superficiali e sorgenti a piccolo bacino.<br>
+      <em>Azioni: attivare razionamento; allertare tutti i gestori; aumentare frequenza campionamenti
+      qualità (SPI basso + concentrazione sali); comunicare ufficialmente alla Prefettura.</em>`;
+  } else {
+    cls = 'sk-crit';
+    msg = `<strong>🚨 Emergenza siccità idrogeologica — stato critico</strong><br>
+      Siccità eccezionale in corso (SPI-12 = ${(last12||0).toFixed(2)}).
+      Le risorse idriche sotterranee sono in condizione di grave deficit.
+      Depauperamento riserve pluriennale previsto per i prossimi 12 mesi.<br>
+      <em>Azioni immediate: dichiarare stato di emergenza idrica; attivare tutte le fonti alternative;
+      comunicare immediatamente a tutti i soggetti istituzionali, gestori e popolazione.
+      Attivare Protezione Civile se necessario.</em>`;
+  }
+
+  const stakeEl = document.getElementById('spiStakeMsg');
+  if (stakeEl) stakeEl.innerHTML = `<div class="stake-box ${cls}">${msg}</div>`;
+}
+
 
 function initSPIselect() {
   const sel=document.getElementById('spiSt');
