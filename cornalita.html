@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
 :root{
@@ -163,6 +164,37 @@ canvas.spark{height:36px;width:100%;}
 .modal-btns{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;}
 .btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}
 .btn-primary:hover{background:#81d4fa;}
+
+
+/* SPI TAB STYLES */
+.spi-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.spi-controls label{color:var(--muted);font-size:12px;}
+.spi-controls select,.spi-controls input{background:var(--card2);color:var(--text);border:1px solid var(--border);
+  border-radius:5px;padding:4px 8px;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.spi-period-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;}
+.spi-period-btns button{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;
+  border:1px solid var(--border);background:var(--card2);color:var(--muted);transition:all .18s;}
+.spi-period-btns button.active,.spi-period-btns button:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.spi-gauges{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0;}
+.spi-gauge{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;
+  text-align:center;min-width:140px;flex:1;}
+.spi-gauge .gauge-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.spi-gauge .gauge-val{font-size:28px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.spi-gauge .gauge-cat{font-size:11px;font-weight:600;margin-top:4px;padding:2px 8px;border-radius:4px;display:inline-block;}
+.spi-heatmap-wrap{overflow-x:auto;margin:14px 0;max-height:500px;overflow-y:auto;}
+.spi-heatmap{border-collapse:collapse;font-size:11px;font-family:'IBM Plex Mono',monospace;width:100%;}
+.spi-heatmap th,.spi-heatmap td{padding:4px 6px;text-align:center;border:1px solid var(--border);min-width:42px;}
+.spi-heatmap th{background:var(--card2);color:var(--muted);position:sticky;top:0;z-index:1;}
+.spi-heatmap td{color:#fff;font-weight:600;font-size:10px;}
+.spi-insight{background:var(--card2);border-left:3px solid var(--accent);padding:12px 16px;
+  border-radius:0 8px 8px 0;margin:14px 0;font-size:12px;line-height:1.6;}
+.spi-insight b{color:var(--accent);}
+.spi-section{margin-top:20px;}
+.spi-section h3{font-size:14px;color:var(--accent);margin-bottom:10px;}
+.spi-chart-wrap{position:relative;height:320px;margin:10px 0;}
+.spi-forecast-wrap{position:relative;height:280px;margin:10px 0;}
+.spi-decade-wrap{position:relative;height:260px;margin:10px 0;}
+
 </style>
 </head>
 <body>
@@ -236,6 +268,7 @@ canvas.spark{height:36px;width:100%;}
     <button class="tab"     data-p="intensity">⚡ Intensità</button>
     <button class="tab"     data-p="extreme">⛈ Estremi</button>
     <button class="tab"     data-p="table">📋 Tabella</button>
+    <button class="tab"     data-p="spi">🌵 SPI Index</button>
   </div>
 
   <!-- RECENTI -->
@@ -398,6 +431,74 @@ canvas.spark{height:36px;width:100%;}
       </div>
       <div class="tbl-wrap" id="tblBody"></div>
     </div>
+  </div>
+
+
+  <!-- SPI INDEX PANEL -->
+  <div class="panel" id="p-spi">
+
+    <div class="card">
+      <div class="card-title">🌵 Standardized Precipitation Index (SPI)
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlSPIData()">⬇ Excel SPI</button></div>
+      </div>
+
+      <div class="spi-controls">
+        <label>Finestra SPI:</label>
+        <select id="spiWin">
+          <option value="1">SPI-1</option>
+          <option value="3" selected>SPI-3</option>
+          <option value="6">SPI-6</option>
+          <option value="12">SPI-12</option>
+          <option value="24">SPI-24</option>
+        </select>
+        <label style="margin-left:16px">Da anno:</label>
+        <input type="number" id="spiFromYr" min="1900" max="2100" style="width:70px"/>
+        <label>A anno:</label>
+        <input type="number" id="spiToYr" min="1900" max="2100" style="width:70px"/>
+        <button class="btn btn-outline" style="font-size:11px;margin-left:6px" onclick="applySPICustomRange()">Applica</button>
+      </div>
+
+      <div class="spi-period-btns" id="spiPeriodBtns">
+        <button class="active" data-range="all">Tutti</button>
+        <button data-range="2020">2020s</button>
+        <button data-range="2010">2010s</button>
+        <button data-range="2000">2000s</button>
+        <button data-range="1990">1990s</button>
+        <button data-range="1980">1980s</button>
+        <button data-range="1970">1970s</button>
+        <button data-range="1960">1960s</button>
+        <button data-range="1950">1950s</button>
+        <button data-range="pre1950">Pre-1950</button>
+      </div>
+
+      <div class="spi-gauges" id="spiGauges"></div>
+      <div class="spi-insight" id="spiInsight"></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>📊 Serie storica SPI</h3>
+      <div class="spi-chart-wrap"><canvas id="spiChart"></canvas></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>🗓️ Heatmap SPI (anno × mese)</h3>
+      <div class="spi-heatmap-wrap" id="spiHeatmapWrap"></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>📉 Frequenza siccità per decennio</h3>
+      <div class="spi-decade-wrap"><canvas id="spiDecadeChart"></canvas></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>🔮 Forecast SPI (prossimi 12 mesi)</h3>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:8px;">
+        Modello AR(1) con persistenza + trend Mann-Kendall + ciclo stagionale. Previsione indicativa, non operativa.
+      </p>
+      <div class="spi-forecast-wrap"><canvas id="spiForecastChart"></canvas></div>
+      <div class="spi-insight" id="spiForecastInsight"></div>
+    </div>
+
   </div>
 
 </div><!-- /main -->
@@ -1319,6 +1420,9 @@ function renderAll() {
   renderP30();
   renderI30();
   renderT30();
+  // SPI: render only if tab is currently visible
+  const spiPanel=document.getElementById('p-spi');
+  if(spiPanel && spiPanel.classList.contains('on')) renderSPITab();
 }
 
 // ════════════════════════════════════════════
@@ -1539,6 +1643,8 @@ document.querySelectorAll('.tab').forEach(t=>{
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
     t.classList.add('on');
     document.getElementById('p-'+t.dataset.p).classList.add('on');
+    // Re-render SPI charts when tab becomes visible (Chart.js needs visible canvas)
+    if(t.dataset.p==='spi') setTimeout(renderSPITab, 60);
   });
 });
 
@@ -1554,6 +1660,487 @@ document.getElementById('tblYr').addEventListener('change',renderTable);
 document.getElementById('tblMo').addEventListener('change',renderTable);
 document.getElementById('tblRain').addEventListener('change',renderTable);
 document.getElementById('dlModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDlModal();});
+
+
+// ════════════════════════════════════════════
+// SPI INDEX — Engine + Rendering + Forecast
+// ════════════════════════════════════════════
+
+/* ── Statistical helpers (ported from HydroAnalyst v2) ── */
+function normalCDF_spi(x){
+  const a=[.254829592,-.284496736,1.421413741,-1.453152027,1.061405429];
+  const sign=x<0?-1:1; x=Math.abs(x)/Math.sqrt(2);
+  const t=1/(1+.3275911*x);
+  const y=1-(((((a[4]*t+a[3])*t)+a[2])*t+a[1])*t+a[0])*t*Math.exp(-x*x);
+  return .5*(1+sign*y);
+}
+function fitGamma_spi(vals){
+  const pos=vals.filter(v=>v>0);
+  if(!pos.length)return{alpha:1,beta:1};
+  const mean=pos.reduce((a,b)=>a+b)/pos.length;
+  const variance=pos.reduce((a,b)=>a+(b-mean)**2,0)/(pos.length-1)||.1;
+  return{alpha:mean**2/variance, beta:variance/mean};
+}
+function gammaCDF_spi(x,alpha,beta){
+  if(x<=0)return 0;
+  if(!isFinite(x)||alpha<=0||beta<=0)return 0;
+  const t=x/beta, mu=1-1/(9*alpha), sigma=Math.sqrt(1/(9*alpha));
+  const z=(Math.pow(t/alpha,1/3)-mu)/sigma;
+  return Math.max(0,Math.min(1,normalCDF_spi(z)));
+}
+function normalQuantile_spi(p){
+  p=Math.max(1e-10,Math.min(1-1e-10,p));
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,
+    1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,
+    6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,
+    -2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  let q,r;
+  if(p<0.02425){r=Math.sqrt(-2*Math.log(p));q=(((((c[0]*r+c[1])*r+c[2])*r+c[3])*r+c[4])*r+c[5])/((((d[0]*r+d[1])*r+d[2])*r+d[3])*r+1);}
+  else if(p<=0.97575){q=p-0.5;r=q*q;q=(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  else{r=Math.sqrt(-2*Math.log(1-p));q=-(((((c[0]*r+c[1])*r+c[2])*r+c[3])*r+c[4])*r+c[5])/((((d[0]*r+d[1])*r+d[2])*r+d[3])*r+1);}
+  return q;
+}
+
+/* ── Compute SPI series (FIXED: skips future months of current year) ── */
+function computeSPI_local(win){
+  const yrs=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(yrs.length<3) return [];
+  const CY=new Date().getFullYear();
+  const CM=new Date().getMonth(); // 0-based current month
+
+  // Detect which months of the current year actually have data
+  // by scanning ppByDate for days in each month
+  const cyValidMonths=new Set();
+  if(typeof ppByDate!=='undefined' && ppByDate){
+    Object.keys(ppByDate).forEach(d=>{
+      if(d.startsWith(CY+'-')){
+        const m=parseInt(d.split('-')[1])-1; // 0-based
+        cyValidMonths.add(m);
+      }
+    });
+  }
+  // Fallback: if ppByDate not available, use current month as cutoff
+  if(!cyValidMonths.size){
+    for(let m=0;m<=CM;m++) cyValidMonths.add(m);
+  }
+
+  // Build monthly series — skip future months of current year
+  const monthly=[];
+  yrs.forEach(y=>{
+    for(let m=0;m<12;m++){
+      // For current year: only include months with actual data
+      if(y===CY && !cyValidMonths.has(m)) continue;
+      monthly.push({y,m,v:ppYM[y]?.[m]||0});
+    }
+  });
+
+  // Rolling window sums (with gap check for skipped CY months)
+  const cumul=monthly.map((_,i)=>{
+    if(i<win-1) return null;
+    // Verify the window spans consecutive months (no gap from skipped CY months)
+    const first=monthly[i-win+1], last=monthly[i];
+    const spanMonths=(last.y*12+last.m)-(first.y*12+first.m);
+    if(spanMonths!==win-1) return null; // gap in series, skip
+    let s=0; for(let k=0;k<win;k++) s+=monthly[i-k].v;
+    return s;
+  });
+
+  // Fit gamma per calendar month on complete past years only
+  const result=[];
+  for(let i=0;i<monthly.length;i++){
+    if(cumul[i]===null) continue;
+    const cm=monthly[i].m;
+    // Gather all values for this calendar month (from complete years only)
+    const vals=[];
+    for(let j=0;j<monthly.length;j++){
+      if(cumul[j]===null) continue;
+      if(monthly[j].m===cm && monthly[j].y<CY) vals.push(cumul[j]);
+    }
+    if(vals.length<6){result.push({y:monthly[i].y,m:monthly[i].m,spi:null});continue;}
+    const g=fitGamma_spi(vals);
+    const q0=vals.filter(v=>v===0).length/vals.length;
+    const p=q0+(1-q0)*gammaCDF_spi(cumul[i],g.alpha,g.beta);
+    let spi=normalQuantile_spi(p);
+    spi=Math.max(-3.5,Math.min(3.5,spi));
+    result.push({y:monthly[i].y, m:monthly[i].m, spi:+spi.toFixed(2)});
+  }
+  return result;
+}
+
+/* ── SPI classification helpers ── */
+function spiCategory(v){
+  if(v===null||v===undefined) return{label:'N/D',color:'#666'};
+  if(v>=2)   return{label:'Estr. umido',color:'#1565c0'};
+  if(v>=1.5) return{label:'Molto umido',color:'#42a5f5'};
+  if(v>=1)   return{label:'Moderatam. umido',color:'#90caf9'};
+  if(v>-1)   return{label:'Normale',color:'#66bb6a'};
+  if(v>-1.5) return{label:'Moderatam. secco',color:'#ffa726'};
+  if(v>-2)   return{label:'Molto secco',color:'#ef5350'};
+  return{label:'Estr. secco',color:'#b71c1c'};
+}
+function spiCellColor(v){
+  if(v===null||v===undefined) return '#222';
+  if(v>=2)   return '#0d47a1';
+  if(v>=1.5) return '#1565c0';
+  if(v>=1)   return '#1e88e5';
+  if(v>=0.5) return '#42a5f5';
+  if(v>=-0.5)return '#455a64';
+  if(v>=-1)  return '#ef6c00';
+  if(v>=-1.5)return '#e53935';
+  if(v>=-2)  return '#c62828';
+  return '#880e4f';
+}
+
+/* ── SPI state ── */
+let spiCache={};
+let spiChartObj=null, spiDecadeObj=null, spiForecastObj=null;
+let spiRangeFrom=null, spiRangeTo=null;
+
+function getSPISeries(win){
+  if(!spiCache[win]) spiCache[win]=computeSPI_local(win);
+  return spiCache[win];
+}
+function clearSPICache(){spiCache={};}
+
+/* ── Period filtering ── */
+function spiFilterByRange(series){
+  if(spiRangeFrom===null && spiRangeTo===null) return series;
+  return series.filter(d=>{
+    if(spiRangeFrom!==null && d.y<spiRangeFrom) return false;
+    if(spiRangeTo!==null && d.y>spiRangeTo) return false;
+    return true;
+  });
+}
+
+function applySPIPeriod(range){
+  document.querySelectorAll('#spiPeriodBtns button').forEach(b=>b.classList.remove('active'));
+  if(event&&event.target) event.target.classList.add('active');
+
+  const yrs=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  const minY=yrs[0]||1950;
+
+  if(range==='all'){spiRangeFrom=null;spiRangeTo=null;}
+  else if(range==='pre1950'){spiRangeFrom=minY;spiRangeTo=1949;}
+  else{const d=parseInt(range);spiRangeFrom=d;spiRangeTo=d+9;}
+  document.getElementById('spiFromYr').value=spiRangeFrom||'';
+  document.getElementById('spiToYr').value=spiRangeTo||'';
+  renderSPITab();
+}
+
+function applySPICustomRange(){
+  const f=parseInt(document.getElementById('spiFromYr').value);
+  const t=parseInt(document.getElementById('spiToYr').value);
+  spiRangeFrom=isNaN(f)?null:f;
+  spiRangeTo=isNaN(t)?null:t;
+  document.querySelectorAll('#spiPeriodBtns button').forEach(b=>b.classList.remove('active'));
+  renderSPITab();
+}
+
+/* ═══════════════════════════════════════════
+   RENDER SPI TAB — main entry
+   ═══════════════════════════════════════════ */
+function renderSPITab(){
+  if(!ppYM||!Object.keys(ppYM).length) return;
+  clearSPICache();
+
+  const win=parseInt(document.getElementById('spiWin').value)||3;
+  const fullSeries=getSPISeries(win);
+  const series=spiFilterByRange(fullSeries);
+  if(!series.length) return;
+
+  renderSPIGauges(fullSeries);
+  renderSPIChart(series,win);
+  renderSPIHeatmap(series,win);
+  renderSPIDecadeChart(fullSeries,win);
+  renderSPIForecast(fullSeries,win);
+  renderSPIInsight(fullSeries,win);
+}
+
+/* ── Gauges ── */
+function renderSPIGauges(fullSeries){
+  const container=document.getElementById('spiGauges');
+  let html='';
+  [3,6,12].forEach(w=>{
+    const s=getSPISeries(w);
+    let last=null;
+    for(let i=s.length-1;i>=0;i--){if(s[i].spi!==null){last=s[i];break;}}
+    const val=last?last.spi:null;
+    const cat=spiCategory(val);
+    const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+    const label=last?`${mo[last.m]} ${last.y}`:'N/D';
+    html+=`<div class="spi-gauge">
+      <div class="gauge-label">SPI-${w} (${label})</div>
+      <div class="gauge-val" style="color:${cat.color}">${val!==null?val.toFixed(2):'\u2014'}</div>
+      <div class="gauge-cat" style="background:${cat.color};color:#fff">${cat.label}</div>
+    </div>`;
+  });
+  container.innerHTML=html;
+}
+
+/* ── Main SPI bar chart ── */
+function renderSPIChart(series,win){
+  const ctx=document.getElementById('spiChart');
+  if(spiChartObj){spiChartObj.destroy();spiChartObj=null;}
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const labels=series.map(d=>`${mo[d.m]} ${d.y}`);
+  const values=series.map(d=>d.spi);
+  const colors=values.map(v=>{
+    if(v===null) return '#444';
+    return v>=0?'rgba(66,165,245,0.8)':'rgba(239,83,80,0.8)';
+  });
+
+  spiChartObj=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:`SPI-${win}`,data:values,backgroundColor:colors,
+      borderColor:colors.map(c=>c.replace('0.8','1')),borderWidth:0.5,barPercentage:1.0,categoryPercentage:1.0}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        annotation:{
+          annotations:{
+            line2p:{type:'line',yMin:2,yMax:2,borderColor:'#1565c0',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Estr. umido (+2)',position:'start',font:{size:9},color:'#90caf9'}},
+            line1p:{type:'line',yMin:1,yMax:1,borderColor:'#42a5f5',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Umido (+1)',position:'start',font:{size:9},color:'#90caf9'}},
+            line1n:{type:'line',yMin:-1,yMax:-1,borderColor:'#ffa726',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Secco (\u22121)',position:'start',font:{size:9},color:'#ffa726'}},
+            line2n:{type:'line',yMin:-2,yMax:-2,borderColor:'#ef5350',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Estr. secco (\u22122)',position:'start',font:{size:9},color:'#ef5350'}},
+            lineZ:{type:'line',yMin:0,yMax:0,borderColor:'#ffffff44',borderWidth:1}
+          }
+        },
+        tooltip:{callbacks:{label:ctx2=>{const v=ctx2.raw;return v!==null?`SPI: ${v.toFixed(2)} \u2014 ${spiCategory(v).label}`:'N/D';}}}
+      },
+      scales:{
+        x:{ticks:{maxRotation:90,font:{size:8},color:'#7a94b8',maxTicksLimit:60},grid:{color:'#1e305033'}},
+        y:{min:-3.5,max:3.5,ticks:{font:{size:10},color:'#7a94b8'},grid:{color:'#1e305066'}}
+      }
+    }
+  });
+}
+
+/* ── Heatmap ── */
+function renderSPIHeatmap(series,win){
+  const wrap=document.getElementById('spiHeatmapWrap');
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const grid={};
+  series.forEach(d=>{if(!grid[d.y])grid[d.y]={};grid[d.y][d.m]=d.spi;});
+  const yrs=Object.keys(grid).map(Number).sort((a,b)=>a-b);
+  let h='<table class="spi-heatmap"><thead><tr><th>Anno</th>';
+  mo.forEach(m=>h+=`<th>${m}</th>`);
+  h+='<th>Media</th></tr></thead><tbody>';
+  yrs.forEach(y=>{
+    h+=`<tr><th>${y}</th>`;
+    let sum=0,cnt=0;
+    for(let m=0;m<12;m++){
+      const v=grid[y]?.[m];
+      const bg=spiCellColor(v);
+      if(v!==null&&v!==undefined){sum+=v;cnt++;}
+      h+=`<td style="background:${bg}" title="SPI ${v!==null&&v!==undefined?v.toFixed(2):'N/D'}">${v!==null&&v!==undefined?v.toFixed(1):'\u2014'}</td>`;
+    }
+    const avg=cnt?sum/cnt:null;
+    const abg=spiCellColor(avg);
+    h+=`<td style="background:${abg};font-weight:700">${avg!==null?avg.toFixed(2):'\u2014'}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  wrap.innerHTML=h;
+}
+
+/* ── Decade drought frequency chart ── */
+function renderSPIDecadeChart(series,win){
+  const ctx=document.getElementById('spiDecadeChart');
+  if(spiDecadeObj){spiDecadeObj.destroy();spiDecadeObj=null;}
+
+  const decades={};
+  series.forEach(d=>{
+    if(d.spi===null) return;
+    const dec=Math.floor(d.y/10)*10;
+    if(!decades[dec]) decades[dec]={drought:0,wet:0,normal:0,total:0};
+    decades[dec].total++;
+    if(d.spi<=-1) decades[dec].drought++;
+    else if(d.spi>=1) decades[dec].wet++;
+    else decades[dec].normal++;
+  });
+  const decs=Object.keys(decades).map(Number).sort((a,b)=>a-b);
+  const labels=decs.map(d=>`${d}s`);
+  const drPct=decs.map(d=>((decades[d].drought/decades[d].total)*100).toFixed(1));
+  const wtPct=decs.map(d=>((decades[d].wet/decades[d].total)*100).toFixed(1));
+  const noPct=decs.map(d=>((decades[d].normal/decades[d].total)*100).toFixed(1));
+
+  spiDecadeObj=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'% Siccit\u00e0 (SPI\u2264\u22121)',data:drPct,backgroundColor:'rgba(239,83,80,0.7)',borderRadius:3},
+      {label:'% Normale',data:noPct,backgroundColor:'rgba(102,187,106,0.5)',borderRadius:3},
+      {label:'% Umido (SPI\u2265+1)',data:wtPct,backgroundColor:'rgba(66,165,245,0.7)',borderRadius:3}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7a94b8',font:{size:11}}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw}%`}}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#7a94b8'},grid:{color:'#1e305033'}},
+        y:{stacked:true,max:100,ticks:{callback:v=>v+'%',color:'#7a94b8'},grid:{color:'#1e305066'}}
+      }
+    }
+  });
+}
+
+/* ═══ SPI FORECAST ═══
+   AR(1) persistence + seasonal cycle + Mann-Kendall trend
+   Projects next 12 months from last available SPI value */
+function renderSPIForecast(series,win){
+  const ctx=document.getElementById('spiForecastChart');
+  if(spiForecastObj){spiForecastObj.destroy();spiForecastObj=null;}
+
+  const valid=series.filter(d=>d.spi!==null);
+  if(valid.length<24){
+    document.getElementById('spiForecastInsight').innerHTML='<b>Dati insufficienti per il forecast.</b> Servono almeno 24 mesi di SPI.';
+    return;
+  }
+
+  // AR(1): phi = autocorrelation lag-1
+  const vals=valid.map(d=>d.spi);
+  const n=vals.length;
+  const mean=vals.reduce((a,b)=>a+b)/n;
+  let num=0,den=0;
+  for(let i=1;i<n;i++){num+=(vals[i]-mean)*(vals[i-1]-mean);den+=(vals[i-1]-mean)**2;}
+  const phi=den?num/den:0;
+
+  // Seasonal cycle (average SPI per calendar month, last 30 years)
+  const recent=valid.filter(d=>d.y>=((new Date().getFullYear())-30));
+  const seasonal=Array(12).fill(0);
+  const sCnt=Array(12).fill(0);
+  recent.forEach(d=>{seasonal[d.m]+=d.spi;sCnt[d.m]++;});
+  for(let m=0;m<12;m++) seasonal[m]=sCnt[m]?seasonal[m]/sCnt[m]:0;
+
+  // Mann-Kendall trend (Theil-Sen slope on last 10 years)
+  const last10=valid.filter(d=>d.y>=((new Date().getFullYear())-10));
+  let slopes=[];
+  for(let i=0;i<last10.length;i++){
+    for(let j=i+1;j<last10.length;j++){
+      slopes.push((last10[j].spi-last10[i].spi)/(j-i));
+    }
+  }
+  slopes.sort((a,b)=>a-b);
+  const trendSlope=slopes.length?slopes[Math.floor(slopes.length/2)]:0;
+
+  // Project 12 months
+  const lastD=valid[valid.length-1];
+  let prev=lastD.spi;
+  const forecast=[];
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  for(let i=1;i<=12;i++){
+    const nm=(lastD.m+i)%12;
+    const ny=lastD.y+Math.floor((lastD.m+i)/12);
+    const ar1=phi*(prev-mean)+mean;
+    const s=seasonal[nm]*0.3;
+    const tr=trendSlope*i;
+    let fc=ar1*0.5+s+tr+mean*0.2;
+    fc=Math.max(-3.5,Math.min(3.5,fc));
+    forecast.push({y:ny,m:nm,spi:+fc.toFixed(2)});
+    prev=fc;
+  }
+
+  // Display: last 36 months historical + 12 months forecast
+  const histTail=valid.slice(-36);
+  const allLabels=[...histTail.map(d=>`${mo[d.m]} ${d.y}`),...forecast.map(d=>`${mo[d.m]} ${d.y}`)];
+  const histData=[...histTail.map(d=>d.spi),...Array(12).fill(null)];
+  const fcData=[...Array(histTail.length-1).fill(null),histTail[histTail.length-1].spi,...forecast.map(d=>d.spi)];
+  const upperBand=[...Array(histTail.length-1).fill(null),histTail[histTail.length-1].spi,...forecast.map((d,i)=>Math.min(3.5,d.spi+0.3*(i+1)))];
+  const lowerBand=[...Array(histTail.length-1).fill(null),histTail[histTail.length-1].spi,...forecast.map((d,i)=>Math.max(-3.5,d.spi-0.3*(i+1)))];
+
+  spiForecastObj=new Chart(ctx,{
+    type:'line',
+    data:{labels:allLabels,datasets:[
+      {label:`SPI-${win} Storico`,data:histData,borderColor:'#4fc3f7',backgroundColor:'rgba(79,195,247,0.1)',
+        fill:false,tension:0.3,pointRadius:2,borderWidth:2},
+      {label:'Forecast',data:fcData,borderColor:'#ffb347',backgroundColor:'rgba(255,179,71,0.1)',
+        borderDash:[5,3],fill:false,tension:0.3,pointRadius:3,borderWidth:2.5},
+      {label:'Banda sup.',data:upperBand,borderColor:'transparent',backgroundColor:'rgba(255,179,71,0.08)',
+        fill:'+1',pointRadius:0,borderWidth:0},
+      {label:'Banda inf.',data:lowerBand,borderColor:'transparent',backgroundColor:'rgba(255,179,71,0.08)',
+        fill:'-1',pointRadius:0,borderWidth:0}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#7a94b8',font:{size:11},filter:i=>i.text!=='Banda sup.'&&i.text!=='Banda inf.'}},
+        annotation:{annotations:{
+          lineZ:{type:'line',yMin:0,yMax:0,borderColor:'#ffffff33',borderWidth:1},
+          line1n:{type:'line',yMin:-1,yMax:-1,borderColor:'#ffa72644',borderWidth:1,borderDash:[3,3]},
+          line1p:{type:'line',yMin:1,yMax:1,borderColor:'#42a5f544',borderWidth:1,borderDash:[3,3]}
+        }}
+      },
+      scales:{
+        x:{ticks:{maxRotation:90,font:{size:8},color:'#7a94b8',maxTicksLimit:24},grid:{color:'#1e305033'}},
+        y:{min:-3.5,max:3.5,ticks:{font:{size:10},color:'#7a94b8'},grid:{color:'#1e305066'}}
+      }
+    }
+  });
+
+  // Forecast insight
+  const fcInsight=document.getElementById('spiForecastInsight');
+  const avgFc=forecast.reduce((a,b)=>a+b.spi,0)/forecast.length;
+  const cat=spiCategory(avgFc);
+  const drMonths=forecast.filter(d=>d.spi<=-1).length;
+  fcInsight.innerHTML=`<b>Forecast SPI-${win} (prossimi 12 mesi):</b> Media prevista <span style="color:${cat.color};font-weight:700">${avgFc.toFixed(2)}</span> (${cat.label}). `+
+    `<b>\u03c6 (AR1):</b> ${phi.toFixed(3)} \u00b7 <b>Trend:</b> ${trendSlope>=0?'+':''}${trendSlope.toFixed(4)}/mese \u00b7 `+
+    `<b>Mesi siccit\u00e0 previsti:</b> ${drMonths}/12.`+
+    (drMonths>=6?'<br>\u26a0\ufe0f <span style="color:var(--red)">Possibile periodo siccitoso prolungato nei prossimi mesi.</span>':'');
+}
+
+/* ── Insight text ── */
+function renderSPIInsight(series,win){
+  const box=document.getElementById('spiInsight');
+  const valid=series.filter(d=>d.spi!==null);
+  if(!valid.length){box.innerHTML='Nessun dato SPI disponibile.';return;}
+
+  const droughts=valid.filter(d=>d.spi<=-1.5);
+  const extremeDr=valid.filter(d=>d.spi<=-2);
+  const wets=valid.filter(d=>d.spi>=1.5);
+  const yrs=Object.keys(ppYM).map(Number);
+  const span=`${Math.min(...yrs)}\u2013${Math.max(...yrs)}`;
+
+  let maxStreak=0,curStreak=0,streakStart=null,bestStart=null;
+  valid.forEach(d=>{
+    if(d.spi<=-1){curStreak++;if(curStreak===1)streakStart=d;if(curStreak>maxStreak){maxStreak=curStreak;bestStart=streakStart;}}
+    else curStreak=0;
+  });
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+  box.innerHTML=`<b>Analisi SPI-${win} | ${span}</b><br>`+
+    `Mesi analizzati: <b>${valid.length}</b> \u00b7 Siccit\u00e0 moderata+: <b>${droughts.length}</b> (${(droughts.length/valid.length*100).toFixed(1)}%) \u00b7 `+
+    `Siccit\u00e0 estrema: <b>${extremeDr.length}</b> \u00b7 Periodi molto umidi: <b>${wets.length}</b><br>`+
+    (bestStart?`\U0001f4cf Sequenza siccitosa pi\u00f9 lunga: <b>${maxStreak} mesi</b> da ${mo[bestStart.m]} ${bestStart.y}.`:'Nessuna sequenza significativa di siccit\u00e0.');
+}
+
+/* ── Download SPI data as Excel ── */
+function dlSPIData(){
+  const win=parseInt(document.getElementById('spiWin').value)||3;
+  const series=getSPISeries(win);
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const rows=[['Anno','Mese','SPI-'+win,'Categoria']];
+  series.forEach(d=>{
+    const cat=spiCategory(d.spi);
+    rows.push([d.y, mo[d.m], d.spi, cat.label]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'SPI');
+  XLSX.writeFile(wb,`Cornalita_SPI${win}.xlsx`);
+}
+
+/* ── Event listeners for SPI controls ── */
+document.getElementById('spiWin').addEventListener('change',renderSPITab);
+document.querySelectorAll('#spiPeriodBtns button').forEach(b=>{
+  b.addEventListener('click',function(){applySPIPeriod(this.dataset.range);});
+});
+
 
 init();
 </script>
