@@ -195,6 +195,23 @@ canvas.spark{height:36px;width:100%;}
 .spi-forecast-wrap{position:relative;height:280px;margin:10px 0;}
 .spi-decade-wrap{position:relative;height:260px;margin:10px 0;}
 
+/* SERIE CONTINUA + CONFRONTO */
+.serie-ctrls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+.serie-ctrls label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.gran-btns{display:flex;gap:4px;}
+.gran-btns button{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;
+  border:1px solid var(--border);background:var(--card2);color:var(--muted);transition:all .18s;}
+.gran-btns button.on,.gran-btns button:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:14px;}
+.cmp-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;border-top:4px solid var(--accent);}
+.cmp-yr{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+.cmp-val{font-size:1.9rem;font-weight:700;font-family:'IBM Plex Mono',monospace;margin:4px 0;line-height:1.1;}
+.cmp-sub{font-size:11px;color:var(--muted);line-height:1.55;}
+.cmp-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;margin-top:7px;color:#fff;}
+.cmp-verdict{background:var(--card2);border-left:3px solid var(--accent);padding:13px 16px;
+  border-radius:0 8px 8px 0;margin-top:4px;font-size:12.5px;line-height:1.65;}
+.cmp-verdict b{color:var(--accent);}
+
 </style>
 </head>
 <body>
@@ -210,6 +227,7 @@ canvas.spark{height:36px;width:100%;}
     <div class="sub">IdStazione 119 · 45.8697°N 9.6391°E · 622 m s.l.m. · BG</div>
   </div>
   <div class="hdr-btns">
+    <button class="btn btn-outline" id="langBtn" onclick="toggleLang()" title="Switch language">🌐 EN</button>
     <button class="btn btn-green" onclick="openDlModal()">⬇ Scarica dati</button>
     <a href="index.html" class="btn btn-outline">← Mappa</a>
     <a href="brembilla.html" class="btn btn-outline">Brembilla →</a>
@@ -269,6 +287,8 @@ canvas.spark{height:36px;width:100%;}
     <button class="tab"     data-p="extreme">⛈ Estremi</button>
     <button class="tab"     data-p="table">📋 Tabella</button>
     <button class="tab"     data-p="spi">🌵 SPI Index</button>
+    <button class="tab"     data-p="serie">📈 Serie continua</button>
+    <button class="tab"     data-p="confronto">📊 Confronto anni</button>
   </div>
 
   <!-- RECENTI -->
@@ -500,6 +520,48 @@ canvas.spark{height:36px;width:100%;}
     </div>
 
   </div>
+  <!-- SERIE CONTINUA -->
+  <div class="panel" id="p-serie">
+    <div class="card">
+      <div class="card-title" id="serieTitle">📈 Serie continua precipitazioni
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlSerie()">⬇ CSV</button></div>
+      </div>
+      <div class="serie-ctrls">
+        <label id="serieGranLbl">Aggregazione:</label>
+        <div class="gran-btns" id="serieGranBtns">
+          <button class="on" data-g="month" onclick="setSerieGran('month')">Mensile</button>
+          <button data-g="quarter" onclick="setSerieGran('quarter')">Trimestrale</button>
+        </div>
+      </div>
+      <div class="serie-ctrls">
+        <label id="serieDecLbl">Decennio:</label>
+        <div id="serieDecadeBar" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <label style="margin-left:8px" id="serieFromLbl">Da:</label>
+        <input type="number" id="serieFrom" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <label id="serieToLbl">A:</label>
+        <input type="number" id="serieTo" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="serieApplyBtn" onclick="applySerieRange()">Applica</button>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="serieAllBtn" onclick="serieAllYears()">Tutti</button>
+      </div>
+      <div class="ch-wrap" style="height:420px"><canvas id="cSerie"></canvas></div>
+      <div class="note" id="serieNote"></div>
+    </div>
+  </div>
+
+  <!-- CONFRONTO ANNI -->
+  <div class="panel" id="p-confronto">
+    <div class="card">
+      <div class="card-title" id="cmpTitle">📊 Anni recenti vs media storica</div>
+      <p style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.6;" id="cmpIntro">
+        Confronto ad alto livello degli ultimi anni rispetto alla media pluriennale della serie Cornalita.
+        Un anno è considerato <b style="color:var(--text)">nella norma</b> se rientra entro ±1 deviazione standard (σ) dalla media,
+        <b style="color:var(--text)">anomalo</b> se la supera. L'anno in corso è confrontato sul cumulato YTD vs media storica dello stesso periodo.
+      </p>
+      <div class="cmp-grid" id="cmpGrid"></div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cCmpAnnual"></canvas></div>
+      <div class="cmp-verdict" id="cmpVerdict" style="margin-top:14px"></div>
+    </div>
+  </div>
 
 </div><!-- /main -->
 
@@ -584,7 +646,10 @@ async function loadSTFromIndex() {
     return false;
   }
 }
-const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const MONTHS_IT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let MONTHS = MONTHS_IT.slice();
+window.LANG = 'it';
 const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
                  '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a','#80cbc4','#ffe082',
                  '#ce93d8','#80deea','#c5e1a5','#ffcc80','#b0bec5','#b39ddb'];
@@ -1246,6 +1311,8 @@ function renderMensile() {
 
 // ── Intensità storico
 function renderIntHist() {
+  const _ivCanvas=document.getElementById('cIntHist');
+  if(!_ivCanvas) return; // canvas già sostituito (nessun dato) — evita crash al re-render
   const view=document.getElementById('intView').value;
   const ents=Object.entries(intByDate).filter(([,v])=>v>0);
   if (!ents.length) {
@@ -1423,6 +1490,12 @@ function renderAll() {
   // SPI: render only if tab is currently visible
   const spiPanel=document.getElementById('p-spi');
   if(spiPanel && spiPanel.classList.contains('on')) renderSPITab();
+  // Serie / Confronto: render only if visible (Chart.js needs visible canvas)
+  const seriePanel=document.getElementById('p-serie');
+  if(seriePanel && seriePanel.classList.contains('on')) renderSerie();
+  const cmpPanel=document.getElementById('p-confronto');
+  if(cmpPanel && cmpPanel.classList.contains('on')) renderConfronto();
+  postRenderI18n();
 }
 
 // ════════════════════════════════════════════
@@ -1645,6 +1718,9 @@ document.querySelectorAll('.tab').forEach(t=>{
     document.getElementById('p-'+t.dataset.p).classList.add('on');
     // Re-render SPI charts when tab becomes visible (Chart.js needs visible canvas)
     if(t.dataset.p==='spi') setTimeout(renderSPITab, 60);
+    if(t.dataset.p==='serie') setTimeout(renderSerie, 60);
+    if(t.dataset.p==='confronto') setTimeout(renderConfronto, 60);
+    setTimeout(postRenderI18n, 90);
   });
 });
 
@@ -2134,6 +2210,344 @@ function dlSPIData(){
   XLSX.utils.book_append_sheet(wb,ws,'SPI');
   XLSX.writeFile(wb,`Cornalita_SPI${win}.xlsx`);
 }
+
+/* ════════════════════════════════════════════
+   SERIE CONTINUA (mensile / trimestrale)
+   ════════════════════════════════════════════ */
+let serieGran='month';
+let serieFrom=null, serieTo=null;
+
+function setSerieGran(g){
+  serieGran=g;
+  document.querySelectorAll('#serieGranBtns button').forEach(b=>b.classList.toggle('on',b.dataset.g===g));
+  renderSerie();
+}
+function applySerieRange(){
+  const a=parseInt(document.getElementById('serieFrom').value);
+  const b=parseInt(document.getElementById('serieTo').value);
+  serieFrom=isNaN(a)?null:a; serieTo=isNaN(b)?null:b;
+  document.querySelectorAll('#serieDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderSerie();
+}
+function serieAllYears(){
+  serieFrom=null; serieTo=null;
+  document.getElementById('serieFrom').value=''; document.getElementById('serieTo').value='';
+  document.querySelectorAll('#serieDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderSerie();
+}
+function buildSerieDecadeBar(){
+  const bar=document.getElementById('serieDecadeBar'); if(!bar) return;
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(!years.length){bar.innerHTML='';return;}
+  bar.innerHTML='';
+  const firstDec=Math.floor(years[0]/10)*10, lastDec=Math.floor(years[years.length-1]/10)*10;
+  for(let d=firstDec; d<=lastDec; d+=10){
+    const btn=document.createElement('button');
+    btn.className='dec-btn'; btn.textContent=`${d}s`; btn.dataset.dec=d;
+    btn.addEventListener('click',()=>{
+      serieFrom=d; serieTo=d+9;
+      document.getElementById('serieFrom').value=d; document.getElementById('serieTo').value=d+9;
+      document.querySelectorAll('#serieDecadeBar .dec-btn').forEach(x=>x.classList.toggle('on',x===btn));
+      renderSerie();
+    });
+    bar.appendChild(btn);
+  }
+}
+
+function lastDataMonthCY(){
+  let last=-1;
+  Object.keys(ppByDate).forEach(d=>{ if(d.startsWith(CY)){const m=+d.split('-')[1]-1; if(m>last)last=m;} });
+  return last;
+}
+
+function renderSerie(){
+  if(!ppYM||!Object.keys(ppYM).length) return;
+  const en=(window.LANG==='en');
+  buildSerieDecadeBar();
+
+  // Static labels (lang-aware)
+  document.getElementById('serieTitle').childNodes[0].nodeValue =
+    en?'📈 Continuous precipitation series ':'📈 Serie continua precipitazioni ';
+  document.getElementById('serieGranLbl').textContent=en?'Aggregation:':'Aggregazione:';
+  document.getElementById('serieDecLbl').textContent =en?'Decade:':'Decennio:';
+  document.getElementById('serieFromLbl').textContent=en?'From:':'Da:';
+  document.getElementById('serieToLbl').textContent  =en?'To:':'A:';
+  document.getElementById('serieApplyBtn').textContent=en?'Apply':'Applica';
+  document.getElementById('serieAllBtn').textContent  =en?'All':'Tutti';
+  const gb=document.querySelectorAll('#serieGranBtns button');
+  gb[0].textContent=en?'Monthly':'Mensile'; gb[1].textContent=en?'Quarterly':'Trimestrale';
+
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  const fromY=serieFrom??years[0], toY=serieTo??years[years.length-1];
+  const cyLastM=lastDataMonthCY();
+  const labels=[], vals=[];
+  years.filter(y=>y>=fromY&&y<=toY).forEach(y=>{
+    if(serieGran==='month'){
+      for(let m=0;m<12;m++){
+        if(y===CY && cyLastM>=0 && m>cyLastM) continue;
+        labels.push(`${MONTHS[m]} ${y}`);
+        vals.push(+(ppYM[y][m]||0).toFixed(1));
+      }
+    } else {
+      for(let q=0;q<4;q++){
+        const ms=[q*3,q*3+1,q*3+2];
+        if(y===CY && cyLastM>=0 && ms[0]>cyLastM) continue;
+        labels.push(`Q${q+1} ${y}`);
+        vals.push(+ms.reduce((a,mi)=>a+(ppYM[y][mi]||0),0).toFixed(1));
+      }
+    }
+  });
+
+  // Moving average (12 mesi / 4 trimestri)
+  const win=serieGran==='month'?12:4;
+  const ma=vals.map((_,i)=> i<win-1?null:+(vals.slice(i-win+1,i+1).reduce((a,b)=>a+b,0)/win).toFixed(1));
+  const maLbl=serieGran==='month'
+    ? (en?'12-month moving avg':'Media mobile 12 mesi')
+    : (en?'4-quarter moving avg':'Media mobile 4 trim.');
+  const barLbl=en?'Precipitation (mm)':'Precipitazione (mm)';
+
+  dc('cSerie');
+  charts['cSerie']=new Chart(document.getElementById('cSerie'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:barLbl,data:vals,backgroundColor:'rgba(79,195,247,0.55)',borderColor:'#4fc3f7',borderWidth:0.5,
+       borderRadius:2,barPercentage:1.0,categoryPercentage:0.95,order:2},
+      {label:maLbl,data:ma,type:'line',borderColor:'#ffb347',borderWidth:2,pointRadius:0,tension:.3,fill:false,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{ticks:{maxRotation:90,font:{size:8},color:'#7a94b8',maxTicksLimit:serieGran==='month'?40:30,autoSkip:true},grid:{color:'#1e305033'}},
+        y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+        tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw!=null?f(i.raw,1)+' mm':'n/d'}`}}}
+    }
+  });
+
+  const note=document.getElementById('serieNote');
+  const periodTxt=`${fromY}\u2013${toY}`;
+  note.textContent=en
+    ? `${vals.length} ${serieGran==='month'?'months':'quarters'} \u00b7 range ${periodTxt} \u00b7 orange line = ${maLbl.toLowerCase()}.`
+    : `${vals.length} ${serieGran==='month'?'mesi':'trimestri'} \u00b7 intervallo ${periodTxt} \u00b7 linea arancio = ${maLbl.toLowerCase()}.`;
+}
+
+function dlSerie(){
+  const ch=charts['cSerie']; if(!ch) return;
+  const labels=ch.data.labels||[];
+  const v=ch.data.datasets[0]?.data||[];
+  const ma=ch.data.datasets[1]?.data||[];
+  const head=['Periodo','mm','MediaMobile'];
+  const rows=[head,...labels.map((l,i)=>[l,v[i]??'',ma[i]??''])];
+  const blob=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`cornalita_serie_${serieGran}.csv`;a.click();
+}
+
+/* ════════════════════════════════════════════
+   CONFRONTO ANNI RECENTI vs MEDIA STORICA
+   ════════════════════════════════════════════ */
+let cmpChartObj=null;
+function renderConfronto(){
+  if(!ppYM||!Object.keys(ppYM).length) return;
+  const en=(window.LANG==='en');
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  const annual={}; years.forEach(y=>annual[y]=+(ppYM[y]||[]).reduce((a,b)=>a+b,0).toFixed(0));
+  const histYears=years.filter(y=>y<CY);
+  const hist=histYears.map(y=>annual[y]);
+  if(hist.length<5) return;
+  const mean=hist.reduce((a,b)=>a+b,0)/hist.length;
+  const sd=Math.sqrt(hist.reduce((a,b)=>a+(b-mean)**2,0)/hist.length);
+  const sortedDesc=[...hist].sort((a,b)=>b-a);
+  const zf=t=>(t-mean)/sd;
+  const pctile=t=>hist.filter(h=>h<=t).length/hist.length*100;
+  const pctMean=t=>(t-mean)/mean*100;
+
+  // Titles & intro (lang-aware)
+  document.getElementById('cmpTitle').textContent=en?'📊 Recent years vs historical mean':'📊 Anni recenti vs media storica';
+  document.getElementById('cmpIntro').innerHTML=en
+    ? `High-level comparison of recent years against the multi-year mean of the Cornalita series. A year is <b style="color:var(--text)">within normal range</b> if it stays within \u00b11 standard deviation (\u03c3) of the mean, <b style="color:var(--text)">anomalous</b> if it exceeds it. The current year is compared on year-to-date cumulative vs the historical average for the same period.`
+    : `Confronto ad alto livello degli ultimi anni rispetto alla media pluriennale della serie Cornalita. Un anno \u00e8 <b style="color:var(--text)">nella norma</b> se rientra entro \u00b11 deviazione standard (\u03c3) dalla media, <b style="color:var(--text)">anomalo</b> se la supera. L'anno in corso \u00e8 confrontato sul cumulato YTD vs media storica dello stesso periodo.`;
+
+  // classify badge
+  function badge(z){
+    if(z>=1)  return {c:'#1565c0', it:'Molto piovoso (anomalo)', en:'Very wet (anomalous)'};
+    if(z<=-1) return {c:'#c62828', it:'Molto secco (anomalo)',  en:'Very dry (anomalous)'};
+    return {c:'#2e7d32', it:'Nella norma (\u00b11\u03c3)', en:'Within normal range (\u00b11\u03c3)'};
+  }
+
+  // build cards for CY-2, CY-1 (full years) + CY (YTD)
+  let cardsHtml='';
+  [CY-2,CY-1].forEach(y=>{
+    if(annual[y]==null) return;
+    const t=annual[y], z=zf(t), p=pctMean(t), pc=pctile(t);
+    const bd=badge(z);
+    cardsHtml+=`<div class="cmp-card" style="border-top-color:${bd.c}">
+      <div class="cmp-yr">${y}</div>
+      <div class="cmp-val" style="color:${bd.c}">${f(t,0)} <span style="font-size:.6em;color:var(--muted)">mm</span></div>
+      <div class="cmp-sub">${p>=0?'+':''}${f(p,0)}% ${en?'vs mean':'vs media'} \u00b7 z=${z>=0?'+':''}${f(z,2)}\u03c3<br>${en?'percentile':'percentile'} ${f(pc,0)}\u00b0 / 100</div>
+      <span class="cmp-badge" style="background:${bd.c}">${en?bd.en:bd.it}</span>
+    </div>`;
+  });
+
+  // current year YTD
+  const cyDays=Object.entries(ppByDate).filter(([d])=>d.startsWith(CY)).sort(([a],[b])=>a.localeCompare(b));
+  let verdictCY='';
+  if(cyDays.length){
+    const lastDate=cyDays[cyDays.length-1][0];
+    const lastDoy=Math.floor((new Date(lastDate)-new Date(CY,0,1))/86400000)+1;
+    const ytd=cyDays.reduce((a,[,v])=>a+v,0);
+    const histYtd=histYears.map(y=>Object.entries(ppByDate).filter(([d])=>{
+      if(!d.startsWith(y))return false;
+      const doy=Math.floor((new Date(d)-new Date(y,0,1))/86400000)+1; return doy<=lastDoy;
+    }).reduce((a,[,v])=>a+v,0)).filter(v=>v>0);
+    const ytdMean=histYtd.length?histYtd.reduce((a,b)=>a+b,0)/histYtd.length:null;
+    const ytdSd=histYtd.length>1?Math.sqrt(histYtd.reduce((a,b)=>a+(b-ytdMean)**2,0)/histYtd.length):0;
+    const ytdZ=ytdSd?(ytd-ytdMean)/ytdSd:0;
+    const ytdPct=ytdMean?(ytd-ytdMean)/ytdMean*100:0;
+    const bd=badge(ytdZ);
+    cardsHtml+=`<div class="cmp-card" style="border-top-color:${bd.c}">
+      <div class="cmp-yr">${CY} ${en?'(YTD)':'(in corso)'}</div>
+      <div class="cmp-val" style="color:${bd.c}">${f(ytd,0)} <span style="font-size:.6em;color:var(--muted)">mm</span></div>
+      <div class="cmp-sub">${en?'YTD through':'YTD al'} ${lastDate}<br>${en?'hist. avg same period':'media storica stesso periodo'}: ${f(ytdMean,0)} mm (${ytdPct>=0?'+':''}${f(ytdPct,0)}%)</div>
+      <span class="cmp-badge" style="background:${bd.c}">${en?bd.en:bd.it}</span>
+    </div>`;
+    verdictCY = en
+      ? `<b>${CY}</b> to date (${lastDate}): <b>${f(ytd,0)} mm</b>, ${ytdPct>=0?'+':''}${f(ytdPct,0)}% vs the historical average for the same period (z=${ytdZ>=0?'+':''}${f(ytdZ,2)}\u03c3) \u2014 ${Math.abs(ytdZ)<1?'broadly in line with the norm':(ytdZ>0?'on the wet side':'on the dry side')}.`
+      : `<b>${CY}</b> al ${lastDate}: <b>${f(ytd,0)} mm</b>, ${ytdPct>=0?'+':''}${f(ytdPct,0)}% vs media storica dello stesso periodo (z=${ytdZ>=0?'+':''}${f(ytdZ,2)}\u03c3) \u2014 ${Math.abs(ytdZ)<1?'sostanzialmente nella norma':(ytdZ>0?'sul lato piovoso':'sul lato secco')}.`;
+  }
+  document.getElementById('cmpGrid').innerHTML=cardsHtml;
+
+  // verdict for full years
+  let vParts=[];
+  if(annual[CY-2]!=null){
+    const t=annual[CY-2], z=zf(t), ord=sortedDesc.indexOf(t)+1;
+    vParts.push(en
+      ? `<b>${CY-2}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3${z>=1?`, ${ord}${ord===1?'st':ord===2?'nd':ord===3?'rd':'th'} wettest of ${hist.length} years \u2014 beyond the normal band`:''}).`
+      : `<b>${CY-2}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3${z>=1?`, ${ord}\u00b0 anno pi\u00f9 piovoso su ${hist.length} \u2014 oltre la banda di normalit\u00e0`:''}).`);
+  }
+  if(annual[CY-1]!=null){
+    const t=annual[CY-1], z=zf(t);
+    vParts.push(en
+      ? `<b>${CY-1}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3) \u2014 ${Math.abs(z)<1?'within normal variability':'anomalous'}${z>0&&z<1?' (high side of normal)':''}.`
+      : `<b>${CY-1}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3) \u2014 ${Math.abs(z)<1?'nella norma':'anomalo'}${z>0&&z<1?' (lato alto del normale)':''}.`);
+  }
+  if(verdictCY) vParts.push(verdictCY);
+  const head=en
+    ? `<b>${en?'Series mean':''} ${f(mean,0)} mm/yr \u00b7 \u03c3=${f(sd,0)} mm \u00b7 normal band [${f(mean-sd,0)}, ${f(mean+sd,0)}] mm.</b><br>`
+    : `<b>Media serie ${f(mean,0)} mm/anno \u00b7 \u03c3=${f(sd,0)} mm \u00b7 banda normale [${f(mean-sd,0)}, ${f(mean+sd,0)}] mm.</b><br>`;
+  document.getElementById('cmpVerdict').innerHTML=head+vParts.join(' ');
+
+  // annual bar chart (full years, last 12) + mean & sigma band
+  const showYears=histYears.slice(-12);
+  const bars=showYears.map(y=>annual[y]);
+  const cols=showYears.map(y=>{const z=zf(annual[y]);return z>=1?'#1565c0':z<=-1?'#c62828':'rgba(79,195,247,.55)';});
+  dc('cCmpAnnual');
+  charts['cCmpAnnual']=new Chart(document.getElementById('cCmpAnnual'),{
+    type:'bar',
+    data:{labels:showYears,datasets:[{label:en?'Annual total (mm)':'Totale annuo (mm)',data:bars,
+      backgroundColor:cols,borderColor:cols.map(c=>c.replace('.55','1')),borderWidth:1,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        annotation:{annotations:{
+          band:{type:'box',yMin:mean-sd,yMax:mean+sd,backgroundColor:'rgba(102,187,106,0.10)',borderWidth:0},
+          meanL:{type:'line',yMin:mean,yMax:mean,borderColor:'#66bb6a',borderWidth:1.5,borderDash:[5,4],
+            label:{display:true,content:(en?'mean ':'media ')+f(mean,0),position:'end',font:{size:9},color:'#66bb6a',backgroundColor:'rgba(0,0,0,0.4)'}},
+          upL:{type:'line',yMin:mean+sd,yMax:mean+sd,borderColor:'#66bb6a55',borderWidth:1,borderDash:[3,3]},
+          loL:{type:'line',yMin:mean-sd,yMax:mean-sd,borderColor:'#66bb6a55',borderWidth:1,borderDash:[3,3]}
+        }},
+        tooltip:{callbacks:{label:i=>`${f(i.raw,0)} mm (${pctMean(i.raw)>=0?'+':''}${f(pctMean(i.raw),0)}%, z=${zf(i.raw)>=0?'+':''}${f(zf(i.raw),2)}\u03c3)`}}},
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}}
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   TRADUZIONE INTERFACCIA (IT ⇄ EN)
+   ════════════════════════════════════════════ */
+const I18N_IT2EN = {
+  // header
+  '⬇ Scarica dati':'⬇ Download data','← Mappa':'← Map','🔬 Analisi':'🔬 Analysis',
+  // status bar
+  'API live:':'Live API:','Storico CSV:':'CSV history:','Periodo:':'Period:','Giorni in DB:':'Days in DB:',
+  // upload
+  '📂 Carica dati storici (CSV / Excel)':'📂 Load historical data (CSV / Excel)','📁 Seleziona file':'📁 Select file',
+  // KPI
+  'Ultimo dato':'Latest value','Anno in corso':'Current year','Media annua':'Annual mean',
+  'Max giornaliero':'Daily max','Max intensità':'Max intensity','Giorni piovosi/anno':'Rainy days/yr',
+  'mm cumulati':'cumulative mm','mm/anno storico':'mm/yr historical','media storica':'historical mean',
+  // tabs
+  '⚡ Recenti':'⚡ Recent','📈 Cumulate':'📈 Cumulative','📅 Mensile':'📅 Monthly','⚡ Intensità':'⚡ Intensity',
+  '⛈ Estremi':'⛈ Extremes','📋 Tabella':'📋 Table','📈 Serie continua':'📈 Continuous series','📊 Confronto anni':'📊 Year comparison',
+  // recenti cards
+  '🌧 Precipitazione giornaliera — ultimi 30 giorni':'🌧 Daily precipitation — last 30 days',
+  '⚡ Intensità massima oraria — ultimi 30 giorni':'⚡ Max hourly intensity — last 30 days',
+  '🌡 Temperatura min / media / max — ultimi 30 giorni':'🌡 Temperature min / mean / max — last 30 days',
+  // cumulate
+  '📈 Curve cumulate annuali':'📈 Annual cumulative curves','Scala:':'Scale:','mm assoluti':'absolute mm','% cumulata':'cumulative %',
+  'Spessore:':'Thickness:','Sottile':'Thin','Normale':'Normal','Spesso':'Thick',
+  'Decennio:':'Decade:','Anni custom:':'Custom years:','Tutti':'All','Nessuno':'None',
+  // heatmap
+  '🟦 Heatmap precipitazione mensile (mm)':'🟦 Monthly precipitation heatmap (mm)','Scala mensile:':'Monthly scale:',
+  'Valori:':'Values:','Mostra':'Show','Nascondi':'Hide','Totale':'Total','media':'mean',
+  // mensile
+  '📅 Precipitazione media mensile storica':'📅 Historical mean monthly precipitation',
+  '🌡 Temperatura media mensile storica':'🌡 Historical mean monthly temperature',
+  // intensità
+  '⚡ Intensità massima oraria — storico annuale':'⚡ Max hourly intensity — annual record',
+  'Vista:':'View:','Max annuale':'Annual max','Media mensile':'Monthly mean','🏆 Top 20 intensità massime':'🏆 Top 20 max intensities',
+  // estremi
+  '⛈ Giorni sopra soglia per anno':'⛈ Days above threshold per year','Soglia:':'Threshold:',
+  '🏆 Top 20 eventi — 1 giorno':'🏆 Top 20 events — 1 day',
+  '🌊 Top 20 eventi — 2 giorni consecutivi':'🌊 Top 20 events — 2 consecutive days',
+  '🌊 Top 20 eventi — 3 giorni consecutivi':'🌊 Top 20 events — 3 consecutive days',
+  '📊 Massimi plurigiornalieri per anno':'📊 Multi-day maxima per year',
+  'Finestra:':'Window:','1 giorno':'1 day','2 giorni':'2 days','3 giorni':'3 days',
+  // tabella
+  '📋 Dati giornalieri':'📋 Daily data','Anno:':'Year:','Mese:':'Month:','Solo piovosi:':'Rainy only:','Sì':'Yes',
+  'Data':'Date','Fonte':'Source','Anno':'Year','Media':'Mean',
+  // SPI
+  'Finestra SPI:':'SPI window:','Da anno:':'From year:','A anno:':'To year:','Applica':'Apply',
+  '📊 Serie storica SPI':'📊 SPI historical series','🗓️ Heatmap SPI (anno × mese)':'🗓️ SPI heatmap (year × month)',
+  '📉 Frequenza siccità per decennio':'📉 Drought frequency by decade','🔮 Forecast SPI (prossimi 12 mesi)':'🔮 SPI forecast (next 12 months)',
+  '⬇ Excel SPI':'⬇ SPI Excel',
+  // serie + confronto section titles (static defaults; render fns also set these lang-aware when their panel is visible)
+  '📈 Serie continua precipitazioni':'📈 Continuous precipitation series',
+  '📊 Anni recenti vs media storica':'📊 Recent years vs historical mean',
+  // modal
+  'Tipo dati':'Data type','Tutto (Excel multi-foglio)':'All (multi-sheet Excel)','Precipitazione giornaliera':'Daily precipitation',
+  'Intensità massima oraria':'Max hourly intensity','Temperatura (min/media/max)':'Temperature (min/mean/max)',
+  'Dal':'From','Al':'To','Formato':'Format','Annulla':'Cancel','⬇ Scarica':'⬇ Download'
+};
+const I18N_EN2IT = Object.fromEntries(Object.entries(I18N_IT2EN).map(([k,v])=>[v,k]));
+
+function translateDoc(){
+  const lang=window.LANG||'it';
+  const dict = lang==='en'?I18N_IT2EN:I18N_EN2IT;
+  const roots=[document.querySelector('header'),document.querySelector('.main'),document.getElementById('dlModal')];
+  roots.forEach(root=>{
+    if(!root) return;
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+    const nodes=[]; let n; while((n=w.nextNode())) nodes.push(n);
+    nodes.forEach(tn=>{
+      const t=tn.nodeValue.trim();
+      if(t && dict[t]!==undefined) tn.nodeValue=tn.nodeValue.replace(t,dict[t]);
+    });
+  });
+}
+function postRenderI18n(){ if((window.LANG||'it')==='en') translateDoc(); }
+
+function applyLang(lang){
+  window.LANG=lang;
+  MONTHS = lang==='en'?MONTHS_EN.slice():MONTHS_IT.slice();
+  document.documentElement.lang=lang;
+  const b=document.getElementById('langBtn'); if(b) b.textContent= lang==='en'?'🌐 IT':'🌐 EN';
+  renderAll();
+  const spi=document.getElementById('p-spi'); if(spi&&spi.classList.contains('on')) renderSPITab();
+  translateDoc();
+}
+function toggleLang(){ applyLang((window.LANG==='en')?'it':'en'); }
+
 
 /* ── Event listeners for SPI controls ── */
 document.getElementById('spiWin').addEventListener('change',renderSPITab);
