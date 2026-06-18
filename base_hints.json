@@ -1,0 +1,706 @@
+{
+ "Stelvio": [
+  "Bormio",
+  "Prato allo Stelvio"
+ ],
+ "Gavia": [
+  "Bormio",
+  "Ponte di Legno"
+ ],
+ "Mortirolo": [
+  "Mazzo di Valtellina",
+  "Grosio",
+  "Monno",
+  "Tovo di Sant'Agata"
+ ],
+ "Aprica": [
+  "Edolo",
+  "Tresenda"
+ ],
+ "Tonale": [
+  "Ponte di Legno",
+  "Vermiglio"
+ ],
+ "Vivione": [
+  "Schilpario",
+  "Forno Allione"
+ ],
+ "Presolana": [
+  "Clusone",
+  "Angolo Terme"
+ ],
+ "San Marco": [
+  "Morbegno",
+  "Mezzoldo"
+ ],
+ "Croce Domini": [
+  "Bagolino",
+  "Breno"
+ ],
+ "Ghisallo": [
+  "Bellagio",
+  "Asso"
+ ],
+ "Pordoi": [
+  "Canazei",
+  "Arabba"
+ ],
+ "Gardena": [
+  "Corvara",
+  "Selva di Val Gardena"
+ ],
+ "Campolongo": [
+  "Corvara",
+  "Arabba"
+ ],
+ "Falzarego": [
+  "Cortina d'Ampezzo",
+  "Andraz"
+ ],
+ "Valparola": [
+  "La Villa",
+  "Andraz"
+ ],
+ "Giau": [
+  "Selva di Cadore",
+  "Cortina d'Ampezzo"
+ ],
+ "Fedaia": [
+  "Canazei",
+  "Caprile"
+ ],
+ "Rolle": [
+  "Predazzo",
+  "Fiera di Primiero"
+ ],
+ "Costalunga": [
+  "Vigo di Fassa",
+  "Nova Levante"
+ ],
+ "Mendola": [
+  "Appiano",
+  "Sarnonico"
+ ],
+ "Palade": [
+  "Lana",
+  "Fondo"
+ ],
+ "Grappa": [
+  "Romano d'Ezzelino",
+  "Semonzo",
+  "Caupo",
+  "Possagno"
+ ],
+ "San Boldo": [
+  "Tovena",
+  "Trichiana"
+ ],
+ "Croce d'Aune": [
+  "Pedavena",
+  "Sovramonte"
+ ],
+ "Duran": [
+  "Agordo",
+  "Forno di Zoldo"
+ ],
+ "Staulanza": [
+  "Selva di Cadore",
+  "Forno di Zoldo"
+ ],
+ "Zoncolan": [
+  "Ovaro",
+  "Sutrio"
+ ],
+ "Finestre": [
+  "Susa",
+  "Sestriere"
+ ],
+ "Sestriere": [
+  "Cesana Torinese",
+  "Pragelato"
+ ],
+ "Agnello": [
+  "Pontechianale"
+ ],
+ "Fauniera": [
+  "Demonte",
+  "Pradleves",
+  "Ponte Marmora"
+ ],
+ "Sampeyre": [
+  "Sampeyre",
+  "Stroppo"
+ ],
+ "Nivolet": [
+  "Ceresole Reale"
+ ],
+ "Tenda": [
+  "Limone Piemonte"
+ ],
+ "San Carlo": [
+  "Morgex",
+  "La Thuile"
+ ],
+ "Lombarda": [
+  "Vinadio"
+ ],
+ "Amiata": [
+  "Abbadia San Salvatore",
+  "Seggiano",
+  "Castel del Piano",
+  "Aiole",
+  "Bagnolo",
+  "Piancastagnaio"
+ ],
+ "Futa": [
+  "Firenzuola",
+  "Barberino di Mugello"
+ ],
+ "Abetone": [
+  "Cutigliano",
+  "Fiumalbo",
+  [
+   44.17825,
+   10.652554,
+   "Via Uccelliera"
+  ]
+ ],
+ "Cisa": [
+  "Berceto",
+  "Pontremoli"
+ ],
+ "Cerreto": [
+  "Collagna",
+  "Fivizzano"
+ ],
+ "Radici": [
+  "Castelnuovo di Garfagnana",
+  "Piandelagotti",
+  "Pievepelago",
+  "Sant'Anna Pelago"
+ ],
+ "San Pellegrino in Alpe": [
+  "Castelnuovo di Garfagnana",
+  "Pievepelago",
+  "Piandelagotti"
+ ],
+ "Lagastrello": [
+  "Monchio delle Corti",
+  "Comano"
+ ],
+ "Cento Croci": [
+  "Varese Ligure",
+  "Bedonia"
+ ],
+ "Turchino": [
+  "Masone",
+  "Mele"
+ ],
+ "Sellajoch": [
+  "Canazei",
+  "Selva di Val Gardena"
+ ],
+ "Erbe": [
+  "Bressanone",
+  "San Martino in Badia"
+ ],
+ "Tre Croci": [
+  "Cortina d'Ampezzo",
+  "Auronzo di Cadore"
+ ],
+ "Cibiana": [
+  "Venas di Cadore",
+  "Forno di Zoldo"
+ ],
+ "Valles": [
+  "Falcade",
+  "Paneveggio"
+ ],
+ "Brocon": [
+  "Castello Tesino",
+  "Canal San Bovo"
+ ],
+ "Manghen": [
+  "Borgo Valsugana",
+  "Molina di Fiemme"
+ ],
+ "Mauria": [
+  "Lorenzago di Cadore",
+  "Ampezzo"
+ ],
+ "Razzo": [
+  "Vigo di Cadore",
+  "Forni di Sopra"
+ ],
+ "Croce Comelico": [
+  "San Candido",
+  "Santo Stefano di Cadore"
+ ],
+ "Moncenisio": [
+  "Susa"
+ ],
+ "Faiallo": [
+  [
+   44.4328,
+   8.7564,
+   "Voltri"
+  ],
+  "Sassello"
+ ],
+ "Melogno": [
+  "Finale Ligure",
+  "Calizzano"
+ ],
+ "Pradarena": [
+  "Ligonchio",
+  "Sillano"
+ ],
+ "Raticosa": [
+  "Loiano",
+  "Firenzuola"
+ ],
+ "Colla di Casaglia": [
+  "Borgo San Lorenzo",
+  "Marradi"
+ ],
+ "Muraglione": [
+  "San Godenzo",
+  "Rocca San Casciano"
+ ],
+ "Calla": [
+  "Stia",
+  "Santa Sofia"
+ ],
+ "Mandrioli": [
+  "Bagno di Romagna",
+  "Badia Prataglia"
+ ],
+ "Carpegna": [
+  "Carpegna",
+  "Pennabilli"
+ ],
+ "Viamaggio": [
+  "Pieve Santo Stefano",
+  "Badia Tedalda"
+ ],
+ "Bocca Trabaria": [
+  "Sansepolcro",
+  "Mercatello sul Metauro"
+ ],
+ "Croce Arcana": [
+  "Fanano",
+  "Cutigliano"
+ ],
+ "Carpinelli": [
+  "Castelnuovo di Garfagnana",
+  "Fivizzano"
+ ],
+ "Bocca Serriola": [
+  "Citta di Castello",
+  "Apecchio"
+ ],
+ "Scheggia": [
+  "Scheggia",
+  "Cagli"
+ ],
+ "Forca Canapine": [
+  "Norcia",
+  "Arquata del Tronto"
+ ],
+ "Forca di Presta": [
+  "Arquata del Tronto",
+  "Montegallo"
+ ],
+ "Fraele": [
+  "Premadio",
+  "Isolaccia"
+ ],
+ "Grödner": [
+  "Corvara",
+  "Selva di Val Gardena"
+ ],
+ "Stilfser": [
+  "Bormio",
+  "Prato allo Stelvio"
+ ],
+ "Resia": [
+  "Malles Venosta",
+  "Curon Venosta",
+  "Nauders"
+ ],
+ "Reschen": [
+  "Malles Venosta",
+  "Curon Venosta",
+  "Nauders"
+ ],
+ "Giovo": [
+  "Vipiteno",
+  "San Leonardo in Passiria"
+ ],
+ "Jaufen": [
+  "Vipiteno",
+  "San Leonardo in Passiria"
+ ],
+ "Pennes": [
+  "Vipiteno",
+  "Sarentino"
+ ],
+ "Lavazè": [
+  "Cavalese",
+  "Nova Ponente"
+ ],
+ "Maniva": [
+  "Bagolino",
+  "Collio"
+ ],
+ "Spluga": [
+  "Campodolcino",
+  "Chiavenna",
+  "Splügen"
+ ],
+ "Sempione": [
+  "Domodossola",
+  "Iselle",
+  "Brig"
+ ],
+ "Cereda": [
+  "Fiera di Primiero",
+  "Agordo"
+ ],
+ "Foscagno": [
+  "Bormio",
+  "Livigno"
+ ],
+ "Mont Cenis": [
+  "Lanslebourg-Mont-Cenis",
+  "Susa"
+ ],
+ "Maddalena": [
+  "Vinadio",
+  "Argentera"
+ ],
+ "Larche": [
+  "Jausiers",
+  "Barcelonnette",
+  "Argentera"
+ ],
+ "Piccolo San Bernardo": [
+  "La Thuile",
+  "Bourg-Saint-Maurice"
+ ],
+ "Petit-Saint-Bernard": [
+  "La Thuile",
+  "Bourg-Saint-Maurice"
+ ],
+ "Monginevro": [
+  "Cesana Torinese",
+  "Briançon"
+ ],
+ "Montgenèvre": [
+  "Cesana Torinese",
+  "Briançon"
+ ],
+ "Galibier": [
+  "Valloire",
+  "Briançon",
+  "Saint-Michel-de-Maurienne"
+ ],
+ "Télégraphe": [
+  "Saint-Michel-de-Maurienne",
+  "Valloire"
+ ],
+ "Lautaret": [
+  "Briançon",
+  "Le Bourg-d'Oisans",
+  "La Grave"
+ ],
+ "Madeleine": [
+  "La Chambre",
+  "La Léchère",
+  "Aigueblanche"
+ ],
+ "Croix de Fer": [
+  "Saint-Jean-de-Maurienne",
+  "Le Bourg-d'Oisans",
+  "Saint-Sorlin-d'Arves"
+ ],
+ "Glandon": [
+  "La Chambre",
+  "Saint-Jean-de-Maurienne"
+ ],
+ "Iseran": [
+  "Bourg-Saint-Maurice",
+  "Bonneval-sur-Arc",
+  "Val-d'Isère"
+ ],
+ "Izoard": [
+  "Briançon",
+  "Guillestre",
+  "Château-Ville-Vieille"
+ ],
+ "Vars": [
+  "Guillestre",
+  "Jausiers",
+  "Saint-Paul-sur-Ubaye"
+ ],
+ "Bonette": [
+  "Jausiers",
+  "Saint-Étienne-de-Tinée"
+ ],
+ "Allos": [
+  "Barcelonnette",
+  "Colmars"
+ ],
+ "Cayolle": [
+  "Barcelonnette",
+  "Guillaumes"
+ ],
+ "Granon": [
+  "Saint-Chaffrey",
+  "Briançon"
+ ],
+ "Loze": [
+  "Méribel",
+  "Courchevel",
+  "Brides-les-Bains"
+ ],
+ "Colombière": [
+  "Cluses",
+  "Le Grand-Bornand"
+ ],
+ "Aravis": [
+  "La Clusaz",
+  "Flumet"
+ ],
+ "Joux Plane": [
+  "Morzine",
+  "Samoëns"
+ ],
+ "Roselend": [
+  "Beaufort",
+  "Bourg-Saint-Maurice"
+ ],
+ "Saisies": [
+  "Flumet",
+  "Beaufort"
+ ],
+ "Tourmalet": [
+  "Luz-Saint-Sauveur",
+  "Sainte-Marie-de-Campan",
+  "Barèges"
+ ],
+ "Aubisque": [
+  "Laruns",
+  "Argelès-Gazost",
+  "Eaux-Bonnes"
+ ],
+ "Soulor": [
+  "Argelès-Gazost",
+  "Arrens-Marsous"
+ ],
+ "Aspin": [
+  "Arreau",
+  "Sainte-Marie-de-Campan"
+ ],
+ "Peyresourde": [
+  "Bagnères-de-Luchon",
+  "Arreau"
+ ],
+ "Marie-Blanque": [
+  "Escot",
+  "Bielle"
+ ],
+ "Portet-d'Aspet": [
+  "Saint-Girons",
+  "Aspet"
+ ],
+ "Port de Balès": [
+  "Mauléon-Barousse",
+  "Bagnères-de-Luchon"
+ ],
+ "Agnès": [
+  "Massat",
+  "Aulus-les-Bains"
+ ],
+ "Furkapass": [
+  "Realp",
+  "Gletsch",
+  "Oberwald"
+ ],
+ "Grimsel": [
+  "Innertkirchen",
+  "Gletsch"
+ ],
+ "Susten": [
+  "Innertkirchen",
+  "Wassen"
+ ],
+ "Gottardo": [
+  "Airolo",
+  "Andermatt"
+ ],
+ "Gotthard": [
+  "Airolo",
+  "Andermatt"
+ ],
+ "Nufenen": [
+  "Ulrichen",
+  "Airolo"
+ ],
+ "Novena": [
+  "Ulrichen",
+  "Airolo"
+ ],
+ "San Bernardino": [
+  "Mesocco",
+  "Hinterrhein"
+ ],
+ "Julier": [
+  "Bivio",
+  "Silvaplana"
+ ],
+ "Albula": [
+  "La Punt-Chamues-ch",
+  "Bergün"
+ ],
+ "Flüela": [
+  "Davos",
+  "Susch"
+ ],
+ "Bernina": [
+  "Pontresina",
+  "Poschiavo"
+ ],
+ "Klausen": [
+  "Linthal",
+  "Bürglen"
+ ],
+ "Oberalp": [
+  "Andermatt",
+  "Sedrun"
+ ],
+ "Lukmanier": [
+  "Olivone",
+  "Disentis"
+ ],
+ "Lucomagno": [
+  "Olivone",
+  "Disentis"
+ ],
+ "Grand-Saint-Bernard": [
+  "Bourg-Saint-Pierre",
+  "Orsières",
+  "Saint-Rhémy-en-Bosses"
+ ],
+ "Gran San Bernardo": [
+  "Saint-Rhémy-en-Bosses",
+  "Bourg-Saint-Pierre"
+ ],
+ "Sanetsch": [
+  "Conthey",
+  "Sion"
+ ],
+ "Maloja": [
+  "Vicosoprano",
+  "Casaccia"
+ ],
+ "Großglockner": [
+  "Fusch",
+  "Heiligenblut"
+ ],
+ "Hochtor": [
+  "Fusch",
+  "Heiligenblut"
+ ],
+ "Gerlos": [
+  "Zell am Ziller",
+  "Krimml"
+ ],
+ "Timmelsjoch": [
+  "Sölden",
+  "San Leonardo in Passiria",
+  "Moso in Passiria"
+ ],
+ "Rombo": [
+  "Moso in Passiria",
+  "Sölden"
+ ],
+ "Hahntennjoch": [
+  "Imst",
+  "Elmen"
+ ],
+ "Silvretta": [
+  "Partenen",
+  "Galtür"
+ ],
+ "Bielerhöhe": [
+  "Partenen",
+  "Galtür"
+ ],
+ "Kühtai": [
+  "Ötz",
+  "Sellrain"
+ ],
+ "Hochtannberg": [
+  "Warth",
+  "Schröcken"
+ ],
+ "Furkajoch": [
+  "Damüls",
+  "Rankweil"
+ ],
+ "Nockalm": [
+  "Innerkrems",
+  "Ebene Reichenau"
+ ],
+ "Katschberg": [
+  "Rennweg am Katschberg",
+  "Sankt Michael im Lungau"
+ ],
+ "Sölkpass": [
+  "Schöder",
+  "Sankt Nikolai im Sölktal"
+ ],
+ "Plöcken": [
+  "Kötschach-Mauthen",
+  "Paluzza"
+ ],
+ "Monte Croce Carnico": [
+  "Paluzza",
+  "Kötschach-Mauthen"
+ ],
+ "Vršič": [
+  "Kranjska Gora",
+  "Trenta"
+ ],
+ "Mangart": [
+  "Log pod Mangartom",
+  "Strmec na Predelu"
+ ],
+ "Predel": [
+  "Bovec",
+  "Cave del Predil",
+  "Tarvisio"
+ ],
+ "Predil": [
+  "Bovec",
+  "Cave del Predil",
+  "Tarvisio"
+ ],
+ "Korensko": [
+  "Kranjska Gora",
+  "Podkoren"
+ ],
+ "Soriška": [
+  "Železniki",
+  "Bohinjska Bistrica"
+ ],
+ "Ljubelj": [
+  "Tržič",
+  "Sankt Jakob im Rosental"
+ ],
+ "Loibl": [
+  "Tržič",
+  "Sankt Jakob im Rosental"
+ ]
+}
