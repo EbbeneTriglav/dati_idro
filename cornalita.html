@@ -392,12 +392,30 @@ canvas.spark{height:36px;width:100%;}
   <!-- ESTREMI -->
   <div class="panel" id="p-extreme">
     <div class="card">
+      <div class="card-title" id="extFilterTitle">🎚 Filtro periodo e visualizzazione</div>
+      <div class="serie-ctrls">
+        <label id="extDecLbl">Decennio:</label>
+        <div id="extDecadeBar" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <label style="margin-left:8px" id="extFromLbl">Da anno:</label>
+        <input type="number" id="extFrom" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <label id="extToLbl">A anno:</label>
+        <input type="number" id="extTo" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="extApplyBtn" onclick="applyExtRange()">Applica</button>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="extAllBtn" onclick="extAllYears()">Tutti</button>
+        <label style="margin-left:14px;display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--text);font-weight:600">
+          <input type="checkbox" id="extGrad" onchange="toggleExtGrad()" style="cursor:pointer"/>
+          <span id="extGradLbl">Sfumatura per intensità</span>
+        </label>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">⛈ Giorni sopra soglia per anno</div>
       <div class="ctrls">
         <label>Soglia:</label>
         <select id="evtThresh">
           <option value="10">≥ 10 mm</option><option value="20" selected>≥ 20 mm</option>
           <option value="30">≥ 30 mm</option><option value="50">≥ 50 mm</option>
+          <option value="60">≥ 60 mm</option><option value="80">≥ 80 mm</option>
           <option value="100">≥ 100 mm</option><option value="200">≥ 200 mm</option>
           <option value="300">≥ 300 mm</option>
         </select>
@@ -417,16 +435,16 @@ canvas.spark{height:36px;width:100%;}
       <div class="tbl-wrap" id="top3dTbl"></div>
     </div>
     <div class="card">
-      <div class="card-title">📊 Massimi plurigiornalieri per anno</div>
-      <div class="ctrls">
-        <label>Finestra:</label>
-        <select id="multiDayWin">
-          <option value="1">1 giorno</option>
-          <option value="2" selected>2 giorni</option>
-          <option value="3">3 giorni</option>
-        </select>
-      </div>
-      <div class="ch-wrap" style="height:280px"><canvas id="cMultiDay"></canvas></div>
+      <div class="card-title" id="multi1Title">📊 Massimi 1 giorno per anno</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMulti1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="multi2Title">📊 Massimi 2 giorni consecutivi per anno</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMulti2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="multi3Title">📊 Massimi 3 giorni consecutivi per anno</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMulti3"></canvas></div>
     </div>
   </div>
 
@@ -1384,60 +1402,118 @@ function makeTopTable(data, cols) {
 }
 
 // ── Estremi
+// Filtro condiviso (range anni / decenni) + sfumatura colore per tutti i grafici della sezione
+let extFrom=null, extTo=null, extGrad=false;
+
+function extYears(){
+  let ys=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(extFrom!=null) ys=ys.filter(y=>y>=extFrom);
+  if(extTo!=null)   ys=ys.filter(y=>y<=extTo);
+  return ys;
+}
+// Colori barre: piatto se sfumatura off, altrimenti opacità crescente col valore (stessa tonalità)
+function extBarColors(values, rgb){
+  if(!extGrad) return `rgba(${rgb},.55)`;
+  const valid=values.filter(v=>v!=null&&!isNaN(v));
+  if(!valid.length) return `rgba(${rgb},.55)`;
+  const mn=Math.min(...valid), mx=Math.max(...valid), span=(mx-mn)||1;
+  return values.map(v=>{
+    if(v==null||isNaN(v)) return 'rgba(120,130,150,.18)';
+    const a=0.28+0.72*((v-mn)/span);
+    return `rgba(${rgb},${a.toFixed(3)})`;
+  });
+}
+function buildExtDecadeBar(){
+  const bar=document.getElementById('extDecadeBar'); if(!bar) return;
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(!years.length){bar.innerHTML='';return;}
+  bar.innerHTML='';
+  const firstDec=Math.floor(years[0]/10)*10, lastDec=Math.floor(years[years.length-1]/10)*10;
+  for(let d=firstDec; d<=lastDec; d+=10){
+    const btn=document.createElement('button');
+    btn.className='dec-btn'; btn.textContent=`${d}s`; btn.dataset.dec=d;
+    if(extFrom===d&&extTo===d+9) btn.classList.add('on');
+    btn.addEventListener('click',()=>{
+      extFrom=d; extTo=d+9;
+      document.getElementById('extFrom').value=d; document.getElementById('extTo').value=d+9;
+      document.querySelectorAll('#extDecadeBar .dec-btn').forEach(x=>x.classList.toggle('on',x===btn));
+      renderEventi();
+    });
+    bar.appendChild(btn);
+  }
+}
+function applyExtRange(){
+  const a=parseInt(document.getElementById('extFrom').value);
+  const b=parseInt(document.getElementById('extTo').value);
+  extFrom=isNaN(a)?null:a; extTo=isNaN(b)?null:b;
+  document.querySelectorAll('#extDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderEventi();
+}
+function extAllYears(){
+  extFrom=null; extTo=null;
+  document.getElementById('extFrom').value=''; document.getElementById('extTo').value='';
+  document.querySelectorAll('#extDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderEventi();
+}
+function toggleExtGrad(){
+  extGrad=document.getElementById('extGrad').checked;
+  renderEventi();
+}
+
 function renderEventi() {
+  buildExtDecadeBar();
   const thresh=Number(document.getElementById('evtThresh').value);
-  const years=Object.keys(ppYM).map(Number).sort();
+  const years=extYears();
 
   // Grafico giorni sopra soglia
+  const evtData=years.map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(String(y))&&v>=thresh).length);
   dc('cEvt');
   charts['cEvt']=new Chart(document.getElementById('cEvt'),{
     type:'bar',data:{labels:years,
       datasets:[{label:`Giorni ≥ ${thresh} mm`,
-        data:years.map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(y)&&v>=thresh).length),
-        backgroundColor:'rgba(79,195,247,.55)',borderColor:'#4fc3f7',borderWidth:1.5,borderRadius:4}]},
+        data:evtData,
+        backgroundColor:extBarColors(evtData,'79,195,247'),borderColor:'#4fc3f7',borderWidth:1.5,borderRadius:4}]},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'N°',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
       plugins:{legend:{labels:{color:'#e3eaf8'}}}}
   });
 
-  // Top 20 — 1 giorno
+  // Top 20 — intera serie (non filtrate)
   const top1=Object.entries(ppByDate).sort(([,a],[,b])=>b-a);
   document.getElementById('topPrecTbl').innerHTML=makeTopTable(
     top1.map(([d,v])=>({cells:[d,f(v,1)+' mm'],highlight:1})),
     ['#','Data','mm']
   );
-
-  // Top 20 — 2 giorni
   const sl2=computeSliding(2);
   document.getElementById('top2dTbl').innerHTML=makeTopTable(
     sl2.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
     ['#','Periodo','mm']
   );
-
-  // Top 20 — 3 giorni
   const sl3=computeSliding(3);
   document.getElementById('top3dTbl').innerHTML=makeTopTable(
     sl3.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
     ['#','Periodo','mm']
   );
 
-  // Grafico max plurigiornalieri per anno
-  renderMultiDay();
+  // Grafici max 1 / 2 / 3 giorni per anno (separati, filtro anni applicato)
+  renderMultiDayChart(1,'cMulti1');
+  renderMultiDayChart(2,'cMulti2');
+  renderMultiDayChart(3,'cMulti3');
 }
 
-function renderMultiDay() {
-  const win=Number(document.getElementById('multiDayWin').value);
-  const years=Object.keys(ppYM).map(Number).sort();
+function renderMultiDayChart(win, canvasId) {
+  const years=extYears();
   const slAll=computeSliding(win);
   const data=years.map(y=>{
-    const hits=slAll.filter(r=>r.date.startsWith(y));
+    const hits=slAll.filter(r=>r.date.startsWith(String(y)));
     return hits.length?hits[0].tot:null;
   });
-  dc('cMultiDay');
-  charts['cMultiDay']=new Chart(document.getElementById('cMultiDay'),{
+  const lab=win===1?'Max 1 giorno (mm)':`Max ${win} giorni consecutivi (mm)`;
+  dc(canvasId);
+  charts[canvasId]=new Chart(document.getElementById(canvasId),{
     type:'bar',data:{labels:years,datasets:[{
-      label:`Max ${win} giorni consecutivi (mm)`,data,
-      backgroundColor:'rgba(240,98,146,.55)',borderColor:'#f06292',borderWidth:1.5,borderRadius:4
+      label:lab,data,
+      backgroundColor:extBarColors(data,'240,98,146'),borderColor:'#f06292',borderWidth:1.5,borderRadius:4
     }]},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
@@ -1730,7 +1806,6 @@ document.getElementById('cumuThick').addEventListener('change',renderCumulate);
 document.getElementById('hmScale').addEventListener('change',renderHeatmap);
 document.getElementById('hmVals').addEventListener('change',renderHeatmap);
 document.getElementById('evtThresh').addEventListener('change',renderEventi);
-document.getElementById('multiDayWin').addEventListener('change',renderMultiDay);
 document.getElementById('intView').addEventListener('change',renderIntHist);
 document.getElementById('tblYr').addEventListener('change',renderTable);
 document.getElementById('tblMo').addEventListener('change',renderTable);
@@ -2497,11 +2572,15 @@ const I18N_IT2EN = {
   '⚡ Intensità massima oraria — storico annuale':'⚡ Max hourly intensity — annual record',
   'Vista:':'View:','Max annuale':'Annual max','Media mensile':'Monthly mean','🏆 Top 20 intensità massime':'🏆 Top 20 max intensities',
   // estremi
+  '🎚 Filtro periodo e visualizzazione':'🎚 Period & display filter',
+  'Sfumatura per intensità':'Shade by intensity',
   '⛈ Giorni sopra soglia per anno':'⛈ Days above threshold per year','Soglia:':'Threshold:',
   '🏆 Top 20 eventi — 1 giorno':'🏆 Top 20 events — 1 day',
   '🌊 Top 20 eventi — 2 giorni consecutivi':'🌊 Top 20 events — 2 consecutive days',
   '🌊 Top 20 eventi — 3 giorni consecutivi':'🌊 Top 20 events — 3 consecutive days',
-  '📊 Massimi plurigiornalieri per anno':'📊 Multi-day maxima per year',
+  '📊 Massimi 1 giorno per anno':'📊 1-day maxima per year',
+  '📊 Massimi 2 giorni consecutivi per anno':'📊 2-day consecutive maxima per year',
+  '📊 Massimi 3 giorni consecutivi per anno':'📊 3-day consecutive maxima per year',
   'Finestra:':'Window:','1 giorno':'1 day','2 giorni':'2 days','3 giorni':'3 days',
   // tabella
   '📋 Dati giornalieri':'📋 Daily data','Anno:':'Year:','Mese:':'Month:','Solo piovosi:':'Rainy only:','Sì':'Yes',
