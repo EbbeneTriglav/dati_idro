@@ -1,243 +1,264 @@
 {
-  "stazioni": [
-    {
-      "id": "boione",
-      "nome": "Sorgente Boione · Rio Borlezza",
-      "lat": 45.84249,
-      "lon": 9.64552,
-      "quota": 639,
-      "comune": "San Pellegrino Terme",
-      "rete": "boione",
-      "colore": "#4caf82",
-      "pagina": "boione.html",
-      "tipo": "sorgente_carsica"
-    },
-    {
-      "id": "cornalita",
-      "nome": "Cornalita – San Giovanni Bianco",
-      "lat": 45.8697,
-      "lon": 9.6391,
-      "quota": 622,
-      "comune": "San Giovanni Bianco",
-      "rete": "ARPA",
-      "colore": "#4fc3f7",
-      "pagina": "cornalita.html",
-      "sensori_arpa": {
-        "PP": 2278,
-        "T": 2270,
-        "UR": 2271,
-        "VV": 11743
-      },
-      "file_dati": [
-        "Cornalita_1950-2026.xlsx",
-        "Cornalita_intensita.xlsx"
-      ]
-    },
-    {
-      "id": "brembilla",
-      "nome": "Brembilla",
-      "lat": 45.8254,
-      "lon": 9.6117,
-      "quota": 468,
-      "comune": "Brembilla",
-      "rete": "ARPA",
-      "colore": "#4caf82",
-      "pagina": "brembilla.html",
-      "sensori_arpa": {
-        "PP": 14499,
-        "T": 14500
-      },
-      "file_dati": [
-        "brembilla_storica.csv",
-        "brembilla_precip.csv",
-        "brembilla_temp.csv"
-      ]
-    },
-    {
-      "id": "piazzacava",
-      "nome": "Piazzacava",
-      "lat": 45.84923,
-      "lon": 9.66032,
-      "quota": 506,
-      "comune": "San Pellegrino Terme",
-      "rete": "locale",
-      "colore": "#ffb347",
-      "pagina": "stazione.html?id=piazzacava",
-      "file_dati": [
-        "piazzacava_suborario.csv"
-      ]
-    },
-    {
-      "id": "pracastello",
-      "nome": "Pracastello",
-      "lat": 45.8486,
-      "lon": 9.666,
-      "quota": 375,
-      "comune": "San Pellegrino Terme",
-      "rete": "locale",
-      "colore": "#f06292",
-      "pagina": "stazione.html?id=pracastello",
-      "file_dati": [
-        "pracastello_suborario.csv"
-      ]
-    },
-    {
-      "id": "vettarola",
-      "nome": "Vettarola",
-      "lat": 45.846072,
-      "lon": 9.630264,
-      "quota": 993,
-      "comune": "Zogno",
-      "rete": "locale",
-      "colore": "#b39ddb",
-      "pagina": "stazione.html?id=vettarola",
-      "file_dati": [
-        "vettarola_suborario.csv"
-      ]
-    },
-    {
-      "id": "taleggio",
-      "nome": "Taleggio",
-      "lat": 45.89290225,
-      "lon": 9.56663314,
-      "quota": 763,
-      "comune": "Taleggio",
-      "rete": "ARPA",
-      "colore": "#81c784",
-      "pagina": "taleggio.html",
-      "sensori_arpa": {
-        "PP": 9096
-      },
-      "file_dati": [
-        "taleggio_storica.xlsx",
-        "taleggio.csv"
-      ],
-      "note": "IdStazione ARPA: 1215 (2004-2012). Storico Vedeseta 1951-2005.",
-      "dismessa": true,
-      "periodo": "2004–2012",
-      "forceExclude": [
-        2004,
-        2005,
-        2007
-      ]
-    },
-    {
-      "id": "valtorta",
-      "nome": "Valtorta",
-      "lat": 45.965,
-      "lon": 9.695,
-      "quota": 946,
-      "comune": "Valtorta",
-      "rete": "SIMN",
-      "colore": "#4dd0e1",
-      "pagina": "valtorta.html",
-      "dismessa": true,
-      "periodo": "1951–2004",
-      "sensori_arpa": {},
-      "file_dati": [
-        "valtorta_precip.csv"
-      ],
-      "forceExclude": [
-        1950,
-        1958,
-        1959,
-        1965,
-        1966,
-        1967,
-        1968,
-        1969,
-        2003
-      ],
-      "note": "Rete SIMN storica, alta Val Brembana"
-    },
-    {
-      "id": "brembilla_storica",
-      "nome": "Brembilla (storica SIMN)",
-      "lat": 45.8254,
-      "lon": 9.6117,
-      "quota": 468,
-      "comune": "Brembilla",
-      "rete": "SIMN",
-      "colore": "#a5d6a7",
-      "pagina": "stazione.html?id=brembilla_storica",
-      "dismessa": true,
-      "periodo": "1974–1991",
-      "sensori_arpa": {},
-      "file_dati": [
-        "brembilla_storica.csv"
-      ],
-      "forceExclude": [
-        1982
-      ],
-      "note": "Stessa posizione della stazione ARPA attuale — usare insieme a brembilla per serie lunga"
-    },
-    {
-      "id": "zogno",
-      "nome": "Zogno",
-      "lat": 45.7935,
-      "lon": 9.6697,
-      "quota": 334,
-      "comune": "Zogno",
-      "rete": "SIMN",
-      "colore": "#ffcc02",
-      "pagina": "zogno.html",
-      "dismessa": true,
-      "periodo": "1974–2002",
-      "sensori_arpa": {},
-      "file_dati": [
-        "zogno_precip.csv"
-      ],
-      "forceExclude": [
-        1973,
-        1980,
-        1982,
-        1995,
-        2001
-      ],
-      "note": "Fondovalle Brembo, stazione SIMN dismessa"
-    },
-    {
-      "id": "sangiovannibianco_storico",
-      "nome": "San Giovanni Bianco (storica)",
-      "lat": 45.8684,
-      "lon": 9.6558,
-      "quota": 420,
-      "comune": "San Giovanni Bianco",
-      "rete": "SIMN",
-      "colore": "#ce93d8",
-      "pagina": "sangiovannibianco_storico.html",
-      "dismessa": true,
-      "periodo": "1951–1994",
-      "sensori_arpa": {},
-      "file_dati": [
-        "sangiovannibianco_storico.csv"
-      ],
-      "forceExclude": [
-        1950,
-        1972,
-        1985
-      ],
-      "note": "Centro paese, stazione SIMN — complementare a Cornalita ARPA"
-    },
-    {
-      "id": "dossena_st1",
-      "nome": "Dossena ST1",
-      "lat": 45.878392,
-      "lon": 9.701726,
-      "quota": 1000,
-      "comune": "Dossena",
-      "rete": "ARPA",
-      "colore": "#80deea",
-      "pagina": "dossena.html",
-      "sensori_arpa": {
-        "PP": 31060,
-        "T": 31061
-      },
-      "file_dati": [
-        "Dossena_dati_orari.csv"
-      ],
-      "forceExclude": [],
-      "note": "IdStazione ARPA: 1572 · IdSensore PP: 31060 · attiva dal 2018"
-    }
-  ]
+ "stazioni": [
+  {
+   "id": "boione",
+   "nome": "Sorgente Boione · Rio Borlezza",
+   "lat": 45.84249,
+   "lon": 9.64552,
+   "quota": 639,
+   "comune": "San Pellegrino Terme",
+   "rete": "boione",
+   "colore": "#4caf82",
+   "pagina": "boione.html",
+   "tipo": "sorgente_carsica"
+  },
+  {
+   "id": "cornalita",
+   "nome": "Cornalita – San Giovanni Bianco",
+   "lat": 45.8697,
+   "lon": 9.6391,
+   "quota": 622,
+   "comune": "San Giovanni Bianco",
+   "rete": "ARPA",
+   "colore": "#4fc3f7",
+   "pagina": "cornalita.html",
+   "sensori_arpa": {
+    "PP": 2278,
+    "T": 2270,
+    "UR": 2271,
+    "VV": 11743
+   },
+   "file_dati": [
+    "Cornalita_1950-2026.xlsx",
+    "Cornalita_intensita.xlsx"
+   ]
+  },
+  {
+   "id": "brembilla",
+   "nome": "Brembilla",
+   "lat": 45.8254,
+   "lon": 9.6117,
+   "quota": 468,
+   "comune": "Brembilla",
+   "rete": "ARPA",
+   "colore": "#4caf82",
+   "pagina": "brembilla.html",
+   "sensori_arpa": {
+    "PP": 14499,
+    "T": 14500
+   },
+   "file_dati": [
+    "brembilla_storica.csv",
+    "brembilla_precip.csv",
+    "brembilla_temp.csv"
+   ]
+  },
+  {
+   "id": "piazzacava",
+   "nome": "Piazzacava",
+   "lat": 45.84923,
+   "lon": 9.66032,
+   "quota": 506,
+   "comune": "San Pellegrino Terme",
+   "rete": "locale",
+   "colore": "#ffb347",
+   "pagina": "stazione.html?id=piazzacava",
+   "file_dati": [
+    "piazzacava_suborario.csv"
+   ]
+  },
+  {
+   "id": "pracastello",
+   "nome": "Pracastello",
+   "lat": 45.8486,
+   "lon": 9.666,
+   "quota": 375,
+   "comune": "San Pellegrino Terme",
+   "rete": "locale",
+   "colore": "#f06292",
+   "pagina": "stazione.html?id=pracastello",
+   "file_dati": [
+    "pracastello_suborario.csv"
+   ]
+  },
+  {
+   "id": "vettarola",
+   "nome": "Vettarola",
+   "lat": 45.846072,
+   "lon": 9.630264,
+   "quota": 993,
+   "comune": "Zogno",
+   "rete": "locale",
+   "colore": "#b39ddb",
+   "pagina": "stazione.html?id=vettarola",
+   "file_dati": [
+    "vettarola_suborario.csv"
+   ]
+  },
+  {
+   "id": "taleggio",
+   "nome": "Taleggio",
+   "lat": 45.89290225,
+   "lon": 9.56663314,
+   "quota": 763,
+   "comune": "Taleggio",
+   "rete": "ARPA",
+   "colore": "#81c784",
+   "pagina": "taleggio.html",
+   "sensori_arpa": {
+    "PP": 9096
+   },
+   "file_dati": [
+    "taleggio_storica.xlsx",
+    "taleggio.csv"
+   ],
+   "note": "IdStazione ARPA: 1215 (2004-2012). Storico Vedeseta 1951-2005.",
+   "dismessa": true,
+   "periodo": "2004–2012",
+   "forceExclude": [
+    2004,
+    2005,
+    2007
+   ]
+  },
+  {
+   "id": "valtorta",
+   "nome": "Valtorta",
+   "lat": 45.965,
+   "lon": 9.695,
+   "quota": 946,
+   "comune": "Valtorta",
+   "rete": "SIMN",
+   "colore": "#4dd0e1",
+   "pagina": "valtorta.html",
+   "dismessa": true,
+   "periodo": "1951–2004",
+   "sensori_arpa": {},
+   "file_dati": [
+    "valtorta_precip.csv"
+   ],
+   "forceExclude": [
+    1950,
+    1958,
+    1959,
+    1965,
+    1966,
+    1967,
+    1968,
+    1969,
+    2003
+   ],
+   "note": "Rete SIMN storica, alta Val Brembana"
+  },
+  {
+   "id": "brembilla_storica",
+   "nome": "Brembilla (storica SIMN)",
+   "lat": 45.8254,
+   "lon": 9.6117,
+   "quota": 468,
+   "comune": "Brembilla",
+   "rete": "SIMN",
+   "colore": "#a5d6a7",
+   "pagina": "stazione.html?id=brembilla_storica",
+   "dismessa": true,
+   "periodo": "1974–1991",
+   "sensori_arpa": {},
+   "file_dati": [
+    "brembilla_storica.csv"
+   ],
+   "forceExclude": [
+    1982
+   ],
+   "note": "Stessa posizione della stazione ARPA attuale — usare insieme a brembilla per serie lunga"
+  },
+  {
+   "id": "zogno",
+   "nome": "Zogno",
+   "lat": 45.7935,
+   "lon": 9.6697,
+   "quota": 334,
+   "comune": "Zogno",
+   "rete": "SIMN",
+   "colore": "#ffcc02",
+   "pagina": "zogno.html",
+   "dismessa": true,
+   "periodo": "1974–2002",
+   "sensori_arpa": {},
+   "file_dati": [
+    "zogno_precip.csv"
+   ],
+   "forceExclude": [
+    1973,
+    1980,
+    1982,
+    1995,
+    2001
+   ],
+   "note": "Fondovalle Brembo, stazione SIMN dismessa"
+  },
+  {
+   "id": "sangiovannibianco_storico",
+   "nome": "San Giovanni Bianco (storica)",
+   "lat": 45.8684,
+   "lon": 9.6558,
+   "quota": 420,
+   "comune": "San Giovanni Bianco",
+   "rete": "SIMN",
+   "colore": "#ce93d8",
+   "pagina": "sangiovannibianco_storico.html",
+   "dismessa": true,
+   "periodo": "1951–1994",
+   "sensori_arpa": {},
+   "file_dati": [
+    "sangiovannibianco_storico.csv"
+   ],
+   "forceExclude": [
+    1950,
+    1972,
+    1985
+   ],
+   "note": "Centro paese, stazione SIMN — complementare a Cornalita ARPA"
+  },
+  {
+   "id": "dossena_st1",
+   "nome": "Dossena ST1",
+   "lat": 45.878392,
+   "lon": 9.701726,
+   "quota": 1000,
+   "comune": "Dossena",
+   "rete": "ARPA",
+   "colore": "#80deea",
+   "pagina": "dossena.html",
+   "sensori_arpa": {
+    "PP": 31060,
+    "T": 31061
+   },
+   "file_dati": [
+    "Dossena_dati_orari.csv"
+   ],
+   "forceExclude": [],
+   "note": "IdStazione ARPA: 1572 · IdSensore PP: 31060 · attiva dal 2018"
+  },
+  {
+   "id": "oga_scolombano",
+   "nome": "Valdisotto Oga S.Colombano",
+   "lat": 46.464,
+   "lon": 10.342,
+   "quota": 2300,
+   "comune": "Valdisotto (SO)",
+   "rete": "ARPA",
+   "colore": "#4fc3f7",
+   "pagina": "cepina.html",
+   "sensori_arpa": {
+    "PP": 8010,
+    "T": 8008,
+    "HS": 8009
+   },
+   "file_dati": [
+    "Cepina_precip_1995-2026.csv",
+    "Cepina_temp_1992-2026.csv",
+    "Cepina_neve_1992-2026.csv"
+   ]
+  }
+ ]
 }
