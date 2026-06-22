@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Monte di Fò — Barberino di Mugello (SIR Toscana)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
+:root{
+  --bg:#0b1120;--card:#151f30;--card2:#1a2840;--border:#1e3050;
+  --accent:#4fc3f7;--green:#4caf82;--orange:#ffb347;--red:#ef5350;--purple:#b39ddb;
+  --text:#e3eaf8;--muted:#7a94b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* Loading */
+#loading{position:fixed;inset:0;background:rgba(11,17,32,.96);z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.spinner{width:42px;height:42px;border:4px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{color:var(--muted);font-size:13px;font-family:'IBM Plex Mono',monospace;}
+
+/* Header */
+header{background:linear-gradient(135deg,#0a1628,#0d2344 50%,#1a3a5c);
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+header h1{font-size:1.1rem;font-weight:700;color:var(--accent);}
+header .sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.hdr-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;
+  border:1.5px solid;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;text-decoration:none;display:inline-block;}
+.btn-green{background:transparent;color:var(--green);border-color:var(--green);}
+.btn-green:hover{background:var(--green);color:#fff;}
+.btn-outline{background:transparent;color:var(--accent);border-color:var(--accent);}
+.btn-outline:hover{background:var(--accent);color:var(--bg);}
+
+/* Main */
+.main{max-width:1400px;margin:0 auto;padding:16px 16px 60px;}
+
+/* Status bar */
+.status-bar{display:flex;gap:16px;flex-wrap:wrap;align-items:center;
+  padding:9px 14px;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;margin-bottom:12px;font-size:12px;}
+.status-item{display:flex;align-items:center;gap:6px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);}
+.dot.ok{background:var(--green);box-shadow:0 0 5px var(--green);}
+.dot.warn{background:var(--orange);}
+.lbl{color:var(--muted);}
+.val{color:var(--text);font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.sdiv{width:1px;height:18px;background:var(--border);}
+
+/* Upload */
+.upload-box{background:var(--card);border:1.5px dashed var(--border);border-radius:8px;
+  padding:13px 16px;margin-bottom:12px;transition:border-color .2s;}
+.upload-box:hover{border-color:var(--accent);}
+.upload-box h3{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;}
+.upload-box p{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px;}
+.upload-box p b{color:var(--text);}
+.upload-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+input[type=file]{display:none;}
+label.upload-btn{padding:5px 13px;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;
+  background:transparent;color:var(--accent);border:1.5px solid var(--accent);}
+label.upload-btn:hover{background:var(--accent);color:var(--bg);}
+#uploadMsg{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--green);}
+.warn-years{font-size:11px;color:var(--orange);margin-top:6px;font-family:'IBM Plex Mono',monospace;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px;}
+.kpi{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.kpi-l{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.kpi-v{font-size:1.45rem;font-weight:700;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin:3px 0;}
+.kpi-s{font-size:10px;color:var(--muted);}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:14px;flex-wrap:wrap;}
+.tab{padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;border-radius:6px 6px 0 0;
+  color:var(--muted);background:transparent;border:none;transition:all .18s;font-family:'IBM Plex Sans',sans-serif;}
+.tab:hover{color:var(--text);background:var(--card);}
+.tab.on{color:var(--accent);background:var(--card);border-bottom:2px solid var(--accent);}
+.panel{display:none;}.panel.on{display:block;}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:16px 18px;margin-bottom:12px;}
+.card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:11px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+.card-title .btns{display:flex;gap:5px;}
+
+/* Controls */
+.ctrls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+.ctrls label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+select{background:var(--card2);color:var(--text);border:1px solid var(--border);
+  padding:4px 8px;border-radius:5px;font-size:12px;cursor:pointer;}
+input[type=date]{background:var(--card2);color:var(--text);border:1px solid var(--border);
+  padding:4px 8px;border-radius:5px;font-size:12px;}
+
+/* Charts */
+.ch-wrap{position:relative;}.ch-wrap canvas{width:100%!important;}
+
+/* Year toggle bar */
+.yr-bar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.yr-btn{padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid;background:transparent;color:var(--muted);transition:all .15s;
+  font-family:'IBM Plex Mono',monospace;}
+.yr-btn.on{color:#0b1120!important;}
+
+/* Heatmap */
+.hm-wrap{overflow-x:auto;}
+.hm-row{display:flex;gap:3px;margin-bottom:3px;align-items:center;}
+.hm-cell{width:46px;height:30px;border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:default;
+  color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.65);transition:transform .1s;}
+.hm-cell:hover{transform:scale(1.15);z-index:4;position:relative;}
+.hm-ylbl{width:34px;text-align:right;font-size:11px;color:var(--muted);
+  padding-right:5px;font-family:'IBM Plex Mono',monospace;}
+.hm-mlbl{width:46px;text-align:center;font-size:10px;color:var(--muted);font-weight:700;}
+
+/* Table */
+.tbl-wrap{overflow:auto;max-height:400px;}
+.dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.dtbl th{background:var(--card2);color:var(--accent);font-weight:700;padding:6px 8px;
+  text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;}
+.dtbl td{padding:5px 8px;border-bottom:1px solid var(--border);}
+.dtbl tr:hover td{background:var(--card2);}
+
+/* Sensor cards */
+.sensor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px;}
+.sc{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.sc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.sc-name{font-size:13px;font-weight:700;}
+.sc-unit{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+.sc-val{font-size:1.8rem;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.sc-time{font-size:10px;color:var(--muted);margin-top:3px;}
+canvas.spark{height:36px;width:100%;}
+
+.note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;}
+.dec-btn{padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;
+  font-family:'IBM Plex Mono',monospace;}
+.dec-btn.on{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.hm-tot{width:56px;text-align:center;font-size:10px;color:var(--muted);font-weight:700;}
+.hm-totcell{width:56px;height:30px;border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.65);}
+
+/* Download modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:998;
+  align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:20px;width:400px;max-width:95vw;}
+.modal h3{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;}
+.frow{margin-bottom:10px;}
+.frow label{display:block;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.frow select,.frow input[type=date]{width:100%;}
+.fcols{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.modal-btns{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;}
+.btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.btn-primary:hover{background:#81d4fa;}
+
+
+/* SPI TAB STYLES */
+.spi-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.spi-controls label{color:var(--muted);font-size:12px;}
+.spi-controls select,.spi-controls input{background:var(--card2);color:var(--text);border:1px solid var(--border);
+  border-radius:5px;padding:4px 8px;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.spi-period-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;}
+.spi-period-btns button{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;
+  border:1px solid var(--border);background:var(--card2);color:var(--muted);transition:all .18s;}
+.spi-period-btns button.active,.spi-period-btns button:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.spi-gauges{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0;}
+.spi-gauge{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;
+  text-align:center;min-width:140px;flex:1;}
+.spi-gauge .gauge-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.spi-gauge .gauge-val{font-size:28px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.spi-gauge .gauge-cat{font-size:11px;font-weight:600;margin-top:4px;padding:2px 8px;border-radius:4px;display:inline-block;}
+.spi-heatmap-wrap{overflow-x:auto;margin:14px 0;max-height:500px;overflow-y:auto;}
+.spi-heatmap{border-collapse:collapse;font-size:11px;font-family:'IBM Plex Mono',monospace;width:100%;}
+.spi-heatmap th,.spi-heatmap td{padding:4px 6px;text-align:center;border:1px solid var(--border);min-width:42px;}
+.spi-heatmap th{background:var(--card2);color:var(--muted);position:sticky;top:0;z-index:1;}
+.spi-heatmap td{color:#fff;font-weight:600;font-size:10px;}
+.spi-insight{background:var(--card2);border-left:3px solid var(--accent);padding:12px 16px;
+  border-radius:0 8px 8px 0;margin:14px 0;font-size:12px;line-height:1.6;}
+.spi-insight b{color:var(--accent);}
+.spi-section{margin-top:20px;}
+.spi-section h3{font-size:14px;color:var(--accent);margin-bottom:10px;}
+.spi-chart-wrap{position:relative;height:320px;margin:10px 0;}
+.spi-forecast-wrap{position:relative;height:280px;margin:10px 0;}
+.spi-decade-wrap{position:relative;height:260px;margin:10px 0;}
+
+/* SERIE CONTINUA + CONFRONTO */
+.serie-ctrls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+.serie-ctrls label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.gran-btns{display:flex;gap:4px;}
+.gran-btns button{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;
+  border:1px solid var(--border);background:var(--card2);color:var(--muted);transition:all .18s;}
+.gran-btns button.on,.gran-btns button:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:14px;}
+.cmp-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;border-top:4px solid var(--accent);}
+.cmp-yr{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+.cmp-val{font-size:1.9rem;font-weight:700;font-family:'IBM Plex Mono',monospace;margin:4px 0;line-height:1.1;}
+.cmp-sub{font-size:11px;color:var(--muted);line-height:1.55;}
+.cmp-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;margin-top:7px;color:#fff;}
+.cmp-verdict{background:var(--card2);border-left:3px solid var(--accent);padding:13px 16px;
+  border-radius:0 8px 8px 0;margin-top:4px;font-size:12.5px;line-height:1.65;}
+.cmp-verdict b{color:var(--accent);}
+
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="loadMsg">Caricamento dati…</div>
+</div>
+
+<header>
+  <div>
+    <h1>📡 Monte di Fò — Barberino di Mugello (FI)</h1>
+    <div class="sub">IdStazione 119 · 45.8697°N 9.6391°E · 622 m s.l.m. · BG</div>
+  </div>
+  <div class="hdr-btns">
+    <button class="btn btn-outline" id="langBtn" onclick="toggleLang()" title="Switch language">🌐 EN</button>
+    <button class="btn btn-green" onclick="openDlModal()">⬇ Scarica dati</button>
+    <a href="index.html" class="btn btn-outline">← Mappa</a>
+    <a href="brembilla.html" class="btn btn-outline">Brembilla →</a>
+    <a href="analisi.html" class="btn btn-outline">🔬 Analisi</a>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="status-item"><div class="dot" id="dotApi"></div><span class="lbl">API live:</span><span class="val" id="lblApi">—</span></div>
+    <div class="sdiv"></div>
+    <div class="status-item"><div class="dot" id="dotCsv"></div><span class="lbl">Storico CSV:</span><span class="val" id="lblCsv">non caricato</span></div>
+    <div class="sdiv"></div>
+    <div class="status-item"><span class="lbl">Periodo:</span><span class="val" id="lblPeriod">—</span></div>
+    <div class="sdiv"></div>
+    <div class="status-item"><span class="lbl">Giorni in DB:</span><span class="val" id="lblCount">—</span></div>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-box" id="uploadBox">
+    <h3>📂 Carica dati storici (CSV / Excel)</h3>
+    <p>
+      Scarica i dati dal <a href="https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati/" target="_blank" style="color:var(--accent)">portale ARPA</a>
+      e caricali qui. Poi <b>carica lo stesso file su GitHub</b> nella cartella <code style="color:var(--accent)">dati/</code>
+      con il nome <code style="color:var(--accent)">cornalita_precip.csv</code> (o <code>cornalita_intensity.csv</code>) —
+      così si carica automaticamente al prossimo refresh.<br>
+      Accetta: <b>CSV precipitazioni</b> · <b>CSV intensità max oraria</b> · <b>Excel multi-colonna</b> (precip + intensità + temp min/media/max).
+    </p>
+    <div class="upload-row">
+      <label for="fileIn" class="upload-btn">📁 Seleziona file</label>
+      <input type="file" id="fileIn" multiple accept=".csv,.xlsx,.xls,.txt"/>
+      <span id="uploadMsg"></span>
+    </div>
+    <div id="githubLog" style="margin-top:7px;font-size:11px;font-family:'IBM Plex Mono',monospace;line-height:1.8;"></div>
+    <div id="warnYears" class="warn-years" style="display:none"></div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-l">Ultimo dato</div><div class="kpi-v" id="kLast">—</div><div class="kpi-s" id="kLastD">—</div></div>
+    <div class="kpi"><div class="kpi-l">Anno in corso</div><div class="kpi-v" id="kYear">—</div><div class="kpi-s">mm cumulati</div></div>
+    <div class="kpi"><div class="kpi-l">Media annua</div><div class="kpi-v" id="kMean">—</div><div class="kpi-s">mm/anno storico</div></div>
+    <div class="kpi"><div class="kpi-l">Max giornaliero</div><div class="kpi-v" id="kMaxD">—</div><div class="kpi-s" id="kMaxDD">—</div></div>
+    <div class="kpi"><div class="kpi-l">Max intensità</div><div class="kpi-v" id="kMaxI">—</div><div class="kpi-s" id="kMaxID">—</div></div>
+    <div class="kpi"><div class="kpi-l">Giorni piovosi/anno</div><div class="kpi-v" id="kWet">—</div><div class="kpi-s">media storica</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab on"  data-p="recent">⚡ Recenti</button>
+    <button class="tab"     data-p="cumulate">📈 Cumulate</button>
+    <button class="tab"     data-p="heatmap">🟦 Heatmap</button>
+    <button class="tab"     data-p="mensile">📅 Mensile</button>
+    <button class="tab"     data-p="intensity">⚡ Intensità</button>
+    <button class="tab"     data-p="extreme">⛈ Estremi</button>
+    <button class="tab"     data-p="table">📋 Tabella</button>
+    <button class="tab"     data-p="spi">🌵 SPI Index</button>
+    <button class="tab"     data-p="serie">📈 Serie continua</button>
+    <button class="tab"     data-p="confronto">📊 Confronto anni</button>
+  </div>
+
+  <!-- RECENTI -->
+  <div class="panel on" id="p-recent">
+    <div class="sensor-grid" id="sensorGrid"></div>
+    <div class="card">
+      <div class="card-title">🌧 Precipitazione giornaliera — ultimi 30 giorni
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlChartData('cP30','precip_30gg')">⬇ CSV</button></div>
+      </div>
+      <div class="ch-wrap" style="height:240px"><canvas id="cP30"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Intensità massima oraria — ultimi 30 giorni
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlChartData('cI30','intensita_30gg')">⬇ CSV</button></div>
+      </div>
+      <div class="ch-wrap" style="height:200px"><canvas id="cI30"></canvas></div>
+      <div class="note" id="intensNote30"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌡 Temperatura min / media / max — ultimi 30 giorni
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlChartData('cT30','temp_30gg')">⬇ CSV</button></div>
+      </div>
+      <div class="ch-wrap" style="height:220px"><canvas id="cT30"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CUMULATE -->
+  <div class="panel" id="p-cumulate">
+    <div class="card">
+      <div class="card-title">📈 Curve cumulate annuali
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlCumulate()">⬇ Excel</button></div>
+      </div>
+      <div class="ctrls">
+        <label>Scala:</label>
+        <select id="cumuNorm"><option value="0">mm assoluti</option><option value="1">% cumulata</option></select>
+        <label>Spessore:</label>
+        <select id="cumuThick"><option value="1.5">Sottile</option><option value="2.5" selected>Normale</option><option value="4">Spesso</option></select>
+      </div>
+      <!-- Selezione per decennio -->
+      <div class="ctrls" style="flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+        <label>Decennio:</label>
+        <div id="decadeBar" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <label style="margin-left:8px">Anni custom:</label>
+        <input id="cumuYrsInput" type="text" placeholder="es. 1976,2000,2024"
+          style="background:var(--card2);color:var(--text);border:1px solid var(--border);
+          padding:4px 8px;border-radius:5px;font-size:12px;width:180px;"
+          oninput="applyCustomYears()"/>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" onclick="selectAllYears()">Tutti</button>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" onclick="clearAllYears()">Nessuno</button>
+      </div>
+      <div class="yr-bar" id="yrBar"></div>
+      <div class="ch-wrap" style="height:420px"><canvas id="cCumu"></canvas></div>
+      <div class="note" id="invalidNote"></div>
+    </div>
+  </div>
+
+  <!-- HEATMAP -->
+  <div class="panel" id="p-heatmap">
+    <div class="card">
+      <div class="card-title">🟦 Heatmap precipitazione mensile (mm)</div>
+      <div class="ctrls">
+        <label>Scala mensile:</label>
+        <select id="hmScale"><option value="auto">Auto</option><option value="150">150mm</option><option value="250">250mm</option><option value="400">400mm</option></select>
+        <label>Valori:</label>
+        <select id="hmVals"><option value="1">Mostra</option><option value="0">Nascondi</option></select>
+      </div>
+      <div class="hm-wrap" id="hmContainer"></div>
+    </div>
+  </div>
+
+  <!-- MENSILE -->
+  <div class="panel" id="p-mensile">
+    <div class="card">
+      <div class="card-title">📅 Precipitazione media mensile storica</div>
+      <div class="ch-wrap" style="height:320px"><canvas id="cMensile"></canvas></div>
+    </div>
+    <div class="card" id="tempMensCard" style="display:none">
+      <div class="card-title">🌡 Temperatura media mensile storica</div>
+      <div class="ch-wrap" style="height:270px"><canvas id="cTempMens"></canvas></div>
+    </div>
+  </div>
+
+  <!-- INTENSITA -->
+  <div class="panel" id="p-intensity">
+    <div class="card">
+      <div class="card-title">⚡ Intensità massima oraria — storico annuale
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlIntData()">⬇ Excel</button></div>
+      </div>
+      <div class="ctrls">
+        <label>Vista:</label>
+        <select id="intView"><option value="annual">Max annuale</option><option value="monthly">Media mensile</option></select>
+      </div>
+      <div class="ch-wrap" style="height:320px"><canvas id="cIntHist"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 Top 20 intensità massime</div>
+      <div class="tbl-wrap" id="topIntTbl"></div>
+    </div>
+  </div>
+
+  <!-- ESTREMI -->
+  <div class="panel" id="p-extreme">
+    <div class="card">
+      <div class="card-title" id="extFilterTitle">🎚 Filtro periodo e visualizzazione</div>
+      <div class="serie-ctrls">
+        <label id="extDecLbl">Decennio:</label>
+        <div id="extDecadeBar" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <label style="margin-left:8px" id="extFromLbl">Da anno:</label>
+        <input type="number" id="extFrom" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <label id="extToLbl">A anno:</label>
+        <input type="number" id="extTo" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="extApplyBtn" onclick="applyExtRange()">Applica</button>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="extAllBtn" onclick="extAllYears()">Tutti</button>
+        <label style="margin-left:14px;display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--text);font-weight:600">
+          <input type="checkbox" id="extGrad" onchange="toggleExtGrad()" style="cursor:pointer"/>
+          <span id="extGradLbl">Sfumatura per intensità</span>
+        </label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⛈ Giorni sopra soglia per anno</div>
+      <div class="ctrls">
+        <label>Soglia:</label>
+        <select id="evtThresh">
+          <option value="10">≥ 10 mm</option><option value="20" selected>≥ 20 mm</option>
+          <option value="30">≥ 30 mm</option><option value="50">≥ 50 mm</option>
+          <option value="60">≥ 60 mm</option><option value="80">≥ 80 mm</option>
+          <option value="100">≥ 100 mm</option><option value="200">≥ 200 mm</option>
+          <option value="300">≥ 300 mm</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cEvt"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 Top 20 eventi — 1 giorno</div>
+      <div class="tbl-wrap" id="topPrecTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌊 Top 20 eventi — 2 giorni consecutivi</div>
+      <div class="tbl-wrap" id="top2dTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌊 Top 20 eventi — 3 giorni consecutivi</div>
+      <div class="tbl-wrap" id="top3dTbl"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="multi1Title">📊 Massimi 1 giorno per anno</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMulti1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="multi2Title">📊 Massimi 2 giorni consecutivi per anno</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMulti2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="multi3Title">📊 Massimi 3 giorni consecutivi per anno</div>
+      <div class="ch-wrap" style="height:280px"><canvas id="cMulti3"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TABELLA -->
+  <div class="panel" id="p-table">
+    <div class="card">
+      <div class="card-title">📋 Dati giornalieri
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlTableData()">⬇ Excel</button></div>
+      </div>
+      <div class="ctrls">
+        <label>Anno:</label><select id="tblYr"></select>
+        <label>Mese:</label>
+        <select id="tblMo">
+          <option value="0">Tutti</option>
+          <option value="1">Gen</option><option value="2">Feb</option><option value="3">Mar</option>
+          <option value="4">Apr</option><option value="5">Mag</option><option value="6">Giu</option>
+          <option value="7">Lug</option><option value="8">Ago</option><option value="9">Set</option>
+          <option value="10">Ott</option><option value="11">Nov</option><option value="12">Dic</option>
+        </select>
+        <label>Solo piovosi:</label>
+        <select id="tblRain"><option value="0">No</option><option value="1">Sì</option></select>
+      </div>
+      <div class="tbl-wrap" id="tblBody"></div>
+    </div>
+  </div>
+
+
+  <!-- SPI INDEX PANEL -->
+  <div class="panel" id="p-spi">
+
+    <div class="card">
+      <div class="card-title">🌵 Standardized Precipitation Index (SPI)
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlSPIData()">⬇ Excel SPI</button></div>
+      </div>
+
+      <div class="spi-controls">
+        <label>Finestra SPI:</label>
+        <select id="spiWin">
+          <option value="1">SPI-1</option>
+          <option value="3" selected>SPI-3</option>
+          <option value="6">SPI-6</option>
+          <option value="12">SPI-12</option>
+          <option value="24">SPI-24</option>
+        </select>
+        <label style="margin-left:16px">Da anno:</label>
+        <input type="number" id="spiFromYr" min="1900" max="2100" style="width:70px"/>
+        <label>A anno:</label>
+        <input type="number" id="spiToYr" min="1900" max="2100" style="width:70px"/>
+        <button class="btn btn-outline" style="font-size:11px;margin-left:6px" onclick="applySPICustomRange()">Applica</button>
+      </div>
+
+      <div class="spi-period-btns" id="spiPeriodBtns">
+        <button class="active" data-range="all">Tutti</button>
+        <button data-range="2020">2020s</button>
+        <button data-range="2010">2010s</button>
+        <button data-range="2000">2000s</button>
+        <button data-range="1990">1990s</button>
+        <button data-range="1980">1980s</button>
+        <button data-range="1970">1970s</button>
+        <button data-range="1960">1960s</button>
+        <button data-range="1950">1950s</button>
+        <button data-range="pre1950">Pre-1950</button>
+      </div>
+
+      <div class="spi-gauges" id="spiGauges"></div>
+      <div class="spi-insight" id="spiInsight"></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>📊 Serie storica SPI</h3>
+      <div class="spi-chart-wrap"><canvas id="spiChart"></canvas></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>🗓️ Heatmap SPI (anno × mese)</h3>
+      <div class="spi-heatmap-wrap" id="spiHeatmapWrap"></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>📉 Frequenza siccità per decennio</h3>
+      <div class="spi-decade-wrap"><canvas id="spiDecadeChart"></canvas></div>
+    </div>
+
+    <div class="card spi-section">
+      <h3>🔮 Forecast SPI (prossimi 12 mesi)</h3>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:8px;">
+        Modello AR(1) con persistenza + trend Mann-Kendall + ciclo stagionale. Previsione indicativa, non operativa.
+      </p>
+      <div class="spi-forecast-wrap"><canvas id="spiForecastChart"></canvas></div>
+      <div class="spi-insight" id="spiForecastInsight"></div>
+    </div>
+
+  </div>
+  <!-- SERIE CONTINUA -->
+  <div class="panel" id="p-serie">
+    <div class="card">
+      <div class="card-title" id="serieTitle">📈 Serie continua precipitazioni
+        <div class="btns"><button class="btn btn-outline" style="font-size:11px" onclick="dlSerie()">⬇ CSV</button></div>
+      </div>
+      <div class="serie-ctrls">
+        <label id="serieGranLbl">Aggregazione:</label>
+        <div class="gran-btns" id="serieGranBtns">
+          <button class="on" data-g="month" onclick="setSerieGran('month')">Mensile</button>
+          <button data-g="quarter" onclick="setSerieGran('quarter')">Trimestrale</button>
+        </div>
+      </div>
+      <div class="serie-ctrls">
+        <label id="serieDecLbl">Decennio:</label>
+        <div id="serieDecadeBar" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <label style="margin-left:8px" id="serieFromLbl">Da:</label>
+        <input type="number" id="serieFrom" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <label id="serieToLbl">A:</label>
+        <input type="number" id="serieTo" min="1900" max="2100" style="width:72px;background:var(--card2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:5px;font-size:12px;"/>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="serieApplyBtn" onclick="applySerieRange()">Applica</button>
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" id="serieAllBtn" onclick="serieAllYears()">Tutti</button>
+      </div>
+      <div class="ch-wrap" style="height:420px"><canvas id="cSerie"></canvas></div>
+      <div class="note" id="serieNote"></div>
+    </div>
+  </div>
+
+  <!-- CONFRONTO ANNI -->
+  <div class="panel" id="p-confronto">
+    <div class="card">
+      <div class="card-title" id="cmpTitle">📊 Anni recenti vs media storica</div>
+      <p style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.6;" id="cmpIntro">
+        Confronto ad alto livello degli ultimi anni rispetto alla media pluriennale della serie Monte di Fò.
+        Un anno è considerato <b style="color:var(--text)">nella norma</b> se rientra entro ±1 deviazione standard (σ) dalla media,
+        <b style="color:var(--text)">anomalo</b> se la supera. L'anno in corso è confrontato sul cumulato YTD vs media storica dello stesso periodo.
+      </p>
+      <div class="cmp-grid" id="cmpGrid"></div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cCmpAnnual"></canvas></div>
+      <div class="cmp-verdict" id="cmpVerdict" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Download Modal -->
+<div class="modal-bg" id="dlModal">
+  <div class="modal">
+    <h3>⬇ Scarica dati</h3>
+    <div class="frow"><label>Tipo dati</label>
+      <select id="dlType">
+        <option value="all">Tutto (Excel multi-foglio)</option>
+        <option value="precip">Precipitazione giornaliera</option>
+        <option value="intensity">Intensità massima oraria</option>
+        <option value="temp">Temperatura (min/media/max)</option>
+      </select>
+    </div>
+    <div class="frow fcols">
+      <div><label>Dal</label><input type="date" id="dlFrom"/></div>
+      <div><label>Al</label><input type="date" id="dlTo"/></div>
+    </div>
+    <div class="frow"><label>Formato</label>
+      <select id="dlFmt"><option value="xlsx">Excel (.xlsx)</option><option value="csv">CSV</option></select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="closeDlModal()">Annulla</button>
+      <button class="btn btn-primary" onclick="execDl()">⬇ Scarica</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════
+// CONFIGURAZIONE STAZIONE — caricata da index.json
+// Se index.json non disponibile, usa i valori di fallback qui sotto
+// ════════════════════════════════════════════
+const STATION_ID  = 'montedifo';
+const GITHUB_BASE = 'https://raw.githubusercontent.com/EbbeneTriglav/dati_idro/main/dati/';
+
+// Fallback hardcoded (usato solo se index.json non raggiungibile)
+// Rete SIR Toscana: NESSUNA API CORS lato client → live=false.
+// L'aggiornamento avviene via GitHub Action che riscrive il CSV in dati/.
+const ST_FALLBACK = {
+  id:         'montedifo',
+  name:       'Monte di Fò – Barberino di Mugello',
+  lat:        44.0800,
+  lon:        11.2810,
+  alt:        820,
+  comune:     'Barberino di Mugello (FI)',
+  rete:       'SIR Toscana',
+  live:       false,            // SIR senza CORS: nessun fetch lato client
+  githubBase: GITHUB_BASE,
+  csvFiles:   ['MonteDiFo_precip_1992-2026.csv','MonteDiFo_temp_1992-2026.csv'],
+  sensors:    {
+    // codice SIR stazione: TOS01000916 (usato dalla GitHub Action lato server)
+    PP:  { id: 'TOS01000916', label: 'Precipitazione', unit: 'mm', color: '#4fc3f7' },
+    T:   { id: 'TOS01000916', label: 'Temperatura',    unit: '°C', color: '#ffb347' },
+  },
+};
+
+// ST viene popolato in init() leggendo index.json
+let ST = ST_FALLBACK;
+
+async function loadSTFromIndex() {
+  try {
+    const r = await fetch(GITHUB_BASE + 'index.json');
+    if (!r.ok) return false;
+    const data = await r.json();
+    const entry = (data.stazioni || []).find(s => s.id === STATION_ID);
+    if (!entry) return false;
+    ST = {
+      id:         entry.id,
+      name:       entry.nome || ST_FALLBACK.name,
+      lat:        entry.lat  || ST_FALLBACK.lat,
+      lon:        entry.lon  || ST_FALLBACK.lon,
+      alt:        entry.quota || ST_FALLBACK.alt,
+      comune:     entry.comune || ST_FALLBACK.comune,
+      githubBase: GITHUB_BASE,
+      csvFiles:   entry.file_dati && entry.file_dati.length ? entry.file_dati : ST_FALLBACK.csvFiles,
+      sensors:    ST_FALLBACK.sensors, // sensori ARPA restano fissi
+    };
+    return true;
+  } catch(e) {
+    console.warn('index.json non disponibile, uso configurazione locale:', e.message);
+    return false;
+  }
+}
+const MONTHS_IT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let MONTHS = MONTHS_IT.slice();
+window.LANG = 'it';
+const PALETTE = ['#4fc3f7','#81c784','#ffb347','#f06292','#ba68c8','#4dd0e1','#aed581',
+                 '#ff8a65','#90a4ae','#fff176','#a5d6a7','#ef9a9a','#80cbc4','#ffe082',
+                 '#ce93d8','#80deea','#c5e1a5','#ffcc80','#b0bec5','#b39ddb'];
+const CY = new Date().getFullYear();
+const SOCRATA = 'https://www.dati.lombardia.it/resource/647i-nhxk.json';
+
+// ════════════════════════════════════════════
+// STATO GLOBALE
+// ════════════════════════════════════════════
+let ppByDate  = {};   // 'YYYY-MM-DD' → mm
+let intByDate = {};   // 'YYYY-MM-DD' → mm/h
+let tmpByDate = {};   // 'YYYY-MM-DD' → {tMin,tMax,tMean}
+let ppYM      = {};   // year → [12 monthly mm]  (filtrati)
+let badYears  = new Set();
+let liveMin   = null, liveMax = null;
+const charts  = {};
+
+const f = (v, d=1) => v == null || isNaN(v) ? '—' : Number(v).toFixed(d);
+const today = () => new Date().toISOString().slice(0,10);
+const daysAgo = n => { const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
+
+// ════════════════════════════════════════════
+// SOCRATA API
+// ════════════════════════════════════════════
+async function socrataFetch(sensorId, limit=50000) {
+  const url = `${SOCRATA}?idsensore=${sensorId}&$limit=${limit}&$order=data+DESC`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+function socrataAggregatePrecip(rows) {
+  // Aggrega righe sub-orarie/orarie Socrata in:
+  //   daily {date → mm_totali}
+  //   intensity {date → max_mm_in_1h}
+  // L'intensità massima oraria si ottiene raggruppando per ora e prendendo
+  // la somma dell'ora con più pioggia (mm/h) per ogni giorno.
+
+  // Prima passa: raggruppa per "YYYY-MM-DD HH" (ora)
+  const byHour = {};
+  for (const row of rows) {
+    const ts = row.data || '';
+    if (!ts) continue;
+    const date = ts.slice(0,10);
+    const hour = ts.slice(0,13); // "YYYY-MM-DDTHH"
+    const v = parseFloat(row.valore ?? 0);
+    if (!isNaN(v) && v >= 0) {
+      if (!byHour[hour]) byHour[hour] = { date, mm: 0 };
+      byHour[hour].mm += v;
+    }
+  }
+
+  // Seconda passa: per ogni giorno → somma totale e max orario
+  const daily = {}, intensity = {};
+  for (const [hour, { date, mm }] of Object.entries(byHour)) {
+    daily[date] = (daily[date] || 0) + mm;
+    if (intensity[date] === undefined || mm > intensity[date]) {
+      intensity[date] = mm;
+    }
+  }
+
+  // Arrotonda a 1 decimale
+  for (const d of Object.keys(daily))    daily[d]     = Math.round(daily[d]*10)/10;
+  for (const d of Object.keys(intensity)) intensity[d] = Math.round(intensity[d]*10)/10;
+
+  return { daily, intensity };
+}
+
+function socrataAggregateTemp(rows) {
+  const byDate = {};
+  for (const row of rows) {
+    const d = (row.data||'').slice(0,10);
+    const v = parseFloat(row.valore ?? null);
+    if (d && !isNaN(v)) {
+      if (!byDate[d]) byDate[d] = [];
+      byDate[d].push(v);
+    }
+  }
+  const out = {};
+  for (const [d, vals] of Object.entries(byDate)) {
+    out[d] = {
+      tMin:  Math.min(...vals),
+      tMax:  Math.max(...vals),
+      tMean: vals.reduce((a,b)=>a+b,0)/vals.length
+    };
+  }
+  return out;
+}
+
+// ════════════════════════════════════════════
+// PARSER CSV / EXCEL
+// ════════════════════════════════════════════
+function normalizeDate(s) {
+  s = (s||'').trim().split(' ')[0]; // prendi solo la parte data, ignora orario
+  // YYYY/MM/DD o YYYY-MM-DD
+  if (/^\d{4}[\/-]\d{2}[\/-]\d{2}$/.test(s)) return s.replace(/\//g,'-');
+  // DD/MM/YYYY
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+    const [d,m,y]=s.split('/'); return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  // DD-MM-YYYY
+  if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(s)) {
+    const [d,m,y]=s.split('-'); return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  return null;
+}
+
+function findCol(hdr, kws) {
+  for (const kw of kws) { const i=hdr.findIndex(h=>h.includes(kw)); if(i>=0)return i; }
+  return -1;
+}
+
+function parseCSVText(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if (!lines.length) return { precip:{}, intensity:{}, temp:{} };
+  const sep = lines[0].includes(';') ? ';' : ',';
+  const hdr = lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
+
+  const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
+  const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
+  const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
+  const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
+  const iTm = findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media']);
+
+  const precip={}, intensity={}, temp={};
+  const tRaw={};   // accumula valori T orari → min/max/mean giornaliero
+  const ppRaw={};  // accumula valori PP orari → max orario = intensità
+  const NODATA = -999;
+  for (let i=1; i<lines.length; i++) {
+    const c = lines[i].split(sep).map(x=>x.replace(/"/g,'').trim());
+    const date = normalizeDate(iD>=0 ? c[iD] : c[0]);
+    if (!date) continue;
+    if (iV>=0) {
+      const v=parseFloat(c[iV].replace(',','.'));
+      if(!isNaN(v)&&v>=0&&v!==NODATA) {
+        precip[date]=Math.round(((precip[date]||0)+v)*10)/10;
+        if(!ppRaw[date]) ppRaw[date]=[];
+        ppRaw[date].push(v);
+      }
+    }
+    if (iIn>=0) { const v=parseFloat(c[iIn].replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA) intensity[date]=v; }
+    if (iTn>=0||iTx>=0||iTm>=0) {
+      const tn=iTn>=0?parseFloat(c[iTn].replace(',','.')):null;
+      const tx=iTx>=0?parseFloat(c[iTx].replace(',','.')):null;
+      const tm=iTm>=0?parseFloat(c[iTm].replace(',','.')):null;
+      const vtn=tn===NODATA||isNaN(tn)?null:tn;
+      const vtx=tx===NODATA||isNaN(tx)?null:tx;
+      const vtm=tm===NODATA||isNaN(tm)?null:tm;
+      if(vtn!==null||vtx!==null||vtm!==null) temp[date]={tMin:vtn, tMax:vtx, tMean:vtm};
+    }
+    if (iTm>=0 && iTn<0 && iTx<0) {
+      const v=parseFloat(c[iTm].replace(',','.'));
+      if(!isNaN(v)&&v!==NODATA) {
+        if(!tRaw[date]) tRaw[date]=[];
+        tRaw[date].push(v);
+      }
+    }
+  }
+  // Intensità automatica: max orario (solo se non già presente da colonna esplicita)
+  for (const [date, vals] of Object.entries(ppRaw)) {
+    if (intensity[date]===undefined && vals.length > 1) {
+      intensity[date] = Math.round(Math.max(...vals)*10)/10;
+    }
+  }
+  // Temperatura: min/max/mean dai valori orari
+  for (const [date, vals] of Object.entries(tRaw)) {
+    if (!vals.length) continue;
+    const mn=Math.min(...vals), mx=Math.max(...vals), me=vals.reduce((a,b)=>a+b,0)/vals.length;
+    temp[date]={ tMin:Math.round(mn*10)/10, tMax:Math.round(mx*10)/10, tMean:Math.round(me*10)/10 };
+  }
+  return {precip, intensity, temp};
+}
+
+function parseXLSXBuffer(buf) {
+  const wb = XLSX.read(buf, {type:'array'});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+  if (!rows.length) return {precip:{},intensity:{},temp:{}};
+  const hdr = rows[0].map(h=>String(h||'').toLowerCase().trim());
+  const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
+  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
+  const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
+  const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
+  const iTm = findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media']);
+
+  const precip={}, intensity={}, temp={};
+  for (let i=1; i<rows.length; i++) {
+    const row = rows[i];
+    let rawD = iD>=0 ? row[iD] : row[0];
+    if (!rawD) continue;
+    let date;
+    if (typeof rawD === 'number') {
+      const d=XLSX.SSF.parse_date_code(rawD);
+      date=`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+    } else { date=normalizeDate(String(rawD)); }
+    if (!date) continue;
+    const NODATA2 = -999;
+    if (iV>=0)  { const v=parseFloat(String(row[iV]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) precip[date]=(precip[date]||0)+v; }
+    if (iIn>=0) { const v=parseFloat(String(row[iIn]||0).replace(',','.')); if(!isNaN(v)&&v>=0&&v!==NODATA2) intensity[date]=v; }
+    if (iTn>=0||iTx>=0||iTm>=0) {
+      const tn=iTn>=0?parseFloat(String(row[iTn]||'').replace(',','.'))  :null;
+      const tx=iTx>=0?parseFloat(String(row[iTx]||'').replace(',','.'))  :null;
+      const tm=iTm>=0?parseFloat(String(row[iTm]||'').replace(',','.'))  :null;
+      const vtn=tn===NODATA2||isNaN(tn)?null:tn;
+      const vtx=tx===NODATA2||isNaN(tx)?null:tx;
+      const vtm=tm===NODATA2||isNaN(tm)?null:tm;
+      if(vtn!==null||vtx!==null||vtm!==null) temp[date]={tMin:vtn, tMax:vtx, tMean:vtm};
+    }
+  }
+  return {precip, intensity, temp};
+}
+
+function mergeData(parsed, srcTag) {
+  // precip: csv solo riempie gap, live sovrascrive
+  for (const [d,v] of Object.entries(parsed.precip||{})) {
+    if (srcTag==='live' || ppByDate[d]===undefined) ppByDate[d]=v;
+  }
+  for (const [d,v] of Object.entries(parsed.intensity||{})) {
+    intByDate[d]=v;
+  }
+  for (const [d,v] of Object.entries(parsed.temp||{})) {
+    tmpByDate[d]=v;
+  }
+}
+
+// ════════════════════════════════════════════
+// FILTRA ANNI INVALIDI
+// ════════════════════════════════════════════
+function buildPpYM() {
+  const raw = {};
+  for (const [d,mm] of Object.entries(ppByDate)) {
+    const [y,m]=d.split('-').map(Number);
+    if (!raw[y]) raw[y]=new Array(12).fill(0);
+    raw[y][m-1]+=mm;
+  }
+  badYears = new Set();
+  for (const [y, months] of Object.entries(raw)) {
+    const yr = Number(y);
+    // Non escludere mai l'anno corrente o l'anno scorso (dati parziali sono normali)
+    if (yr >= CY - 1) continue;
+    const total = months.reduce((a,b)=>a+b,0);
+    if (total===0) { badYears.add(yr); continue; }
+    // Escludi se >=4 mesi a zero E non sono tutti nei mesi estivi (lug-ago-set)
+    const nonSummerZeros = [0,1,2,3,4,9,10,11].filter(m=>months[m]===0).length;
+    if (nonSummerZeros>=4) { badYears.add(yr); continue; }
+    // 3+ mesi consecutivi a zero (escludi se sono solo estivi)
+    let consec=0, maxConsec=0;
+    for (const v of months) { if(v===0){consec++;maxConsec=Math.max(maxConsec,consec);}else consec=0; }
+    if (maxConsec>=4) { badYears.add(yr); }
+  }
+  ppYM={};
+  for (const [y,months] of Object.entries(raw)) {
+    if (!badYears.has(Number(y))) ppYM[y]=months;
+  }
+}
+
+// ════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════
+Chart.defaults.color = '#7a94b8';
+Chart.defaults.borderColor = '#1e3050';
+
+function dc(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+// ── KPI
+function renderKPI() {
+  const sorted = Object.entries(ppByDate).sort(([a],[b])=>b.localeCompare(a));
+  if (sorted.length) {
+    document.getElementById('kLast').textContent  = f(sorted[0][1],1)+' mm';
+    document.getElementById('kLastD').textContent = sorted[0][0];
+  }
+  const yrTotal = Object.entries(ppByDate).filter(([d])=>d.startsWith(CY)).reduce((a,[,v])=>a+v,0);
+  document.getElementById('kYear').textContent = f(yrTotal,0)+' mm';
+
+  const vYears = Object.keys(ppYM).map(Number);
+  const annuals = vYears.map(y=>Object.entries(ppByDate).filter(([d])=>d.startsWith(y)).reduce((a,[,v])=>a+v,0));
+  // Escludi anno corrente dalle medie storiche
+  const histAnnuals = annuals.filter((_,i)=>vYears[i]<CY);
+  document.getElementById('kMean').textContent = f(histAnnuals.length?histAnnuals.reduce((a,b)=>a+b)/histAnnuals.length:0,0)+' mm';
+
+  const [mxD,mxV] = sorted.sort(([,a],[,b])=>b-a)[0]||['—',0];
+  document.getElementById('kMaxD').textContent  = f(mxV,1)+' mm';
+  document.getElementById('kMaxDD').textContent = mxD;
+
+  const intSorted = Object.entries(intByDate).sort(([,a],[,b])=>b-a);
+  if (intSorted.length) {
+    document.getElementById('kMaxI').textContent  = f(intSorted[0][1],1)+' mm/h';
+    document.getElementById('kMaxID').textContent = intSorted[0][0];
+  }
+
+  const wetPY = vYears.filter(y=>y<CY).map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(y)&&v>=0.1).length);
+  document.getElementById('kWet').textContent = f(wetPY.length?wetPY.reduce((a,b)=>a+b)/wetPY.length:0,0);
+
+  // status bar
+  const allD = Object.keys(ppByDate).sort();
+  if (allD.length) document.getElementById('lblPeriod').textContent = `${allD[0]} → ${allD[allD.length-1]}`;
+  document.getElementById('lblCount').textContent = allD.length;
+
+  // invalid years
+  const wn = document.getElementById('warnYears');
+  if (badYears.size) {
+    wn.style.display=''; wn.textContent=`⚠ Anni esclusi (dati insufficienti): ${[...badYears].sort().join(', ')}`;
+  } else wn.style.display='none';
+  document.getElementById('invalidNote').textContent = badYears.size ? `Esclusi: ${[...badYears].sort().join(', ')}` : '';
+}
+
+// ── Recenti 30gg precipitazione
+function renderP30() {
+  const cut=daysAgo(30);
+  const data = Object.entries(ppByDate).filter(([d])=>d>=cut).sort(([a],[b])=>a.localeCompare(b));
+  dc('cP30');
+  charts['cP30']=new Chart(document.getElementById('cP30').getContext('2d'),{
+    type:'bar', data:{
+      labels:data.map(([d])=>d),
+      datasets:[{label:'mm',data:data.map(([,v])=>v),
+        backgroundColor:data.map(([,v])=>v>30?'#ef5350bb':v>10?'#ffb347bb':'#4fc3f7aa'),
+        borderRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{type:'time',time:{unit:'day',displayFormats:{day:'dd/MM'}},grid:{color:'#1e3050'}},
+              y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>`${f(i.raw,1)} mm`}}}}
+  });
+}
+
+// ── Recenti 30gg intensità
+function renderI30() {
+  const cut=daysAgo(30);
+  const data=Object.entries(intByDate).filter(([d])=>d>=cut).sort(([a],[b])=>a.localeCompare(b));
+  const note=document.getElementById('intensNote30');
+  if (!data.length) {
+    note.textContent='Dati di intensità non disponibili — carica il CSV specifico.'; return;
+  }
+  note.textContent='';
+  dc('cI30');
+  charts['cI30']=new Chart(document.getElementById('cI30').getContext('2d'),{
+    type:'bar', data:{
+      labels:data.map(([d])=>d),
+      datasets:[{label:'mm/h',data:data.map(([,v])=>v),
+        backgroundColor:'rgba(179,157,219,.7)',borderRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{type:'time',time:{unit:'day',displayFormats:{day:'dd/MM'}},grid:{color:'#1e3050'}},
+              y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm/h',color:'#7a94b8'}}},
+      plugins:{legend:{display:false}}}
+  });
+}
+
+// ── Temperatura 30gg
+function renderT30() {
+  const cut=daysAgo(30);
+  const data=Object.entries(tmpByDate).filter(([d])=>d>=cut).sort(([a],[b])=>a.localeCompare(b));
+  if (!data.length) return;
+  dc('cT30');
+  charts['cT30']=new Chart(document.getElementById('cT30').getContext('2d'),{
+    type:'line', data:{
+      labels:data.map(([d])=>d),
+      datasets:[
+        {label:'T max',data:data.map(([,v])=>v.tMax),borderColor:'#ef5350',borderWidth:2,pointRadius:2,tension:.3,fill:false},
+        {label:'T media',data:data.map(([,v])=>v.tMean),borderColor:'#ffb347',borderWidth:2,pointRadius:2,tension:.3,fill:false},
+        {label:'T min',data:data.map(([,v])=>v.tMin),borderColor:'#4fc3f7',borderWidth:2,pointRadius:2,tension:.3,fill:false},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{type:'time',time:{unit:'day',displayFormats:{day:'dd/MM'}},grid:{color:'#1e3050'}},
+              y:{grid:{color:'#1e3050'},title:{display:true,text:'°C',color:'#7a94b8'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+}
+
+// ── Sensor cards
+async function renderSensorCards() {
+  const grid=document.getElementById('sensorGrid'); grid.innerHTML='';
+  for (const [k,s] of Object.entries(ST.sensors)) {
+    const card=document.createElement('div'); card.className='sc';
+    card.innerHTML=`
+      <div class="sc-top"><div class="sc-name">${s.label}</div><div class="sc-unit">${s.unit}</div></div>
+      <div class="sc-val" id="sv${s.id}" style="color:${s.color}">…</div>
+      <div class="sc-time" id="st${s.id}">caricamento…</div>
+      <div style="position:relative;height:52px;margin-top:6px"><canvas id="sp${s.id}"></canvas></div>`;
+    grid.appendChild(card);
+    if (ST.live === false) {
+      document.getElementById('sv'+s.id).textContent='—';
+      document.getElementById('st'+s.id).textContent='solo storico (SIR)';
+      continue;
+    }
+    (async()=>{
+      try {
+        const rows=await socrataFetch(s.id,200);
+        rows.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+        if (!rows.length) return;
+        const v=parseFloat(rows[0].valore??0);
+        document.getElementById('sv'+s.id).textContent=`${f(v,1)} ${s.unit}`;
+        document.getElementById('st'+s.id).textContent=(rows[0].data||'').slice(0,16).replace('T',' ');
+        const spark=rows.slice(0,72).reverse();
+        const lbl=spark.map(r=>(r.data||'').slice(0,16).replace('T',' '));
+        const unit=s.unit;
+        new Chart(document.getElementById('sp'+s.id),{
+          type:'line',
+          data:{
+            labels:lbl,
+            datasets:[{
+              data:spark.map(r=>parseFloat(r.valore??0)),
+              borderColor:s.color,backgroundColor:s.color+'22',
+              borderWidth:1.5,pointRadius:0,pointHoverRadius:4,
+              pointHoverBackgroundColor:s.color,
+              fill:true,tension:.3
+            }]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            scales:{x:{display:false},y:{display:false,grace:'10%'}},
+            plugins:{
+              legend:{display:false},
+              tooltip:{
+                backgroundColor:'rgba(15,25,45,.92)',
+                titleColor:'#7a94b8',bodyColor:'#e3eaf8',
+                borderColor:'#1e3050',borderWidth:1,
+                padding:8,
+                callbacks:{
+                  title:i=>i[0]?.label||'',
+                  label:i=>`${f(i.raw,1)} ${unit}`
+                }
+              }
+            }
+          }
+        });
+      } catch(e) { const el=document.getElementById('sv'+s.id);if(el)el.textContent='n/d'; }
+    })();
+  }
+}
+
+// ── Cumulate
+function buildYrBar() {
+  const bar=document.getElementById('yrBar'); bar.innerHTML='';
+  const years=Object.keys(ppYM).map(Number).sort();
+  years.forEach((y,i)=>{
+    const col=PALETTE[i%PALETTE.length];
+    const b=document.createElement('button');
+    b.className='yr-btn on'; b.dataset.y=y; b.textContent=y;
+    b.style.borderColor=col; b.style.color=col;
+    b.addEventListener('click',()=>{b.classList.toggle('on');renderCumulate();});
+    bar.appendChild(b);
+  });
+  buildDecadeBar();
+}
+
+function buildDecadeBar() {
+  const bar=document.getElementById('decadeBar'); bar.innerHTML='';
+  const years=Object.keys(ppYM).map(Number).sort();
+  if (!years.length) return;
+  const firstDec=Math.floor(years[0]/10)*10;
+  const lastDec =Math.floor(years[years.length-1]/10)*10;
+  for (let d=firstDec; d<=lastDec; d+=10) {
+    const btn=document.createElement('button');
+    btn.className='dec-btn'; btn.textContent=`${d}s`;
+    btn.addEventListener('click',()=>{ selectDecade(d); });
+    bar.appendChild(btn);
+  }
+  // Bottone anno corrente
+  const bCY=document.createElement('button');
+  bCY.className='dec-btn'; bCY.textContent=`${CY}`;
+  bCY.style.borderColor='var(--accent)'; bCY.style.color='var(--accent)';
+  bCY.addEventListener('click',()=>selectDecade(CY,1));
+  bar.appendChild(bCY);
+}
+
+function selectDecade(dec, single=0) {
+  // Deseleziona tutto, seleziona solo il decennio scelto
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>{
+    const y=Number(b.dataset.y);
+    const inDec=single ? y===dec : y>=dec && y<dec+10;
+    b.classList.toggle('on', inDec);
+  });
+  renderCumulate();
+}
+
+function selectAllYears() {
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.add('on'));
+  renderCumulate();
+}
+
+function clearAllYears() {
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>b.classList.remove('on'));
+  renderCumulate();
+}
+
+function applyCustomYears() {
+  const raw=document.getElementById('cumuYrsInput').value;
+  const wanted=raw.split(/[,;\s]+/).map(Number).filter(n=>n>1900&&n<2100);
+  if (!wanted.length) return;
+  document.querySelectorAll('#yrBar .yr-btn').forEach(b=>{
+    b.classList.toggle('on', wanted.includes(Number(b.dataset.y)));
+  });
+  renderCumulate();
+}
+
+function renderCumulate() {
+  const norm=document.getElementById('cumuNorm').value==='1';
+  const thick=Number(document.getElementById('cumuThick').value);
+  const activeYears=[...document.querySelectorAll('#yrBar .yr-btn.on')].map(b=>Number(b.dataset.y));
+  const validYears=Object.keys(ppYM).map(Number).sort();
+
+  const datasets=activeYears.map(y=>{
+    const dates=Object.entries(ppByDate).filter(([d])=>d.startsWith(y)).sort(([a],[b])=>a.localeCompare(b));
+    if (!dates.length) return null;
+    let run=0;
+    const pts=dates.map(([d,mm])=>{
+      run+=mm;
+      const doy=Math.floor((new Date(d)-new Date(y,0,1))/86400000)+1;
+      return {x:doy, y:run};
+    });
+    const total=pts[pts.length-1].y||1;
+    const col=PALETTE[validYears.indexOf(y)%PALETTE.length];
+    return {
+      label:String(y),
+      data: norm ? pts.map(p=>({x:p.x,y:p.y/total*100})) : pts,
+      borderColor:col,backgroundColor:'transparent',
+      borderWidth:y===CY?thick+1.5:thick,
+      pointRadius:0,tension:.2,parsing:false
+    };
+  }).filter(Boolean);
+
+  dc('cCumu');
+  charts['cCumu']=new Chart(document.getElementById('cCumu'),{
+    type:'line', data:{datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{type:'linear',min:1,max:366,grid:{color:'#1e3050'},
+           ticks:{callback(v){const d=[1,32,60,91,121,152,182,213,244,274,305,335];const i=d.indexOf(v);return i>=0?MONTHS[i]:'';},maxTicksLimit:12},
+           title:{display:true,text:"Giorno dell'anno",color:'#7a94b8'}},
+        y:{grid:{color:'#1e3050'},title:{display:true,text:norm?'%':'mm',color:'#7a94b8'}}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true,pointStyleWidth:14}},
+               tooltip:{callbacks:{title:i=>`Giorno ${i[0]?.parsed?.x}`,
+                                   label:i=>` ${i.dataset.label}: ${f(i.parsed.y,1)}${norm?'%':' mm'}`}}}
+    }
+  });
+}
+
+// ── Heatmap
+function mmColor(v,mx) {
+  const t=Math.max(0,Math.min(1,mx?v/mx:0));
+  const s=[[0,[11,26,107]],[.2,[29,111,164]],[.45,[46,170,181]],[.65,[62,214,160]],[.82,[255,224,102]],[.93,[255,127,39]],[1,[196,0,0]]];
+  for (let i=0;i<s.length-1;i++){
+    const[t0,c0]=s[i],[t1,c1]=s[i+1];
+    if(t>=t0&&t<=t1){const r=(t-t0)/(t1-t0);return`rgb(${~~(c0[0]+(c1[0]-c0[0])*r)},${~~(c0[1]+(c1[1]-c0[1])*r)},${~~(c0[2]+(c1[2]-c0[2])*r)})`;}
+  }
+  return '#c40000';
+}
+
+function renderHeatmap() {
+  const scOpt=document.getElementById('hmScale').value;
+  const show=document.getElementById('hmVals').value==='1';
+  const years=Object.keys(ppYM).map(Number).sort();
+  if (!years.length) return;
+
+  // Scala colore mensile
+  let mx=scOpt==='auto'?0:Number(scOpt);
+  if (scOpt==='auto') years.forEach(y=>mx=Math.max(mx,...(ppYM[y]||[])));
+
+  // Totali annuali (escludi anno corrente per la scala colore dei totali)
+  const annuals=years.map(y=>(ppYM[y]||[]).reduce((a,b)=>a+b,0));
+  const annualsHist=annuals.filter((_,i)=>years[i]<CY);
+  const mxAnn=annualsHist.length?Math.max(...annualsHist):Math.max(...annuals);
+  const mnAnn=annualsHist.length?Math.min(...annualsHist.filter(v=>v>0)):0;
+
+  // Colore per totale annuale — scala separata rispetto ai mensili
+  const annColor=(v)=>{
+    if (!v) return 'var(--card2)';
+    const t=Math.max(0,Math.min(1,(v-mnAnn)/(mxAnn-mnAnn||1)));
+    return mmColor(t*mx,mx); // riusa scala ma su range annuale normalizzato
+  };
+
+  // Media annua storica (escludi anno corrente)
+  const meanAnn=annualsHist.length?Math.round(annualsHist.reduce((a,b)=>a+b)/annualsHist.length):0;
+
+  let h=`<div class="hm-row"><div class="hm-ylbl"></div>`;
+  MONTHS.forEach(m=>h+=`<div class="hm-mlbl">${m}</div>`);
+  h+=`<div class="hm-tot" style="color:var(--accent)">Totale</div></div>`;
+
+  years.forEach((y,yi)=>{
+    const tot=annuals[yi];
+    const isCY=y===CY;
+    h+=`<div class="hm-row"><div class="hm-ylbl">${y}</div>`;
+    for(let m=0;m<12;m++){
+      const v=ppYM[y]?.[m]??0;
+      h+=`<div class="hm-cell" style="background:${mmColor(v,mx)}"
+        title="${y} ${MONTHS[m]}: ${f(v,1)} mm">${show?Math.round(v):''}</div>`;
+    }
+    // Colonna totale annuale
+    const pct=meanAnn>0?Math.round((tot-meanAnn)/meanAnn*100):0;
+    const pctStr=!isCY&&meanAnn>0?(pct>=0?`+${pct}%`:`${pct}%`):'';
+    h+=`<div class="hm-totcell" style="background:${isCY?'var(--card2)':annColor(tot)}"
+      title="${y}: ${f(tot,0)} mm${pctStr?' ('+pctStr+' vs media)':''} ${isCY?'(anno in corso)':''}">
+      ${Math.round(tot)}${pctStr?'<br><span style=\'font-size:9px;opacity:.8\'>'+pctStr+'</span>':''}
+    </div>`;
+    h+='</div>';
+  });
+
+  // Riga media storica
+  h+=`<div class="hm-row" style="opacity:.6;border-top:1px solid var(--border);margin-top:3px">
+    <div class="hm-ylbl" style="font-size:10px">media</div>`;
+  for(let m=0;m<12;m++){
+    const vs=years.filter(y=>y<CY).map(y=>ppYM[y]?.[m]??0);
+    const mv=vs.length?vs.reduce((a,b)=>a+b)/vs.length:0;
+    h+=`<div class="hm-cell" style="background:${mmColor(mv,mx)};opacity:.85"
+      title="Media ${MONTHS[m]}: ${f(mv,1)} mm">${show?Math.round(mv):''}</div>`;
+  }
+  h+=`<div class="hm-totcell" style="background:${annColor(meanAnn)}"
+    title="Media annua storica: ${meanAnn} mm">${meanAnn}</div>`;
+  h+='</div>';
+
+  document.getElementById('hmContainer').innerHTML=h;
+}
+
+// ── Mensile
+function renderMensile() {
+  const years=Object.keys(ppYM).map(Number);
+  const stats=MONTHS.map((_,m)=>{
+    const vs=years.filter(y=>y<CY).map(y=>ppYM[y]?.[m]??null).filter(v=>v!==null); // escludi anno corrente
+    if (!vs.length) return{mean:0,min:0,max:0};
+    const mean=vs.reduce((a,b)=>a+b)/vs.length;
+    return{mean,min:Math.min(...vs),max:Math.max(...vs)};
+  });
+  dc('cMensile');
+  charts['cMensile']=new Chart(document.getElementById('cMensile'),{
+    type:'bar', data:{labels:MONTHS,datasets:[
+      {label:'Media (mm)',data:stats.map(d=>d.mean),
+       backgroundColor:MONTHS.map((_,i)=>`hsla(${195+i*15},65%,55%,.7)`),borderRadius:3},
+      {label:'Max',type:'line',data:stats.map(d=>d.max),borderColor:'#ef5350',borderWidth:2,pointRadius:4,fill:false},
+      {label:'Min',type:'line',data:stats.map(d=>d.min),borderColor:'#4caf82',borderWidth:2,pointRadius:4,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}}}}
+  });
+
+  // Temp mensile
+  const tmpCard=document.getElementById('tempMensCard');
+  const tMens=MONTHS.map((_,m)=>{
+    const vs=Object.entries(tmpByDate)
+      .filter(([d,v])=>parseInt(d.split('-')[1])-1===m&&v?.tMean!=null)
+      .map(([,v])=>v.tMean);
+    return vs.length?vs.reduce((a,b)=>a+b)/vs.length:null;
+  });
+  if (tMens.some(v=>v!==null)) {
+    tmpCard.style.display='';
+    dc('cTempMens');
+    charts['cTempMens']=new Chart(document.getElementById('cTempMens'),{
+      type:'line',data:{labels:MONTHS,datasets:[{label:'T media (°C)',data:tMens,
+        borderColor:'#ffb347',borderWidth:2.5,backgroundColor:'rgba(255,179,71,.1)',fill:true,
+        pointBackgroundColor:'#ffb347',pointRadius:5,tension:.4}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{y:{grid:{color:'#1e3050'},title:{display:true,text:'°C',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+        plugins:{legend:{labels:{color:'#e3eaf8'}}}}
+    });
+  }
+}
+
+// ── Intensità storico
+function renderIntHist() {
+  const _ivCanvas=document.getElementById('cIntHist');
+  if(!_ivCanvas) return; // canvas già sostituito (nessun dato) — evita crash al re-render
+  const view=document.getElementById('intView').value;
+  const ents=Object.entries(intByDate).filter(([,v])=>v>0);
+  if (!ents.length) {
+    dc('cIntHist');
+    document.getElementById('cIntHist').parentElement.innerHTML=
+      '<p style="color:var(--muted);padding:20px;font-size:13px">Nessun dato intensità — carica il file CSV specifico.</p>';
+    return;
+  }
+  const years=Object.keys(ppYM).map(Number).sort();
+  let labels, data, title;
+  if (view==='annual') {
+    labels=years;
+    data=years.map(y=>{const vs=ents.filter(([d])=>d.startsWith(y)).map(([,v])=>v);return vs.length?Math.max(...vs):null;});
+    title='Intensità massima annuale (mm/h)';
+  } else {
+    labels=MONTHS;
+    data=MONTHS.map((_,m)=>{const vs=ents.filter(([d])=>parseInt(d.split('-')[1])-1===m).map(([,v])=>v);return vs.length?vs.reduce((a,b)=>a+b)/vs.length:null;});
+    title='Intensità media mensile (mm/h)';
+  }
+  dc('cIntHist');
+  charts['cIntHist']=new Chart(document.getElementById('cIntHist'),{
+    type:'bar',data:{labels,datasets:[{label:title,data,
+      backgroundColor:'rgba(179,157,219,.65)',borderColor:'#b39ddb',borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm/h',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}}}}
+  });
+
+  // Top 20
+  const top20=ents.sort(([,a],[,b])=>b-a).slice(0,20);
+  const med=['🥇','🥈','🥉'];
+  let h=`<table class="dtbl"><thead><tr><th>#</th><th>Data</th><th>mm/h</th></tr></thead><tbody>`;
+  top20.forEach(([d,v],i)=>h+=`<tr><td>${med[i]||i+1}</td><td>${d}</td><td style="color:${i<3?'var(--orange)':'var(--text)'};font-weight:700">${f(v,1)}</td></tr>`);
+  document.getElementById('topIntTbl').innerHTML=h+'</tbody></table>';
+}
+
+// ── Calcolo sliding window (cumulate N giorni consecutivi)
+function computeSliding(n) {
+  const sorted=Object.entries(ppByDate).sort(([a],[b])=>a.localeCompare(b));
+  if (sorted.length<n) return [];
+  const results=[];
+  for (let i=0;i<=sorted.length-n;i++) {
+    // Verifica che i giorni siano consecutivi
+    let consec=true, tot=0;
+    for (let j=0;j<n;j++) {
+      const [d,v]=sorted[i+j];
+      if (j>0) {
+        const prev=new Date(sorted[i+j-1][0]);
+        const cur=new Date(d);
+        if ((cur-prev)/86400000>1.5) { consec=false; break; }
+      }
+      tot+=v;
+    }
+    if (consec && tot>0) results.push({ date:sorted[i][0], end:sorted[i+n-1][0], tot:Math.round(tot*10)/10 });
+  }
+  return results.sort((a,b)=>b.tot-a.tot);
+}
+
+function makeTopTable(data, cols) {
+  const med=['🥇','🥈','🥉'];
+  let h=`<table class="dtbl"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  data.slice(0,20).forEach((row,i)=>{
+    const color=i===0?'var(--red)':i<3?'var(--orange)':'var(--text)';
+    h+=`<tr><td>${med[i]||i+1}</td>`;
+    h+=row.cells.map((v,ci)=>`<td style="${ci===row.highlight?`color:${color};font-weight:700`:''}">${v}</td>`).join('');
+    h+='</tr>';
+  });
+  return h+'</tbody></table>';
+}
+
+// ── Estremi
+// Filtro condiviso (range anni / decenni) + sfumatura colore per tutti i grafici della sezione
+let extFrom=null, extTo=null, extGrad=false;
+
+function extYears(){
+  let ys=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(extFrom!=null) ys=ys.filter(y=>y>=extFrom);
+  if(extTo!=null)   ys=ys.filter(y=>y<=extTo);
+  return ys;
+}
+// Colori barre: piatto se sfumatura off, altrimenti opacità crescente col valore (stessa tonalità)
+function extBarColors(values, rgb){
+  if(!extGrad) return `rgba(${rgb},.55)`;
+  const valid=values.filter(v=>v!=null&&!isNaN(v));
+  if(!valid.length) return `rgba(${rgb},.55)`;
+  const mn=Math.min(...valid), mx=Math.max(...valid), span=(mx-mn)||1;
+  return values.map(v=>{
+    if(v==null||isNaN(v)) return 'rgba(120,130,150,.18)';
+    const a=0.28+0.72*((v-mn)/span);
+    return `rgba(${rgb},${a.toFixed(3)})`;
+  });
+}
+function buildExtDecadeBar(){
+  const bar=document.getElementById('extDecadeBar'); if(!bar) return;
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(!years.length){bar.innerHTML='';return;}
+  bar.innerHTML='';
+  const firstDec=Math.floor(years[0]/10)*10, lastDec=Math.floor(years[years.length-1]/10)*10;
+  for(let d=firstDec; d<=lastDec; d+=10){
+    const btn=document.createElement('button');
+    btn.className='dec-btn'; btn.textContent=`${d}s`; btn.dataset.dec=d;
+    if(extFrom===d&&extTo===d+9) btn.classList.add('on');
+    btn.addEventListener('click',()=>{
+      extFrom=d; extTo=d+9;
+      document.getElementById('extFrom').value=d; document.getElementById('extTo').value=d+9;
+      document.querySelectorAll('#extDecadeBar .dec-btn').forEach(x=>x.classList.toggle('on',x===btn));
+      renderEventi();
+    });
+    bar.appendChild(btn);
+  }
+}
+function applyExtRange(){
+  const a=parseInt(document.getElementById('extFrom').value);
+  const b=parseInt(document.getElementById('extTo').value);
+  extFrom=isNaN(a)?null:a; extTo=isNaN(b)?null:b;
+  document.querySelectorAll('#extDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderEventi();
+}
+function extAllYears(){
+  extFrom=null; extTo=null;
+  document.getElementById('extFrom').value=''; document.getElementById('extTo').value='';
+  document.querySelectorAll('#extDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderEventi();
+}
+function toggleExtGrad(){
+  extGrad=document.getElementById('extGrad').checked;
+  renderEventi();
+}
+
+function renderEventi() {
+  buildExtDecadeBar();
+  const thresh=Number(document.getElementById('evtThresh').value);
+  const years=extYears();
+
+  // Grafico giorni sopra soglia
+  const evtData=years.map(y=>Object.entries(ppByDate).filter(([d,v])=>d.startsWith(String(y))&&v>=thresh).length);
+  dc('cEvt');
+  charts['cEvt']=new Chart(document.getElementById('cEvt'),{
+    type:'bar',data:{labels:years,
+      datasets:[{label:`Giorni ≥ ${thresh} mm`,
+        data:evtData,
+        backgroundColor:extBarColors(evtData,'79,195,247'),borderColor:'#4fc3f7',borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'N°',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}}}}
+  });
+
+  // Top 20 — intera serie (non filtrate)
+  const top1=Object.entries(ppByDate).sort(([,a],[,b])=>b-a);
+  document.getElementById('topPrecTbl').innerHTML=makeTopTable(
+    top1.map(([d,v])=>({cells:[d,f(v,1)+' mm'],highlight:1})),
+    ['#','Data','mm']
+  );
+  const sl2=computeSliding(2);
+  document.getElementById('top2dTbl').innerHTML=makeTopTable(
+    sl2.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
+    ['#','Periodo','mm']
+  );
+  const sl3=computeSliding(3);
+  document.getElementById('top3dTbl').innerHTML=makeTopTable(
+    sl3.map(r=>({cells:[`${r.date} → ${r.end}`,f(r.tot,1)+' mm'],highlight:1})),
+    ['#','Periodo','mm']
+  );
+
+  // Grafici max 1 / 2 / 3 giorni per anno (separati, filtro anni applicato)
+  renderMultiDayChart(1,'cMulti1');
+  renderMultiDayChart(2,'cMulti2');
+  renderMultiDayChart(3,'cMulti3');
+}
+
+function renderMultiDayChart(win, canvasId) {
+  const years=extYears();
+  const slAll=computeSliding(win);
+  const data=years.map(y=>{
+    const hits=slAll.filter(r=>r.date.startsWith(String(y)));
+    return hits.length?hits[0].tot:null;
+  });
+  const lab=win===1?'Max 1 giorno (mm)':`Max ${win} giorni consecutivi (mm)`;
+  dc(canvasId);
+  charts[canvasId]=new Chart(document.getElementById(canvasId),{
+    type:'bar',data:{labels:years,datasets:[{
+      label:lab,data,
+      backgroundColor:extBarColors(data,'240,98,146'),borderColor:'#f06292',borderWidth:1.5,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#e3eaf8'}},
+               tooltip:{callbacks:{label:i=>i.raw!=null?`${f(i.raw,1)} mm`:'n.d.'}}}}
+  });
+}
+
+// ── Tabella
+function populateTblYr() {
+  const sel=document.getElementById('tblYr');
+  sel.innerHTML='<option value="0">Tutti</option>';
+  Object.keys(ppYM).map(Number).sort((a,b)=>b-a).forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;sel.appendChild(o);});
+}
+function renderTable() {
+  const yr=Number(document.getElementById('tblYr').value);
+  const mo=Number(document.getElementById('tblMo').value);
+  const rain=document.getElementById('tblRain').value==='1';
+  const rows=Object.entries(ppByDate)
+    .filter(([d,v])=>{const[y,m]=d.split('-').map(Number);return(!yr||y===yr)&&(!mo||m===mo)&&(!rain||v>=0.1);})
+    .sort(([a],[b])=>b.localeCompare(a));
+  if (!rows.length){document.getElementById('tblBody').innerHTML='<p style="padding:12px;color:var(--muted)">Nessun dato.</p>';return;}
+  const hI=Object.keys(intByDate).length>0, hT=Object.keys(tmpByDate).length>0;
+  let h=`<table class="dtbl"><thead><tr><th>Data</th><th>mm</th>${hI?'<th>Int.Max mm/h</th>':''}${hT?'<th>T min</th><th>T media</th><th>T max</th>':''}<th>Fonte</th></tr></thead><tbody>`;
+  rows.forEach(([d,mm])=>{
+    const col=mm>=30?'var(--red)':mm>=10?'var(--orange)':mm>0?'var(--accent)':'var(--muted)';
+    const live=liveMin&&d>=liveMin&&d<=liveMax;
+    const src=live?'<span style="color:var(--green)">live</span>':'<span style="color:var(--orange)">csv</span>';
+    const iv=hI?`<td>${intByDate[d]!=null?f(intByDate[d],1):'—'}</td>`:'';
+    const tv=hT?`<td>${tmpByDate[d]?.tMin!=null?f(tmpByDate[d].tMin,1)+'°':'—'}</td><td>${tmpByDate[d]?.tMean!=null?f(tmpByDate[d].tMean,1)+'°':'—'}</td><td>${tmpByDate[d]?.tMax!=null?f(tmpByDate[d].tMax,1)+'°':'—'}</td>`:'';
+    h+=`<tr><td>${d}</td><td style="color:${col};font-weight:600">${f(mm,1)}</td>${iv}${tv}<td>${src}</td></tr>`;
+  });
+  document.getElementById('tblBody').innerHTML=h+'</tbody></table>';
+}
+
+function renderAll() {
+  buildPpYM();
+  renderKPI();
+  buildYrBar();
+  renderCumulate();
+  renderHeatmap();
+  renderMensile();
+  renderIntHist();
+  renderEventi();
+  populateTblYr();
+  renderTable();
+  renderP30();
+  renderI30();
+  renderT30();
+  // SPI: render only if tab is currently visible
+  const spiPanel=document.getElementById('p-spi');
+  if(spiPanel && spiPanel.classList.contains('on')) renderSPITab();
+  // Serie / Confronto: render only if visible (Chart.js needs visible canvas)
+  const seriePanel=document.getElementById('p-serie');
+  if(seriePanel && seriePanel.classList.contains('on')) renderSerie();
+  const cmpPanel=document.getElementById('p-confronto');
+  if(cmpPanel && cmpPanel.classList.contains('on')) renderConfronto();
+  postRenderI18n();
+}
+
+// ════════════════════════════════════════════
+// DOWNLOAD
+// ════════════════════════════════════════════
+function openDlModal() {
+  const all=Object.keys(ppByDate).sort();
+  document.getElementById('dlFrom').value=all[0]||today();
+  document.getElementById('dlTo').value=today();
+  document.getElementById('dlModal').classList.add('open');
+}
+function closeDlModal(){document.getElementById('dlModal').classList.remove('open');}
+
+function execDl() {
+  const type=document.getElementById('dlType').value;
+  const from=document.getElementById('dlFrom').value;
+  const to=document.getElementById('dlTo').value;
+  const fmt=document.getElementById('dlFmt').value;
+  const fd=([d])=>(!from||d>=from)&&(!to||d<=to);
+  const sn=ST.name.replace(/\s+/g,'_');
+
+  const ppRows=[['Data','mm','Fonte'],...Object.entries(ppByDate).filter(fd).sort(([a],[b])=>a.localeCompare(b)).map(([d,v])=>[d,v,liveMin&&d>=liveMin&&d<=liveMax?'live':'csv'])];
+  const inRows=[['Data','Intensita_max_mmh'],...Object.entries(intByDate).filter(fd).sort(([a],[b])=>a.localeCompare(b)).map(([d,v])=>[d,v])];
+  const tpRows=[['Data','T_min','T_media','T_max'],...Object.entries(tmpByDate).filter(fd).sort(([a],[b])=>a.localeCompare(b)).map(([d,v])=>[d,v.tMin,v.tMean,v.tMax])];
+
+  if (type==='all') {
+    const sheets=[{name:'Precipitazione',data:ppRows}];
+    if (inRows.length>1) sheets.push({name:'IntensitaMax',data:inRows});
+    if (tpRows.length>1) sheets.push({name:'Temperatura',data:tpRows});
+    const wb=XLSX.utils.book_new();
+    sheets.forEach(s=>{const ws=XLSX.utils.aoa_to_sheet(s.data);XLSX.utils.book_append_sheet(wb,ws,s.name);});
+    XLSX.writeFile(wb,`${sn}_${from}_${to}.xlsx`);
+  } else {
+    const dataMap={precip:ppRows,intensity:inRows,temp:tpRows};
+    const rows=dataMap[type]||ppRows;
+    if (fmt==='csv') {
+      const blob=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${sn}_${type}_${from}_${to}.csv`;a.click();
+    } else {
+      const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'Dati');XLSX.writeFile(wb,`${sn}_${type}_${from}_${to}.xlsx`);
+    }
+  }
+  closeDlModal();
+}
+
+function dlChartData(chartId, name) {
+  const ch=charts[chartId]; if(!ch)return;
+  const labels=ch.data.labels||[];
+  const rows=[['Data','Valore'],...labels.map((l,i)=>[l,ch.data.datasets[0]?.data?.[i]??''])];
+  const blob=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`montedifo_${name}.csv`;a.click();
+}
+
+function dlCumulate() {
+  const years=Object.keys(ppYM).map(Number).sort();
+  const hdr=['DayOfYear',...years];
+  const byDoy={};
+  years.forEach(y=>{
+    let run=0;
+    Object.entries(ppByDate).filter(([d])=>d.startsWith(y)).sort(([a],[b])=>a.localeCompare(b)).forEach(([d,mm])=>{
+      run+=mm;
+      const doy=Math.floor((new Date(d)-new Date(y,0,1))/86400000)+1;
+      if (!byDoy[doy]) byDoy[doy]=new Array(years.length).fill('');
+      byDoy[doy][years.indexOf(y)]=run.toFixed(1);
+    });
+  });
+  const data=[hdr,...Object.entries(byDoy).sort(([a],[b])=>Number(a)-Number(b)).map(([d,v])=>[d,...v])];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Cumulate');XLSX.writeFile(wb,'montedifo_cumulate.xlsx');
+}
+
+function dlIntData() {
+  const rows=[['Anno','Max_mmh'],...Object.keys(ppYM).map(Number).sort().map(y=>{const vs=Object.entries(intByDate).filter(([d])=>d.startsWith(y)).map(([,v])=>v);return[y,vs.length?Math.max(...vs).toFixed(1):''];})];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'IntMax');XLSX.writeFile(wb,'montedifo_intensita.xlsx');
+}
+
+function dlTableData() {
+  const yr=Number(document.getElementById('tblYr').value);
+  const rows=[['Data','mm','IntMax_mmh','T_min','T_media','T_max']];
+  Object.entries(ppByDate).filter(([d])=>!yr||d.startsWith(yr)).sort(([a],[b])=>a.localeCompare(b))
+    .forEach(([d,mm])=>rows.push([d,mm,intByDate[d]??'',tmpByDate[d]?.tMin??'',tmpByDate[d]?.tMean??'',tmpByDate[d]?.tMax??'']));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Dati');XLSX.writeFile(wb,`montedifo_${yr||'tutti'}.xlsx`);
+}
+
+// ════════════════════════════════════════════
+// FILE UPLOAD
+// ════════════════════════════════════════════
+document.getElementById('fileIn').addEventListener('change', async e => {
+  const files=[...e.target.files]; if(!files.length)return;
+  const msg=document.getElementById('uploadMsg');
+  msg.style.color='var(--muted)'; msg.textContent='⏳ Parsing…';
+  let tp=0,ti=0,tt=0;
+  for (const file of files) {
+    try {
+      let parsed;
+      if (file.name.match(/\.xlsx?$/i)) {
+        parsed=parseXLSXBuffer(new Uint8Array(await file.arrayBuffer()));
+      } else {
+        parsed=parseCSVText(await file.text());
+      }
+      mergeData(parsed, 'csv');
+      tp+=Object.keys(parsed.precip||{}).length;
+      ti+=Object.keys(parsed.intensity||{}).length;
+      tt+=Object.keys(parsed.temp||{}).length;
+    } catch(err) { msg.style.color='var(--red)'; msg.textContent=`✗ ${file.name}: ${err.message}`; return; }
+  }
+  msg.style.color='var(--green)';
+  msg.textContent=`✅ ${tp} gg precip · ${ti} gg intensità · ${tt} gg temp`;
+  renderAll();
+});
+
+// ════════════════════════════════════════════
+// CARICA CSV DA GITHUB (se esiste)
+// ════════════════════════════════════════════
+async function loadGithubFiles() {
+  let totalPrecip=0, totalInt=0, totalTemp=0;
+  const results = []; // log visibile nell'UI
+  for (const filename of (ST.csvFiles||[])) {
+    try {
+      const url = `${ST.githubBase}${encodeURIComponent(filename)}`;
+      const r = await fetch(url);
+      if (!r.ok) {
+        if (r.status !== 404) results.push(`⚠ ${filename}: HTTP ${r.status}`);
+        // 404 = file non ancora caricato, silenzioso
+        continue;
+      }
+      const ext = filename.toLowerCase().split('.').pop();
+      let parsed;
+      if (ext==='csv'||ext==='txt') {
+        parsed = parseCSVText(await r.text());
+      } else {
+        const buf = await r.arrayBuffer();
+        parsed = parseXLSXBuffer(new Uint8Array(buf));
+      }
+      mergeData(parsed, 'csv');
+      const np = Object.keys(parsed.precip||{}).length;
+      const ni = Object.keys(parsed.intensity||{}).length;
+      const nt = Object.keys(parsed.temp||{}).length;
+      totalPrecip += np; totalInt += ni; totalTemp += nt;
+      const parts=[];
+      if(np) parts.push(`${np} gg precip`);
+      if(ni) parts.push(`${ni} gg intensità`);
+      if(nt) parts.push(`${nt} gg temp`);
+      results.push(`✓ ${filename}: ${parts.join(', ')||'nessun dato riconosciuto ⚠'}`);
+      console.log(`✓ ${filename}:`, parsed);
+    } catch(e) {
+      results.push(`✗ ${filename}: ${e.message}`);
+      console.warn(`Errore ${filename}:`, e);
+    }
+  }
+  // Mostra risultati nella status bar e nel box upload
+  const logEl = document.getElementById('githubLog');
+  if (logEl) logEl.innerHTML = results.map(r=>
+    `<div style="color:${r.startsWith('✓')?'var(--green)':r.startsWith('⚠')?'var(--orange)':'var(--red)'}">${r}</div>`
+  ).join('');
+
+  if (totalPrecip>0 || totalInt>0 || totalTemp>0) {
+    document.getElementById('dotCsv').className='dot ok';
+    const parts=[];
+    if (totalPrecip) parts.push(`${totalPrecip} gg precip`);
+    if (totalInt)    parts.push(`${totalInt} gg intensità`);
+    if (totalTemp)   parts.push(`${totalTemp} gg temp`);
+    document.getElementById('lblCsv').textContent=parts.join(' · ')+' da GitHub';
+  } else if (results.length===0) {
+    document.getElementById('lblCsv').textContent='nessun file in dati/';
+  }
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+async function init() {
+  const msg=document.getElementById('loadMsg');
+  msg.textContent='Carico configurazione…';
+  await loadSTFromIndex(); // aggiorna ST da index.json se disponibile
+  try {
+    // 1. Carica CSV storici da GitHub (se esistono)
+    msg.textContent='Carico CSV storici da GitHub…';
+    await loadGithubFiles();
+
+    // 2. Carica dati live da Socrata (solo reti ARPA Lombardia con CORS)
+    if (ST.live === false) {
+      msg.textContent='Solo dati storici (rete SIR Toscana: nessuna API live, aggiornamento via GitHub Action)';
+      const la=document.getElementById('lblApi'); if(la) la.textContent='non disponibile (SIR senza API CORS)';
+    } else {
+    msg.textContent='Carico precipitazioni API live…';
+    try {
+      const ppRows=await socrataFetch(ST.sensors.PP.id, 50000);
+      const { daily: ppMap, intensity: intMap } = socrataAggregatePrecip(ppRows);
+      const dates=Object.keys(ppMap).sort();
+      if (dates.length) {
+        liveMin=dates[0]; liveMax=dates[dates.length-1];
+        mergeData({precip:ppMap, intensity:intMap},'live');
+        document.getElementById('dotApi').className='dot ok';
+        document.getElementById('lblApi').textContent=`${liveMin} → ${liveMax} (intensità calcolata)`;
+      }
+    } catch(e) { document.getElementById('lblApi').textContent='errore: '+e.message; }
+
+    msg.textContent='Carico temperatura API…';
+    try {
+      const tRows=await socrataFetch(ST.sensors.T.id, 50000);
+      const tMap=socrataAggregateTemp(tRows);
+      mergeData({temp:tMap},'live');
+    } catch(e) {}
+    }
+
+    // 3. Render
+    msg.textContent='Render grafici…';
+    renderAll();
+    renderSensorCards();
+
+  } catch(e) {
+    msg.textContent='Errore: '+e.message;
+    console.error(e);
+    return;
+  }
+  document.getElementById('loading').style.display='none';
+}
+
+// Tab navigation
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById('p-'+t.dataset.p).classList.add('on');
+    // Re-render SPI charts when tab becomes visible (Chart.js needs visible canvas)
+    if(t.dataset.p==='spi') setTimeout(renderSPITab, 60);
+    if(t.dataset.p==='serie') setTimeout(renderSerie, 60);
+    if(t.dataset.p==='confronto') setTimeout(renderConfronto, 60);
+    setTimeout(postRenderI18n, 90);
+  });
+});
+
+// Control events
+document.getElementById('cumuNorm').addEventListener('change',renderCumulate);
+document.getElementById('cumuThick').addEventListener('change',renderCumulate);
+document.getElementById('hmScale').addEventListener('change',renderHeatmap);
+document.getElementById('hmVals').addEventListener('change',renderHeatmap);
+document.getElementById('evtThresh').addEventListener('change',renderEventi);
+document.getElementById('intView').addEventListener('change',renderIntHist);
+document.getElementById('tblYr').addEventListener('change',renderTable);
+document.getElementById('tblMo').addEventListener('change',renderTable);
+document.getElementById('tblRain').addEventListener('change',renderTable);
+document.getElementById('dlModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDlModal();});
+
+
+// ════════════════════════════════════════════
+// SPI INDEX — Engine + Rendering + Forecast
+// ════════════════════════════════════════════
+
+/* ── Statistical helpers (ported from HydroAnalyst v2) ── */
+function normalCDF_spi(x){
+  const a=[.254829592,-.284496736,1.421413741,-1.453152027,1.061405429];
+  const sign=x<0?-1:1; x=Math.abs(x)/Math.sqrt(2);
+  const t=1/(1+.3275911*x);
+  const y=1-(((((a[4]*t+a[3])*t)+a[2])*t+a[1])*t+a[0])*t*Math.exp(-x*x);
+  return .5*(1+sign*y);
+}
+function fitGamma_spi(vals){
+  const pos=vals.filter(v=>v>0);
+  if(!pos.length)return{alpha:1,beta:1};
+  const mean=pos.reduce((a,b)=>a+b)/pos.length;
+  const variance=pos.reduce((a,b)=>a+(b-mean)**2,0)/(pos.length-1)||.1;
+  return{alpha:mean**2/variance, beta:variance/mean};
+}
+function gammaCDF_spi(x,alpha,beta){
+  if(x<=0)return 0;
+  if(!isFinite(x)||alpha<=0||beta<=0)return 0;
+  const t=x/beta, mu=1-1/(9*alpha), sigma=Math.sqrt(1/(9*alpha));
+  const z=(Math.pow(t/alpha,1/3)-mu)/sigma;
+  return Math.max(0,Math.min(1,normalCDF_spi(z)));
+}
+function normalQuantile_spi(p){
+  p=Math.max(1e-10,Math.min(1-1e-10,p));
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,
+    1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,
+    6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,
+    -2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  let q,r;
+  if(p<0.02425){r=Math.sqrt(-2*Math.log(p));q=(((((c[0]*r+c[1])*r+c[2])*r+c[3])*r+c[4])*r+c[5])/((((d[0]*r+d[1])*r+d[2])*r+d[3])*r+1);}
+  else if(p<=0.97575){q=p-0.5;r=q*q;q=(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  else{r=Math.sqrt(-2*Math.log(1-p));q=-(((((c[0]*r+c[1])*r+c[2])*r+c[3])*r+c[4])*r+c[5])/((((d[0]*r+d[1])*r+d[2])*r+d[3])*r+1);}
+  return q;
+}
+
+/* ── Compute SPI series (FIXED: skips future months of current year) ── */
+function computeSPI_local(win){
+  const yrs=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(yrs.length<3) return [];
+  const CY=new Date().getFullYear();
+  const CM=new Date().getMonth(); // 0-based current month
+
+  // Detect which months of the current year actually have data
+  // by scanning ppByDate for days in each month
+  const cyValidMonths=new Set();
+  if(typeof ppByDate!=='undefined' && ppByDate){
+    Object.keys(ppByDate).forEach(d=>{
+      if(d.startsWith(CY+'-')){
+        const m=parseInt(d.split('-')[1])-1; // 0-based
+        cyValidMonths.add(m);
+      }
+    });
+  }
+  // Fallback: if ppByDate not available, use current month as cutoff
+  if(!cyValidMonths.size){
+    for(let m=0;m<=CM;m++) cyValidMonths.add(m);
+  }
+
+  // Build monthly series — skip future months of current year
+  const monthly=[];
+  yrs.forEach(y=>{
+    for(let m=0;m<12;m++){
+      // For current year: only include months with actual data
+      if(y===CY && !cyValidMonths.has(m)) continue;
+      monthly.push({y,m,v:ppYM[y]?.[m]||0});
+    }
+  });
+
+  // Rolling window sums (with gap check for skipped CY months)
+  const cumul=monthly.map((_,i)=>{
+    if(i<win-1) return null;
+    // Verify the window spans consecutive months (no gap from skipped CY months)
+    const first=monthly[i-win+1], last=monthly[i];
+    const spanMonths=(last.y*12+last.m)-(first.y*12+first.m);
+    if(spanMonths!==win-1) return null; // gap in series, skip
+    let s=0; for(let k=0;k<win;k++) s+=monthly[i-k].v;
+    return s;
+  });
+
+  // Fit gamma per calendar month on complete past years only
+  const result=[];
+  for(let i=0;i<monthly.length;i++){
+    if(cumul[i]===null) continue;
+    const cm=monthly[i].m;
+    // Gather all values for this calendar month (from complete years only)
+    const vals=[];
+    for(let j=0;j<monthly.length;j++){
+      if(cumul[j]===null) continue;
+      if(monthly[j].m===cm && monthly[j].y<CY) vals.push(cumul[j]);
+    }
+    if(vals.length<6){result.push({y:monthly[i].y,m:monthly[i].m,spi:null});continue;}
+    const g=fitGamma_spi(vals);
+    const q0=vals.filter(v=>v===0).length/vals.length;
+    const p=q0+(1-q0)*gammaCDF_spi(cumul[i],g.alpha,g.beta);
+    let spi=normalQuantile_spi(p);
+    spi=Math.max(-3.5,Math.min(3.5,spi));
+    result.push({y:monthly[i].y, m:monthly[i].m, spi:+spi.toFixed(2)});
+  }
+  return result;
+}
+
+/* ── SPI classification helpers ── */
+function spiCategory(v){
+  if(v===null||v===undefined) return{label:'N/D',color:'#666'};
+  if(v>=2)   return{label:'Estr. umido',color:'#1565c0'};
+  if(v>=1.5) return{label:'Molto umido',color:'#42a5f5'};
+  if(v>=1)   return{label:'Moderatam. umido',color:'#90caf9'};
+  if(v>-1)   return{label:'Normale',color:'#66bb6a'};
+  if(v>-1.5) return{label:'Moderatam. secco',color:'#ffa726'};
+  if(v>-2)   return{label:'Molto secco',color:'#ef5350'};
+  return{label:'Estr. secco',color:'#b71c1c'};
+}
+function spiCellColor(v){
+  if(v===null||v===undefined) return '#222';
+  if(v>=2)   return '#0d47a1';
+  if(v>=1.5) return '#1565c0';
+  if(v>=1)   return '#1e88e5';
+  if(v>=0.5) return '#42a5f5';
+  if(v>=-0.5)return '#455a64';
+  if(v>=-1)  return '#ef6c00';
+  if(v>=-1.5)return '#e53935';
+  if(v>=-2)  return '#c62828';
+  return '#880e4f';
+}
+
+/* ── SPI state ── */
+let spiCache={};
+let spiChartObj=null, spiDecadeObj=null, spiForecastObj=null;
+let spiRangeFrom=null, spiRangeTo=null;
+
+function getSPISeries(win){
+  if(!spiCache[win]) spiCache[win]=computeSPI_local(win);
+  return spiCache[win];
+}
+function clearSPICache(){spiCache={};}
+
+/* ── Period filtering ── */
+function spiFilterByRange(series){
+  if(spiRangeFrom===null && spiRangeTo===null) return series;
+  return series.filter(d=>{
+    if(spiRangeFrom!==null && d.y<spiRangeFrom) return false;
+    if(spiRangeTo!==null && d.y>spiRangeTo) return false;
+    return true;
+  });
+}
+
+function applySPIPeriod(range){
+  document.querySelectorAll('#spiPeriodBtns button').forEach(b=>b.classList.remove('active'));
+  if(event&&event.target) event.target.classList.add('active');
+
+  const yrs=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  const minY=yrs[0]||1950;
+
+  if(range==='all'){spiRangeFrom=null;spiRangeTo=null;}
+  else if(range==='pre1950'){spiRangeFrom=minY;spiRangeTo=1949;}
+  else{const d=parseInt(range);spiRangeFrom=d;spiRangeTo=d+9;}
+  document.getElementById('spiFromYr').value=spiRangeFrom||'';
+  document.getElementById('spiToYr').value=spiRangeTo||'';
+  renderSPITab();
+}
+
+function applySPICustomRange(){
+  const f=parseInt(document.getElementById('spiFromYr').value);
+  const t=parseInt(document.getElementById('spiToYr').value);
+  spiRangeFrom=isNaN(f)?null:f;
+  spiRangeTo=isNaN(t)?null:t;
+  document.querySelectorAll('#spiPeriodBtns button').forEach(b=>b.classList.remove('active'));
+  renderSPITab();
+}
+
+/* ═══════════════════════════════════════════
+   RENDER SPI TAB — main entry
+   ═══════════════════════════════════════════ */
+function renderSPITab(){
+  if(!ppYM||!Object.keys(ppYM).length) return;
+  clearSPICache();
+
+  const win=parseInt(document.getElementById('spiWin').value)||3;
+  const fullSeries=getSPISeries(win);
+  const series=spiFilterByRange(fullSeries);
+  if(!series.length) return;
+
+  renderSPIGauges(fullSeries);
+  renderSPIChart(series,win);
+  renderSPIHeatmap(series,win);
+  renderSPIDecadeChart(fullSeries,win);
+  renderSPIForecast(fullSeries,win);
+  renderSPIInsight(fullSeries,win);
+}
+
+/* ── Gauges ── */
+function renderSPIGauges(fullSeries){
+  const container=document.getElementById('spiGauges');
+  let html='';
+  [3,6,12].forEach(w=>{
+    const s=getSPISeries(w);
+    let last=null;
+    for(let i=s.length-1;i>=0;i--){if(s[i].spi!==null){last=s[i];break;}}
+    const val=last?last.spi:null;
+    const cat=spiCategory(val);
+    const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+    const label=last?`${mo[last.m]} ${last.y}`:'N/D';
+    html+=`<div class="spi-gauge">
+      <div class="gauge-label">SPI-${w} (${label})</div>
+      <div class="gauge-val" style="color:${cat.color}">${val!==null?val.toFixed(2):'\u2014'}</div>
+      <div class="gauge-cat" style="background:${cat.color};color:#fff">${cat.label}</div>
+    </div>`;
+  });
+  container.innerHTML=html;
+}
+
+/* ── Main SPI bar chart ── */
+function renderSPIChart(series,win){
+  const ctx=document.getElementById('spiChart');
+  if(spiChartObj){spiChartObj.destroy();spiChartObj=null;}
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const labels=series.map(d=>`${mo[d.m]} ${d.y}`);
+  const values=series.map(d=>d.spi);
+  const colors=values.map(v=>{
+    if(v===null) return '#444';
+    return v>=0?'rgba(66,165,245,0.8)':'rgba(239,83,80,0.8)';
+  });
+
+  spiChartObj=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:`SPI-${win}`,data:values,backgroundColor:colors,
+      borderColor:colors.map(c=>c.replace('0.8','1')),borderWidth:0.5,barPercentage:1.0,categoryPercentage:1.0}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        annotation:{
+          annotations:{
+            line2p:{type:'line',yMin:2,yMax:2,borderColor:'#1565c0',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Estr. umido (+2)',position:'start',font:{size:9},color:'#90caf9'}},
+            line1p:{type:'line',yMin:1,yMax:1,borderColor:'#42a5f5',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Umido (+1)',position:'start',font:{size:9},color:'#90caf9'}},
+            line1n:{type:'line',yMin:-1,yMax:-1,borderColor:'#ffa726',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Secco (\u22121)',position:'start',font:{size:9},color:'#ffa726'}},
+            line2n:{type:'line',yMin:-2,yMax:-2,borderColor:'#ef5350',borderWidth:1,borderDash:[4,3],
+              label:{display:true,content:'Estr. secco (\u22122)',position:'start',font:{size:9},color:'#ef5350'}},
+            lineZ:{type:'line',yMin:0,yMax:0,borderColor:'#ffffff44',borderWidth:1}
+          }
+        },
+        tooltip:{callbacks:{label:ctx2=>{const v=ctx2.raw;return v!==null?`SPI: ${v.toFixed(2)} \u2014 ${spiCategory(v).label}`:'N/D';}}}
+      },
+      scales:{
+        x:{ticks:{maxRotation:90,font:{size:8},color:'#7a94b8',maxTicksLimit:60},grid:{color:'#1e305033'}},
+        y:{min:-3.5,max:3.5,ticks:{font:{size:10},color:'#7a94b8'},grid:{color:'#1e305066'}}
+      }
+    }
+  });
+}
+
+/* ── Heatmap ── */
+function renderSPIHeatmap(series,win){
+  const wrap=document.getElementById('spiHeatmapWrap');
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const grid={};
+  series.forEach(d=>{if(!grid[d.y])grid[d.y]={};grid[d.y][d.m]=d.spi;});
+  const yrs=Object.keys(grid).map(Number).sort((a,b)=>a-b);
+  let h='<table class="spi-heatmap"><thead><tr><th>Anno</th>';
+  mo.forEach(m=>h+=`<th>${m}</th>`);
+  h+='<th>Media</th></tr></thead><tbody>';
+  yrs.forEach(y=>{
+    h+=`<tr><th>${y}</th>`;
+    let sum=0,cnt=0;
+    for(let m=0;m<12;m++){
+      const v=grid[y]?.[m];
+      const bg=spiCellColor(v);
+      if(v!==null&&v!==undefined){sum+=v;cnt++;}
+      h+=`<td style="background:${bg}" title="SPI ${v!==null&&v!==undefined?v.toFixed(2):'N/D'}">${v!==null&&v!==undefined?v.toFixed(1):'\u2014'}</td>`;
+    }
+    const avg=cnt?sum/cnt:null;
+    const abg=spiCellColor(avg);
+    h+=`<td style="background:${abg};font-weight:700">${avg!==null?avg.toFixed(2):'\u2014'}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  wrap.innerHTML=h;
+}
+
+/* ── Decade drought frequency chart ── */
+function renderSPIDecadeChart(series,win){
+  const ctx=document.getElementById('spiDecadeChart');
+  if(spiDecadeObj){spiDecadeObj.destroy();spiDecadeObj=null;}
+
+  const decades={};
+  series.forEach(d=>{
+    if(d.spi===null) return;
+    const dec=Math.floor(d.y/10)*10;
+    if(!decades[dec]) decades[dec]={drought:0,wet:0,normal:0,total:0};
+    decades[dec].total++;
+    if(d.spi<=-1) decades[dec].drought++;
+    else if(d.spi>=1) decades[dec].wet++;
+    else decades[dec].normal++;
+  });
+  const decs=Object.keys(decades).map(Number).sort((a,b)=>a-b);
+  const labels=decs.map(d=>`${d}s`);
+  const drPct=decs.map(d=>((decades[d].drought/decades[d].total)*100).toFixed(1));
+  const wtPct=decs.map(d=>((decades[d].wet/decades[d].total)*100).toFixed(1));
+  const noPct=decs.map(d=>((decades[d].normal/decades[d].total)*100).toFixed(1));
+
+  spiDecadeObj=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'% Siccit\u00e0 (SPI\u2264\u22121)',data:drPct,backgroundColor:'rgba(239,83,80,0.7)',borderRadius:3},
+      {label:'% Normale',data:noPct,backgroundColor:'rgba(102,187,106,0.5)',borderRadius:3},
+      {label:'% Umido (SPI\u2265+1)',data:wtPct,backgroundColor:'rgba(66,165,245,0.7)',borderRadius:3}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7a94b8',font:{size:11}}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw}%`}}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#7a94b8'},grid:{color:'#1e305033'}},
+        y:{stacked:true,max:100,ticks:{callback:v=>v+'%',color:'#7a94b8'},grid:{color:'#1e305066'}}
+      }
+    }
+  });
+}
+
+/* ═══ SPI FORECAST ═══
+   AR(1) persistence + seasonal cycle + Mann-Kendall trend
+   Projects next 12 months from last available SPI value */
+function renderSPIForecast(series,win){
+  const ctx=document.getElementById('spiForecastChart');
+  if(spiForecastObj){spiForecastObj.destroy();spiForecastObj=null;}
+
+  const valid=series.filter(d=>d.spi!==null);
+  if(valid.length<24){
+    document.getElementById('spiForecastInsight').innerHTML='<b>Dati insufficienti per il forecast.</b> Servono almeno 24 mesi di SPI.';
+    return;
+  }
+
+  // AR(1): phi = autocorrelation lag-1
+  const vals=valid.map(d=>d.spi);
+  const n=vals.length;
+  const mean=vals.reduce((a,b)=>a+b)/n;
+  let num=0,den=0;
+  for(let i=1;i<n;i++){num+=(vals[i]-mean)*(vals[i-1]-mean);den+=(vals[i-1]-mean)**2;}
+  const phi=den?num/den:0;
+
+  // Seasonal cycle (average SPI per calendar month, last 30 years)
+  const recent=valid.filter(d=>d.y>=((new Date().getFullYear())-30));
+  const seasonal=Array(12).fill(0);
+  const sCnt=Array(12).fill(0);
+  recent.forEach(d=>{seasonal[d.m]+=d.spi;sCnt[d.m]++;});
+  for(let m=0;m<12;m++) seasonal[m]=sCnt[m]?seasonal[m]/sCnt[m]:0;
+
+  // Mann-Kendall trend (Theil-Sen slope on last 10 years)
+  const last10=valid.filter(d=>d.y>=((new Date().getFullYear())-10));
+  let slopes=[];
+  for(let i=0;i<last10.length;i++){
+    for(let j=i+1;j<last10.length;j++){
+      slopes.push((last10[j].spi-last10[i].spi)/(j-i));
+    }
+  }
+  slopes.sort((a,b)=>a-b);
+  const trendSlope=slopes.length?slopes[Math.floor(slopes.length/2)]:0;
+
+  // Project 12 months
+  const lastD=valid[valid.length-1];
+  let prev=lastD.spi;
+  const forecast=[];
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  for(let i=1;i<=12;i++){
+    const nm=(lastD.m+i)%12;
+    const ny=lastD.y+Math.floor((lastD.m+i)/12);
+    const ar1=phi*(prev-mean)+mean;
+    const s=seasonal[nm]*0.3;
+    const tr=trendSlope*i;
+    let fc=ar1*0.5+s+tr+mean*0.2;
+    fc=Math.max(-3.5,Math.min(3.5,fc));
+    forecast.push({y:ny,m:nm,spi:+fc.toFixed(2)});
+    prev=fc;
+  }
+
+  // Display: last 36 months historical + 12 months forecast
+  const histTail=valid.slice(-36);
+  const allLabels=[...histTail.map(d=>`${mo[d.m]} ${d.y}`),...forecast.map(d=>`${mo[d.m]} ${d.y}`)];
+  const histData=[...histTail.map(d=>d.spi),...Array(12).fill(null)];
+  const fcData=[...Array(histTail.length-1).fill(null),histTail[histTail.length-1].spi,...forecast.map(d=>d.spi)];
+  const upperBand=[...Array(histTail.length-1).fill(null),histTail[histTail.length-1].spi,...forecast.map((d,i)=>Math.min(3.5,d.spi+0.3*(i+1)))];
+  const lowerBand=[...Array(histTail.length-1).fill(null),histTail[histTail.length-1].spi,...forecast.map((d,i)=>Math.max(-3.5,d.spi-0.3*(i+1)))];
+
+  spiForecastObj=new Chart(ctx,{
+    type:'line',
+    data:{labels:allLabels,datasets:[
+      {label:`SPI-${win} Storico`,data:histData,borderColor:'#4fc3f7',backgroundColor:'rgba(79,195,247,0.1)',
+        fill:false,tension:0.3,pointRadius:2,borderWidth:2},
+      {label:'Forecast',data:fcData,borderColor:'#ffb347',backgroundColor:'rgba(255,179,71,0.1)',
+        borderDash:[5,3],fill:false,tension:0.3,pointRadius:3,borderWidth:2.5},
+      {label:'Banda sup.',data:upperBand,borderColor:'transparent',backgroundColor:'rgba(255,179,71,0.08)',
+        fill:'+1',pointRadius:0,borderWidth:0},
+      {label:'Banda inf.',data:lowerBand,borderColor:'transparent',backgroundColor:'rgba(255,179,71,0.08)',
+        fill:'-1',pointRadius:0,borderWidth:0}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#7a94b8',font:{size:11},filter:i=>i.text!=='Banda sup.'&&i.text!=='Banda inf.'}},
+        annotation:{annotations:{
+          lineZ:{type:'line',yMin:0,yMax:0,borderColor:'#ffffff33',borderWidth:1},
+          line1n:{type:'line',yMin:-1,yMax:-1,borderColor:'#ffa72644',borderWidth:1,borderDash:[3,3]},
+          line1p:{type:'line',yMin:1,yMax:1,borderColor:'#42a5f544',borderWidth:1,borderDash:[3,3]}
+        }}
+      },
+      scales:{
+        x:{ticks:{maxRotation:90,font:{size:8},color:'#7a94b8',maxTicksLimit:24},grid:{color:'#1e305033'}},
+        y:{min:-3.5,max:3.5,ticks:{font:{size:10},color:'#7a94b8'},grid:{color:'#1e305066'}}
+      }
+    }
+  });
+
+  // Forecast insight
+  const fcInsight=document.getElementById('spiForecastInsight');
+  const avgFc=forecast.reduce((a,b)=>a+b.spi,0)/forecast.length;
+  const cat=spiCategory(avgFc);
+  const drMonths=forecast.filter(d=>d.spi<=-1).length;
+  fcInsight.innerHTML=`<b>Forecast SPI-${win} (prossimi 12 mesi):</b> Media prevista <span style="color:${cat.color};font-weight:700">${avgFc.toFixed(2)}</span> (${cat.label}). `+
+    `<b>\u03c6 (AR1):</b> ${phi.toFixed(3)} \u00b7 <b>Trend:</b> ${trendSlope>=0?'+':''}${trendSlope.toFixed(4)}/mese \u00b7 `+
+    `<b>Mesi siccit\u00e0 previsti:</b> ${drMonths}/12.`+
+    (drMonths>=6?'<br>\u26a0\ufe0f <span style="color:var(--red)">Possibile periodo siccitoso prolungato nei prossimi mesi.</span>':'');
+}
+
+/* ── Insight text ── */
+function renderSPIInsight(series,win){
+  const box=document.getElementById('spiInsight');
+  const valid=series.filter(d=>d.spi!==null);
+  if(!valid.length){box.innerHTML='Nessun dato SPI disponibile.';return;}
+
+  const droughts=valid.filter(d=>d.spi<=-1.5);
+  const extremeDr=valid.filter(d=>d.spi<=-2);
+  const wets=valid.filter(d=>d.spi>=1.5);
+  const yrs=Object.keys(ppYM).map(Number);
+  const span=`${Math.min(...yrs)}\u2013${Math.max(...yrs)}`;
+
+  let maxStreak=0,curStreak=0,streakStart=null,bestStart=null;
+  valid.forEach(d=>{
+    if(d.spi<=-1){curStreak++;if(curStreak===1)streakStart=d;if(curStreak>maxStreak){maxStreak=curStreak;bestStart=streakStart;}}
+    else curStreak=0;
+  });
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+  box.innerHTML=`<b>Analisi SPI-${win} | ${span}</b><br>`+
+    `Mesi analizzati: <b>${valid.length}</b> \u00b7 Siccit\u00e0 moderata+: <b>${droughts.length}</b> (${(droughts.length/valid.length*100).toFixed(1)}%) \u00b7 `+
+    `Siccit\u00e0 estrema: <b>${extremeDr.length}</b> \u00b7 Periodi molto umidi: <b>${wets.length}</b><br>`+
+    (bestStart?`\U0001f4cf Sequenza siccitosa pi\u00f9 lunga: <b>${maxStreak} mesi</b> da ${mo[bestStart.m]} ${bestStart.y}.`:'Nessuna sequenza significativa di siccit\u00e0.');
+}
+
+/* ── Download SPI data as Excel ── */
+function dlSPIData(){
+  const win=parseInt(document.getElementById('spiWin').value)||3;
+  const series=getSPISeries(win);
+  const mo=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const rows=[['Anno','Mese','SPI-'+win,'Categoria']];
+  series.forEach(d=>{
+    const cat=spiCategory(d.spi);
+    rows.push([d.y, mo[d.m], d.spi, cat.label]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'SPI');
+  XLSX.writeFile(wb,`MonteDiFo_SPI${win}.xlsx`);
+}
+
+/* ════════════════════════════════════════════
+   SERIE CONTINUA (mensile / trimestrale)
+   ════════════════════════════════════════════ */
+let serieGran='month';
+let serieFrom=null, serieTo=null;
+
+function setSerieGran(g){
+  serieGran=g;
+  document.querySelectorAll('#serieGranBtns button').forEach(b=>b.classList.toggle('on',b.dataset.g===g));
+  renderSerie();
+}
+function applySerieRange(){
+  const a=parseInt(document.getElementById('serieFrom').value);
+  const b=parseInt(document.getElementById('serieTo').value);
+  serieFrom=isNaN(a)?null:a; serieTo=isNaN(b)?null:b;
+  document.querySelectorAll('#serieDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderSerie();
+}
+function serieAllYears(){
+  serieFrom=null; serieTo=null;
+  document.getElementById('serieFrom').value=''; document.getElementById('serieTo').value='';
+  document.querySelectorAll('#serieDecadeBar .dec-btn').forEach(x=>x.classList.remove('on'));
+  renderSerie();
+}
+function buildSerieDecadeBar(){
+  const bar=document.getElementById('serieDecadeBar'); if(!bar) return;
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  if(!years.length){bar.innerHTML='';return;}
+  bar.innerHTML='';
+  const firstDec=Math.floor(years[0]/10)*10, lastDec=Math.floor(years[years.length-1]/10)*10;
+  for(let d=firstDec; d<=lastDec; d+=10){
+    const btn=document.createElement('button');
+    btn.className='dec-btn'; btn.textContent=`${d}s`; btn.dataset.dec=d;
+    btn.addEventListener('click',()=>{
+      serieFrom=d; serieTo=d+9;
+      document.getElementById('serieFrom').value=d; document.getElementById('serieTo').value=d+9;
+      document.querySelectorAll('#serieDecadeBar .dec-btn').forEach(x=>x.classList.toggle('on',x===btn));
+      renderSerie();
+    });
+    bar.appendChild(btn);
+  }
+}
+
+function lastDataMonthCY(){
+  let last=-1;
+  Object.keys(ppByDate).forEach(d=>{ if(d.startsWith(CY)){const m=+d.split('-')[1]-1; if(m>last)last=m;} });
+  return last;
+}
+
+function renderSerie(){
+  if(!ppYM||!Object.keys(ppYM).length) return;
+  const en=(window.LANG==='en');
+  buildSerieDecadeBar();
+
+  // Static labels (lang-aware)
+  document.getElementById('serieTitle').childNodes[0].nodeValue =
+    en?'📈 Continuous precipitation series ':'📈 Serie continua precipitazioni ';
+  document.getElementById('serieGranLbl').textContent=en?'Aggregation:':'Aggregazione:';
+  document.getElementById('serieDecLbl').textContent =en?'Decade:':'Decennio:';
+  document.getElementById('serieFromLbl').textContent=en?'From:':'Da:';
+  document.getElementById('serieToLbl').textContent  =en?'To:':'A:';
+  document.getElementById('serieApplyBtn').textContent=en?'Apply':'Applica';
+  document.getElementById('serieAllBtn').textContent  =en?'All':'Tutti';
+  const gb=document.querySelectorAll('#serieGranBtns button');
+  gb[0].textContent=en?'Monthly':'Mensile'; gb[1].textContent=en?'Quarterly':'Trimestrale';
+
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  const fromY=serieFrom??years[0], toY=serieTo??years[years.length-1];
+  const cyLastM=lastDataMonthCY();
+  const labels=[], vals=[];
+  years.filter(y=>y>=fromY&&y<=toY).forEach(y=>{
+    if(serieGran==='month'){
+      for(let m=0;m<12;m++){
+        if(y===CY && cyLastM>=0 && m>cyLastM) continue;
+        labels.push(`${MONTHS[m]} ${y}`);
+        vals.push(+(ppYM[y][m]||0).toFixed(1));
+      }
+    } else {
+      for(let q=0;q<4;q++){
+        const ms=[q*3,q*3+1,q*3+2];
+        if(y===CY && cyLastM>=0 && ms[0]>cyLastM) continue;
+        labels.push(`Q${q+1} ${y}`);
+        vals.push(+ms.reduce((a,mi)=>a+(ppYM[y][mi]||0),0).toFixed(1));
+      }
+    }
+  });
+
+  // Moving average (12 mesi / 4 trimestri)
+  const win=serieGran==='month'?12:4;
+  const ma=vals.map((_,i)=> i<win-1?null:+(vals.slice(i-win+1,i+1).reduce((a,b)=>a+b,0)/win).toFixed(1));
+  const maLbl=serieGran==='month'
+    ? (en?'12-month moving avg':'Media mobile 12 mesi')
+    : (en?'4-quarter moving avg':'Media mobile 4 trim.');
+  const barLbl=en?'Precipitation (mm)':'Precipitazione (mm)';
+
+  dc('cSerie');
+  charts['cSerie']=new Chart(document.getElementById('cSerie'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:barLbl,data:vals,backgroundColor:'rgba(79,195,247,0.55)',borderColor:'#4fc3f7',borderWidth:0.5,
+       borderRadius:2,barPercentage:1.0,categoryPercentage:0.95,order:2},
+      {label:maLbl,data:ma,type:'line',borderColor:'#ffb347',borderWidth:2,pointRadius:0,tension:.3,fill:false,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{ticks:{maxRotation:90,font:{size:8},color:'#7a94b8',maxTicksLimit:serieGran==='month'?40:30,autoSkip:true},grid:{color:'#1e305033'}},
+        y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}}
+      },
+      plugins:{legend:{labels:{color:'#e3eaf8',usePointStyle:true}},
+        tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw!=null?f(i.raw,1)+' mm':'n/d'}`}}}
+    }
+  });
+
+  const note=document.getElementById('serieNote');
+  const periodTxt=`${fromY}\u2013${toY}`;
+  note.textContent=en
+    ? `${vals.length} ${serieGran==='month'?'months':'quarters'} \u00b7 range ${periodTxt} \u00b7 orange line = ${maLbl.toLowerCase()}.`
+    : `${vals.length} ${serieGran==='month'?'mesi':'trimestri'} \u00b7 intervallo ${periodTxt} \u00b7 linea arancio = ${maLbl.toLowerCase()}.`;
+}
+
+function dlSerie(){
+  const ch=charts['cSerie']; if(!ch) return;
+  const labels=ch.data.labels||[];
+  const v=ch.data.datasets[0]?.data||[];
+  const ma=ch.data.datasets[1]?.data||[];
+  const head=['Periodo','mm','MediaMobile'];
+  const rows=[head,...labels.map((l,i)=>[l,v[i]??'',ma[i]??''])];
+  const blob=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`montedifo_serie_${serieGran}.csv`;a.click();
+}
+
+/* ════════════════════════════════════════════
+   CONFRONTO ANNI RECENTI vs MEDIA STORICA
+   ════════════════════════════════════════════ */
+let cmpChartObj=null;
+function renderConfronto(){
+  if(!ppYM||!Object.keys(ppYM).length) return;
+  const en=(window.LANG==='en');
+  const years=Object.keys(ppYM).map(Number).sort((a,b)=>a-b);
+  const annual={}; years.forEach(y=>annual[y]=+(ppYM[y]||[]).reduce((a,b)=>a+b,0).toFixed(0));
+  const histYears=years.filter(y=>y<CY);
+  const hist=histYears.map(y=>annual[y]);
+  if(hist.length<5) return;
+  const mean=hist.reduce((a,b)=>a+b,0)/hist.length;
+  const sd=Math.sqrt(hist.reduce((a,b)=>a+(b-mean)**2,0)/hist.length);
+  const sortedDesc=[...hist].sort((a,b)=>b-a);
+  const zf=t=>(t-mean)/sd;
+  const pctile=t=>hist.filter(h=>h<=t).length/hist.length*100;
+  const pctMean=t=>(t-mean)/mean*100;
+
+  // Titles & intro (lang-aware)
+  document.getElementById('cmpTitle').textContent=en?'📊 Recent years vs historical mean':'📊 Anni recenti vs media storica';
+  document.getElementById('cmpIntro').innerHTML=en
+    ? `High-level comparison of recent years against the multi-year mean of the Monte di Fò series. A year is <b style="color:var(--text)">within normal range</b> if it stays within \u00b11 standard deviation (\u03c3) of the mean, <b style="color:var(--text)">anomalous</b> if it exceeds it. The current year is compared on year-to-date cumulative vs the historical average for the same period.`
+    : `Confronto ad alto livello degli ultimi anni rispetto alla media pluriennale della serie Monte di Fò. Un anno \u00e8 <b style="color:var(--text)">nella norma</b> se rientra entro \u00b11 deviazione standard (\u03c3) dalla media, <b style="color:var(--text)">anomalo</b> se la supera. L'anno in corso \u00e8 confrontato sul cumulato YTD vs media storica dello stesso periodo.`;
+
+  // classify badge
+  function badge(z){
+    if(z>=1)  return {c:'#1565c0', it:'Molto piovoso (anomalo)', en:'Very wet (anomalous)'};
+    if(z<=-1) return {c:'#c62828', it:'Molto secco (anomalo)',  en:'Very dry (anomalous)'};
+    return {c:'#2e7d32', it:'Nella norma (\u00b11\u03c3)', en:'Within normal range (\u00b11\u03c3)'};
+  }
+
+  // build cards for CY-2, CY-1 (full years) + CY (YTD)
+  let cardsHtml='';
+  [CY-2,CY-1].forEach(y=>{
+    if(annual[y]==null) return;
+    const t=annual[y], z=zf(t), p=pctMean(t), pc=pctile(t);
+    const bd=badge(z);
+    cardsHtml+=`<div class="cmp-card" style="border-top-color:${bd.c}">
+      <div class="cmp-yr">${y}</div>
+      <div class="cmp-val" style="color:${bd.c}">${f(t,0)} <span style="font-size:.6em;color:var(--muted)">mm</span></div>
+      <div class="cmp-sub">${p>=0?'+':''}${f(p,0)}% ${en?'vs mean':'vs media'} \u00b7 z=${z>=0?'+':''}${f(z,2)}\u03c3<br>${en?'percentile':'percentile'} ${f(pc,0)}\u00b0 / 100</div>
+      <span class="cmp-badge" style="background:${bd.c}">${en?bd.en:bd.it}</span>
+    </div>`;
+  });
+
+  // current year YTD
+  const cyDays=Object.entries(ppByDate).filter(([d])=>d.startsWith(CY)).sort(([a],[b])=>a.localeCompare(b));
+  let verdictCY='';
+  if(cyDays.length){
+    const lastDate=cyDays[cyDays.length-1][0];
+    const lastDoy=Math.floor((new Date(lastDate)-new Date(CY,0,1))/86400000)+1;
+    const ytd=cyDays.reduce((a,[,v])=>a+v,0);
+    const histYtd=histYears.map(y=>Object.entries(ppByDate).filter(([d])=>{
+      if(!d.startsWith(y))return false;
+      const doy=Math.floor((new Date(d)-new Date(y,0,1))/86400000)+1; return doy<=lastDoy;
+    }).reduce((a,[,v])=>a+v,0)).filter(v=>v>0);
+    const ytdMean=histYtd.length?histYtd.reduce((a,b)=>a+b,0)/histYtd.length:null;
+    const ytdSd=histYtd.length>1?Math.sqrt(histYtd.reduce((a,b)=>a+(b-ytdMean)**2,0)/histYtd.length):0;
+    const ytdZ=ytdSd?(ytd-ytdMean)/ytdSd:0;
+    const ytdPct=ytdMean?(ytd-ytdMean)/ytdMean*100:0;
+    const bd=badge(ytdZ);
+    cardsHtml+=`<div class="cmp-card" style="border-top-color:${bd.c}">
+      <div class="cmp-yr">${CY} ${en?'(YTD)':'(in corso)'}</div>
+      <div class="cmp-val" style="color:${bd.c}">${f(ytd,0)} <span style="font-size:.6em;color:var(--muted)">mm</span></div>
+      <div class="cmp-sub">${en?'YTD through':'YTD al'} ${lastDate}<br>${en?'hist. avg same period':'media storica stesso periodo'}: ${f(ytdMean,0)} mm (${ytdPct>=0?'+':''}${f(ytdPct,0)}%)</div>
+      <span class="cmp-badge" style="background:${bd.c}">${en?bd.en:bd.it}</span>
+    </div>`;
+    verdictCY = en
+      ? `<b>${CY}</b> to date (${lastDate}): <b>${f(ytd,0)} mm</b>, ${ytdPct>=0?'+':''}${f(ytdPct,0)}% vs the historical average for the same period (z=${ytdZ>=0?'+':''}${f(ytdZ,2)}\u03c3) \u2014 ${Math.abs(ytdZ)<1?'broadly in line with the norm':(ytdZ>0?'on the wet side':'on the dry side')}.`
+      : `<b>${CY}</b> al ${lastDate}: <b>${f(ytd,0)} mm</b>, ${ytdPct>=0?'+':''}${f(ytdPct,0)}% vs media storica dello stesso periodo (z=${ytdZ>=0?'+':''}${f(ytdZ,2)}\u03c3) \u2014 ${Math.abs(ytdZ)<1?'sostanzialmente nella norma':(ytdZ>0?'sul lato piovoso':'sul lato secco')}.`;
+  }
+  document.getElementById('cmpGrid').innerHTML=cardsHtml;
+
+  // verdict for full years
+  let vParts=[];
+  if(annual[CY-2]!=null){
+    const t=annual[CY-2], z=zf(t), ord=sortedDesc.indexOf(t)+1;
+    vParts.push(en
+      ? `<b>${CY-2}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3${z>=1?`, ${ord}${ord===1?'st':ord===2?'nd':ord===3?'rd':'th'} wettest of ${hist.length} years \u2014 beyond the normal band`:''}).`
+      : `<b>${CY-2}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3${z>=1?`, ${ord}\u00b0 anno pi\u00f9 piovoso su ${hist.length} \u2014 oltre la banda di normalit\u00e0`:''}).`);
+  }
+  if(annual[CY-1]!=null){
+    const t=annual[CY-1], z=zf(t);
+    vParts.push(en
+      ? `<b>${CY-1}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3) \u2014 ${Math.abs(z)<1?'within normal variability':'anomalous'}${z>0&&z<1?' (high side of normal)':''}.`
+      : `<b>${CY-1}</b>: ${f(t,0)} mm (${pctMean(t)>=0?'+':''}${f(pctMean(t),0)}%, z=${z>=0?'+':''}${f(z,2)}\u03c3) \u2014 ${Math.abs(z)<1?'nella norma':'anomalo'}${z>0&&z<1?' (lato alto del normale)':''}.`);
+  }
+  if(verdictCY) vParts.push(verdictCY);
+  const head=en
+    ? `<b>${en?'Series mean':''} ${f(mean,0)} mm/yr \u00b7 \u03c3=${f(sd,0)} mm \u00b7 normal band [${f(mean-sd,0)}, ${f(mean+sd,0)}] mm.</b><br>`
+    : `<b>Media serie ${f(mean,0)} mm/anno \u00b7 \u03c3=${f(sd,0)} mm \u00b7 banda normale [${f(mean-sd,0)}, ${f(mean+sd,0)}] mm.</b><br>`;
+  document.getElementById('cmpVerdict').innerHTML=head+vParts.join(' ');
+
+  // annual bar chart (full years, last 12) + mean & sigma band
+  const showYears=histYears.slice(-12);
+  const bars=showYears.map(y=>annual[y]);
+  const cols=showYears.map(y=>{const z=zf(annual[y]);return z>=1?'#1565c0':z<=-1?'#c62828':'rgba(79,195,247,.55)';});
+  dc('cCmpAnnual');
+  charts['cCmpAnnual']=new Chart(document.getElementById('cCmpAnnual'),{
+    type:'bar',
+    data:{labels:showYears,datasets:[{label:en?'Annual total (mm)':'Totale annuo (mm)',data:bars,
+      backgroundColor:cols,borderColor:cols.map(c=>c.replace('.55','1')),borderWidth:1,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        annotation:{annotations:{
+          band:{type:'box',yMin:mean-sd,yMax:mean+sd,backgroundColor:'rgba(102,187,106,0.10)',borderWidth:0},
+          meanL:{type:'line',yMin:mean,yMax:mean,borderColor:'#66bb6a',borderWidth:1.5,borderDash:[5,4],
+            label:{display:true,content:(en?'mean ':'media ')+f(mean,0),position:'end',font:{size:9},color:'#66bb6a',backgroundColor:'rgba(0,0,0,0.4)'}},
+          upL:{type:'line',yMin:mean+sd,yMax:mean+sd,borderColor:'#66bb6a55',borderWidth:1,borderDash:[3,3]},
+          loL:{type:'line',yMin:mean-sd,yMax:mean-sd,borderColor:'#66bb6a55',borderWidth:1,borderDash:[3,3]}
+        }},
+        tooltip:{callbacks:{label:i=>`${f(i.raw,0)} mm (${pctMean(i.raw)>=0?'+':''}${f(pctMean(i.raw),0)}%, z=${zf(i.raw)>=0?'+':''}${f(zf(i.raw),2)}\u03c3)`}}},
+      scales:{y:{beginAtZero:true,grid:{color:'#1e3050'},title:{display:true,text:'mm',color:'#7a94b8'}},x:{grid:{color:'#1e3050'}}}
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   TRADUZIONE INTERFACCIA (IT ⇄ EN)
+   ════════════════════════════════════════════ */
+const I18N_IT2EN = {
+  // header
+  '⬇ Scarica dati':'⬇ Download data','← Mappa':'← Map','🔬 Analisi':'🔬 Analysis',
+  // status bar
+  'API live:':'Live API:','Storico CSV:':'CSV history:','Periodo:':'Period:','Giorni in DB:':'Days in DB:',
+  // upload
+  '📂 Carica dati storici (CSV / Excel)':'📂 Load historical data (CSV / Excel)','📁 Seleziona file':'📁 Select file',
+  // KPI
+  'Ultimo dato':'Latest value','Anno in corso':'Current year','Media annua':'Annual mean',
+  'Max giornaliero':'Daily max','Max intensità':'Max intensity','Giorni piovosi/anno':'Rainy days/yr',
+  'mm cumulati':'cumulative mm','mm/anno storico':'mm/yr historical','media storica':'historical mean',
+  // tabs
+  '⚡ Recenti':'⚡ Recent','📈 Cumulate':'📈 Cumulative','📅 Mensile':'📅 Monthly','⚡ Intensità':'⚡ Intensity',
+  '⛈ Estremi':'⛈ Extremes','📋 Tabella':'📋 Table','📈 Serie continua':'📈 Continuous series','📊 Confronto anni':'📊 Year comparison',
+  // recenti cards
+  '🌧 Precipitazione giornaliera — ultimi 30 giorni':'🌧 Daily precipitation — last 30 days',
+  '⚡ Intensità massima oraria — ultimi 30 giorni':'⚡ Max hourly intensity — last 30 days',
+  '🌡 Temperatura min / media / max — ultimi 30 giorni':'🌡 Temperature min / mean / max — last 30 days',
+  // cumulate
+  '📈 Curve cumulate annuali':'📈 Annual cumulative curves','Scala:':'Scale:','mm assoluti':'absolute mm','% cumulata':'cumulative %',
+  'Spessore:':'Thickness:','Sottile':'Thin','Normale':'Normal','Spesso':'Thick',
+  'Decennio:':'Decade:','Anni custom:':'Custom years:','Tutti':'All','Nessuno':'None',
+  // heatmap
+  '🟦 Heatmap precipitazione mensile (mm)':'🟦 Monthly precipitation heatmap (mm)','Scala mensile:':'Monthly scale:',
+  'Valori:':'Values:','Mostra':'Show','Nascondi':'Hide','Totale':'Total','media':'mean',
+  // mensile
+  '📅 Precipitazione media mensile storica':'📅 Historical mean monthly precipitation',
+  '🌡 Temperatura media mensile storica':'🌡 Historical mean monthly temperature',
+  // intensità
+  '⚡ Intensità massima oraria — storico annuale':'⚡ Max hourly intensity — annual record',
+  'Vista:':'View:','Max annuale':'Annual max','Media mensile':'Monthly mean','🏆 Top 20 intensità massime':'🏆 Top 20 max intensities',
+  // estremi
+  '🎚 Filtro periodo e visualizzazione':'🎚 Period & display filter',
+  'Sfumatura per intensità':'Shade by intensity',
+  '⛈ Giorni sopra soglia per anno':'⛈ Days above threshold per year','Soglia:':'Threshold:',
+  '🏆 Top 20 eventi — 1 giorno':'🏆 Top 20 events — 1 day',
+  '🌊 Top 20 eventi — 2 giorni consecutivi':'🌊 Top 20 events — 2 consecutive days',
+  '🌊 Top 20 eventi — 3 giorni consecutivi':'🌊 Top 20 events — 3 consecutive days',
+  '📊 Massimi 1 giorno per anno':'📊 1-day maxima per year',
+  '📊 Massimi 2 giorni consecutivi per anno':'📊 2-day consecutive maxima per year',
+  '📊 Massimi 3 giorni consecutivi per anno':'📊 3-day consecutive maxima per year',
+  'Finestra:':'Window:','1 giorno':'1 day','2 giorni':'2 days','3 giorni':'3 days',
+  // tabella
+  '📋 Dati giornalieri':'📋 Daily data','Anno:':'Year:','Mese:':'Month:','Solo piovosi:':'Rainy only:','Sì':'Yes',
+  'Data':'Date','Fonte':'Source','Anno':'Year','Media':'Mean',
+  // SPI
+  'Finestra SPI:':'SPI window:','Da anno:':'From year:','A anno:':'To year:','Applica':'Apply',
+  '📊 Serie storica SPI':'📊 SPI historical series','🗓️ Heatmap SPI (anno × mese)':'🗓️ SPI heatmap (year × month)',
+  '📉 Frequenza siccità per decennio':'📉 Drought frequency by decade','🔮 Forecast SPI (prossimi 12 mesi)':'🔮 SPI forecast (next 12 months)',
+  '⬇ Excel SPI':'⬇ SPI Excel',
+  // serie + confronto section titles (static defaults; render fns also set these lang-aware when their panel is visible)
+  '📈 Serie continua precipitazioni':'📈 Continuous precipitation series',
+  '📊 Anni recenti vs media storica':'📊 Recent years vs historical mean',
+  // modal
+  'Tipo dati':'Data type','Tutto (Excel multi-foglio)':'All (multi-sheet Excel)','Precipitazione giornaliera':'Daily precipitation',
+  'Intensità massima oraria':'Max hourly intensity','Temperatura (min/media/max)':'Temperature (min/mean/max)',
+  'Dal':'From','Al':'To','Formato':'Format','Annulla':'Cancel','⬇ Scarica':'⬇ Download'
+};
+const I18N_EN2IT = Object.fromEntries(Object.entries(I18N_IT2EN).map(([k,v])=>[v,k]));
+
+function translateDoc(){
+  const lang=window.LANG||'it';
+  const dict = lang==='en'?I18N_IT2EN:I18N_EN2IT;
+  const roots=[document.querySelector('header'),document.querySelector('.main'),document.getElementById('dlModal')];
+  roots.forEach(root=>{
+    if(!root) return;
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+    const nodes=[]; let n; while((n=w.nextNode())) nodes.push(n);
+    nodes.forEach(tn=>{
+      const t=tn.nodeValue.trim();
+      if(t && dict[t]!==undefined) tn.nodeValue=tn.nodeValue.replace(t,dict[t]);
+    });
+  });
+}
+function postRenderI18n(){ if((window.LANG||'it')==='en') translateDoc(); }
+
+function applyLang(lang){
+  window.LANG=lang;
+  MONTHS = lang==='en'?MONTHS_EN.slice():MONTHS_IT.slice();
+  document.documentElement.lang=lang;
+  const b=document.getElementById('langBtn'); if(b) b.textContent= lang==='en'?'🌐 IT':'🌐 EN';
+  renderAll();
+  const spi=document.getElementById('p-spi'); if(spi&&spi.classList.contains('on')) renderSPITab();
+  translateDoc();
+}
+function toggleLang(){ applyLang((window.LANG==='en')?'it':'en'); }
+
+
+/* ── Event listeners for SPI controls ── */
+document.getElementById('spiWin').addEventListener('change',renderSPITab);
+document.querySelectorAll('#spiPeriodBtns button').forEach(b=>{
+  b.addEventListener('click',function(){applySPIPeriod(this.dataset.range);});
+});
+
+
+init();
+</script>
+</body>
+</html>
