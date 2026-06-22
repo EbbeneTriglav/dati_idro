@@ -271,9 +271,10 @@
  "colore": "#26c6da",
  "pagina": "montedifo.html",
  "codice_sir": "TOS01000916",
- "file_dati": [
-   "MonteDiFo_precip_1992-2026.csv",
-   "MonteDiFo_temp_1992-2026.csv"
+  "file_dati": [
+    "MonteDiFo_precip_1992-2026.csv",
+    "MonteDiFo_temp_1992-2026.csv",
+    "MonteDiFo_estremi_1991-2025.csv"
   ]
 }
  ]
