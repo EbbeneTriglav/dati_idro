@@ -1,13 +1,15 @@
 name: Aggiorna Monte di Fò (SIR Toscana)
 
-# Aggiornamento server-side (niente CORS): lo script interroga il SIR e committa il CSV.
+# Aggiornamento server-side (niente CORS): lo script scarica i CSV dal SIR e committa.
+# Imposta prima i due URL di download come "Repository variables" (Settings -> Secrets and
+# variables -> Actions -> Variables):  SIR_PRECIP_URL  e  SIR_TEMP_URL
 on:
   schedule:
-    - cron: '30 6 * * *'      # ogni giorno alle 06:30 UTC (08:30 ora legale IT)
+    - cron: '30 6 * * *'      # ogni giorno 06:30 UTC
   workflow_dispatch:           # esecuzione manuale dal tab Actions
 
 permissions:
-  contents: write
+  contents: write              # serve per il push del commit
 
 concurrency:
   group: update-montedifo
@@ -16,24 +18,24 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    env:
+      SIR_PRECIP_URL: ${{ vars.SIR_PRECIP_URL }}
+      SIR_TEMP_URL:   ${{ vars.SIR_TEMP_URL }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+        with: { python-version: '3.12' }
 
-      - name: Aggiorna CSV da SIR Toscana
+      - name: Aggiorna CSV da SIR
         run: python scripts/update_montedifo_sir.py
 
       - name: Commit se ci sono novità
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- dati/MonteDiFo_precip_2004-2026.csv; then
-            git add dati/MonteDiFo_precip_2004-2026.csv
+          if ! git diff --quiet -- dati/MonteDiFo_precip_2004-2026.csv dati/MonteDiFo_temp_1992-2026.csv; then
+            git add dati/MonteDiFo_precip_2004-2026.csv dati/MonteDiFo_temp_1992-2026.csv
             git commit -m "auto: aggiornamento Monte di Fò (SIR) $(date -u +%F)"
-            # retry rebase-push (come radar-dpc) per evitare conflitti con altri commit
             for i in 1 2 3 4 5; do
               git pull --rebase --autostash && git push && break || sleep 5
             done
