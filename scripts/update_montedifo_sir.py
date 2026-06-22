@@ -2,31 +2,30 @@
 """
 Aggiorna i CSV di Monte di Fo (TOS01000916) - PRECIPITAZIONE e TEMPERATURA - dal SIR Toscana.
 
-PERCHE SERVER-SIDE
-------------------
-Il SIR NON ha API REST/CORS e il grafico e un PNG generato lato server (nessuna XHR di dati).
-Il download avviene dalla pagina  https://www.sir.toscana.it/consistenza-rete :
-ricerca stazione -> modale -> icona download -> CSV (serie completa, formato noto).
-Questo script gira in una GitHub Action (niente CORS), riscarica il CSV completo e fonde i
-giorni nuovi/cambiati nei file in dati/.
+FONTE DATI
+----------
+Pagina per-anno del SIR (tabella HTML a matrice giorni x mesi):
+  https://www.sir.toscana.it/archivio/dati.php?A=<anno>&IDS=TOS01000916&IDST=pluvio  (precip)
+  https://www.sir.toscana.it/archivio/dati.php?A=<anno>&IDS=TOS01000916&IDST=termo   (temp: Tmax Tmin)
 
->>> UNICA COSA DA FARE UNA VOLTA: incollare i 2 URL di download <<<
-Aprire consistenza-rete, cercare "Monte di Fo", aprire il modale, premere F12 -> scheda
-"Network", cliccare l'icona di download (una volta col sensore PLUVIOMETRO selezionato, una
-col TERMOMETRO): copiare l'URL della richiesta che parte e incollarlo qui sotto.
-(In alternativa passarli via variabili d'ambiente SIR_PRECIP_URL / SIR_TEMP_URL.)
+Lo script gira lato server (GitHub Action, niente CORS), legge la matrice dell'ANNO CORRENTE
+(il param A viene riscritto in automatico) e fonde i giorni nuovi/cambiati nei CSV in dati/.
+Lo storico pre-anno-corrente resta quello gia committato.
+
+URL impostati come Repository variables: SIR_PRECIP_URL / SIR_TEMP_URL
+(possono contenere un A= qualsiasi: viene sostituito con l'anno corrente).
 """
-import csv, os, re, sys, urllib.request
+import csv, os, re, sys, datetime as dt, urllib.request
 
 BASE = os.path.join(os.path.dirname(__file__), "..", "dati")
 HEADERS = {"User-Agent": "Mozilla/5.0 (dati_idro updater)"}
+YEAR = dt.date.today().year
 
-# -- URL di download (da catturare dalla Network tab di consistenza-rete) --
 SIR_PRECIP_URL = os.environ.get("SIR_PRECIP_URL", "")
 SIR_TEMP_URL   = os.environ.get("SIR_TEMP_URL", "")
 
 JOBS = [
-    (SIR_PRECIP_URL, "MonteDiFo_precip_2004-2026.csv", "precip"),
+    (SIR_PRECIP_URL, "MonteDiFo_precip_1992-2026.csv", "precip"),
     (SIR_TEMP_URL,   "MonteDiFo_temp_1992-2026.csv",   "temp"),
 ]
 
@@ -37,37 +36,66 @@ def fetch(url):
         return r.read().decode("utf-8", "replace")
 
 
-def clean_num(x):
-    x = re.sub(r'[NRIVP@\s"]', "", x or "").replace(",", ".")
-    if x in ("", "-9999"):
-        return None
+def cells_of(html):
+    """Estrae la griglia di celle (lista di righe, ogni riga = lista di testi cella)."""
+    rows = []
+    for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", html, re.S | re.I):
+        cells = []
+        for td in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", tr, re.S | re.I):
+            txt = re.sub(r"<[^>]+>", " ", td)          # togli tag (br, span, ...)
+            txt = txt.replace("&nbsp;", " ").replace("\xa0", " ")
+            txt = re.sub(r"\s+", " ", txt).strip()
+            cells.append(txt)
+        if cells:
+            rows.append(cells)
+    return rows
+
+
+def valid_date(y, m, d):
     try:
-        return round(float(x), 1)
+        dt.date(y, m, d); return True
     except ValueError:
-        return None
+        return False
 
 
-def parse_sir_csv(text, kind):
-    """precip -> {date: mm}; temp -> {date: (tmin, tmedia, tmax)}."""
+def parse_sir_matrix(html, kind, year):
+    """precip -> {date: mm}; temp -> {date: (tmin, tmedia, tmax)}.
+    Matrice: prima cella = giorno (1-31), poi 12 celle = mesi gen..dic.
+    precip: '-' = 0.0 (asciutto), vuoto = mancante. temp: cella = 'Tmax Tmin'."""
     out = {}
-    for line in text.splitlines():
-        m = re.match(r'^"?(\d{2})/(\d{2})/(\d{4})"?;(.*)$', line.strip())
-        if not m:
+    for r in cells_of(html):
+        if not r:
             continue
-        dd, mm, yyyy, rest = m.groups()
-        cols = rest.split(";")
-        iso = f"{yyyy}-{mm}-{dd}"
-        if kind == "precip":
-            v = clean_num(cols[0]) if cols else None
-            if v is not None:
-                out[iso] = v
-        else:
-            tmax = clean_num(cols[0]) if len(cols) > 0 else None
-            tmin = clean_num(cols[1]) if len(cols) > 1 else None
-            if tmax is None and tmin is None:
+        first = r[0].strip()
+        if not re.fullmatch(r"\d{1,2}", first):
+            continue
+        day = int(first)
+        if not (1 <= day <= 31):
+            continue
+        for mi in range(1, 13):                         # colonna mese
+            if mi >= len(r):
+                break
+            cell = r[mi].strip()
+            if not valid_date(year, mi, day):
                 continue
-            tmed = round((tmax + tmin) / 2, 1) if (tmax is not None and tmin is not None) else ""
-            out[iso] = (("" if tmin is None else tmin), tmed, ("" if tmax is None else tmax))
+            iso = f"{year}-{mi:02d}-{day:02d}"
+            if kind == "precip":
+                if cell == "-":
+                    out[iso] = 0.0
+                elif cell:
+                    nums = re.findall(r"-?\d+(?:[.,]\d+)?", cell)
+                    if nums:
+                        try:
+                            out[iso] = round(float(nums[0].replace(",", ".")), 1)
+                        except ValueError:
+                            pass
+            else:  # temp
+                if not cell or cell == "-":
+                    continue
+                nums = re.findall(r"-?\d+(?:[.,]\d+)?", cell.replace(",", "."))
+                if len(nums) >= 2:
+                    tmax = float(nums[0]); tmin = float(nums[1])
+                    out[iso] = (tmin, round((tmax + tmin) / 2, 1), tmax)
     return out
 
 
@@ -75,12 +103,10 @@ def load_existing(path, kind):
     rows = {}
     if os.path.exists(path):
         with open(path, newline="") as f:
-            r = csv.reader(f, delimiter=";")
-            next(r, None)
-            for row in r:
-                if not row or not row[0]:
-                    continue
-                rows[row[0]] = tuple(row[1:]) if kind == "temp" else row[1]
+            rd = csv.reader(f, delimiter=";"); next(rd, None)
+            for row in rd:
+                if row and row[0]:
+                    rows[row[0]] = tuple(row[1:]) if kind == "temp" else row[1]
     return rows
 
 
@@ -89,8 +115,7 @@ def save(path, rows, kind):
         f.write("Data;Tmin;Tmedia;Tmax\n" if kind == "temp" else "Data;Precip_mm\n")
         for d in sorted(rows):
             if kind == "temp":
-                tn, tm, tx = rows[d]
-                f.write(f"{d};{tn};{tm};{tx}\n")
+                tn, tm, tx = rows[d]; f.write(f"{d};{tn};{tm};{tx}\n")
             else:
                 f.write(f"{d};{rows[d]}\n")
 
@@ -98,29 +123,28 @@ def save(path, rows, kind):
 def run_job(url, fname, kind):
     path = os.path.join(BASE, fname)
     if not url:
-        print(f"[SKIP] {fname}: URL non impostato (vedi header).")
-        return
+        print(f"[SKIP] {fname}: URL non impostato."); return
+    url = re.sub(r"A=\d{4}", f"A={YEAR}", url)           # forza anno corrente
+    if "A=" not in url:
+        url += ("&" if "?" in url else "?") + f"A={YEAR}"
     try:
-        text = fetch(url)
+        html = fetch(url)
     except Exception as e:
-        print(f"[WARN] {fname}: fetch fallito ({e}) - file invariato.", file=sys.stderr)
-        return
-    new = parse_sir_csv(text, kind)
+        print(f"[WARN] {fname}: fetch fallito ({e}) - file invariato.", file=sys.stderr); return
+    new = parse_sir_matrix(html, kind, YEAR)
     if not new:
-        print(f"[WARN] {fname}: nessun dato estratto (controlla URL/formato).", file=sys.stderr)
-        return
+        print(f"[WARN] {fname}: 0 dati estratti dalla matrice (controlla URL/struttura).", file=sys.stderr); return
     existing = load_existing(path, kind)
     changed = 0
     for d, v in new.items():
-        cur = existing.get(d)
         nv = tuple(str(x) for x in v) if kind == "temp" else str(v)
+        cur = existing.get(d)
         cv = tuple(str(x) for x in cur) if (kind == "temp" and cur) else cur
         if cv != nv:
-            existing[d] = v
-            changed += 1
+            existing[d] = v; changed += 1
     if changed:
         save(path, existing, kind)
-        print(f"[OK] {fname}: {changed} giorni aggiornati. Ultimo: {max(new)}")
+        print(f"[OK] {fname}: {changed} giorni aggiornati (anno {YEAR}). Ultimo: {max(new)}")
     else:
         print(f"[OK] {fname}: nessuna novita.")
 
