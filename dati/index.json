@@ -272,7 +272,7 @@
  "pagina": "montedifo.html",
  "codice_sir": "TOS01000916",
  "file_dati": [
-   "MonteDiFo_precip_2004-2026.csv",
+   "MonteDiFo_precip_1992-2026.csv",
    "MonteDiFo_temp_1992-2026.csv"
   ]
 }
