@@ -259,6 +259,21 @@
     "Cepina_temp_1992-2026.csv",
     "Cepina_neve_1992-2026.csv"
    ]
-  }
+  },
+  {
+ "id": "montedifo",
+ "nome": "Monte di Fò – Barberino di Mugello",
+ "lat": 44.08,
+ "lon": 11.281,
+ "quota": 820,
+ "comune": "Barberino di Mugello (FI)",
+ "rete": "SIR Toscana",
+ "colore": "#26c6da",
+ "pagina": "montedifo.html",
+ "codice_sir": "TOS01000916",
+ "file_dati": [
+  "MonteDiFo_precip_2004-2026.csv"
+ ]
+}
  ]
 }
