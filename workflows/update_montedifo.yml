@@ -1,0 +1,42 @@
+name: Aggiorna Monte di Fò (SIR Toscana)
+
+# Aggiornamento server-side (niente CORS): lo script interroga il SIR e committa il CSV.
+on:
+  schedule:
+    - cron: '30 6 * * *'      # ogni giorno alle 06:30 UTC (08:30 ora legale IT)
+  workflow_dispatch:           # esecuzione manuale dal tab Actions
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-montedifo
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Aggiorna CSV da SIR Toscana
+        run: python scripts/update_montedifo_sir.py
+
+      - name: Commit se ci sono novità
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- dati/MonteDiFo_precip_2004-2026.csv; then
+            git add dati/MonteDiFo_precip_2004-2026.csv
+            git commit -m "auto: aggiornamento Monte di Fò (SIR) $(date -u +%F)"
+            # retry rebase-push (come radar-dpc) per evitare conflitti con altri commit
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash && git push && break || sleep 5
+            done
+          else
+            echo "Nessuna modifica."
+          fi
