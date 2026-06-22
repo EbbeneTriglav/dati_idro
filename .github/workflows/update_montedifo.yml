@@ -33,8 +33,8 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- dati/MonteDiFo_precip_2004-2026.csv dati/MonteDiFo_temp_1992-2026.csv; then
-            git add dati/MonteDiFo_precip_2004-2026.csv dati/MonteDiFo_temp_1992-2026.csv
+          if ! git diff --quiet -- dati/MonteDiFo_precip_1992-2026.csv dati/MonteDiFo_temp_1992-2026.csv; then
+            git add dati/MonteDiFo_precip_1992-2026.csv dati/MonteDiFo_temp_1992-2026.csv
             git commit -m "auto: aggiornamento Monte di Fò (SIR) $(date -u +%F)"
             for i in 1 2 3 4 5; do
               git pull --rebase --autostash && git push && break || sleep 5
