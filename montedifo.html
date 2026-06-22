@@ -285,6 +285,7 @@ canvas.spark{height:36px;width:100%;}
     <button class="tab"     data-p="mensile">📅 Mensile</button>
     <button class="tab"     data-p="intensity">⚡ Intensità</button>
     <button class="tab"     data-p="extreme">⛈ Estremi</button>
+    <button class="tab"     data-p="idf">🌧 Piogge intense</button>
     <button class="tab"     data-p="table">📋 Tabella</button>
     <button class="tab"     data-p="spi">🌵 SPI Index</button>
     <button class="tab"     data-p="serie">📈 Serie continua</button>
@@ -578,6 +579,54 @@ canvas.spark{height:36px;width:100%;}
       <div class="cmp-grid" id="cmpGrid"></div>
       <div class="ch-wrap" style="height:300px"><canvas id="cCmpAnnual"></canvas></div>
       <div class="cmp-verdict" id="cmpVerdict" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-idf">
+    <div class="card">
+      <div class="card-title">🌧 Piogge intense — massimi annuali per durata (IDF)</div>
+      <div class="note">Massimo annuale di precipitazione per finestra di durata (5 min → 24 h), 1991–2025. Fonte: SIR Toscana — precipitazioni massime. Dato grezzo non rielaborato statisticamente (no fit di Gumbel/GEV): mostra record osservati e media dei massimi annui.</div>
+      <div class="kpi-grid" id="idfRecords" style="margin-top:10px"></div>
+      <div class="note" id="idfNote"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📏 Curva altezza–durata (Depth-Duration)</div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cIdfDepth"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Curva intensità–durata (IDF) — intensità massima (mm/h, scala log)</div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cIdfInt"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 Massimi annui per durata — andamento e trend</div>
+      <div class="ctrls">
+        <label>Durata:</label>
+        <select id="idfTrendWin" onchange="renderIdfTrend()">
+          <option value="5mn">5 min</option><option value="10mn">10 min</option><option value="15mn">15 min</option><option value="20mn">20 min</option><option value="30mn">30 min</option><option value="1h">1 h</option><option value="3h">3 h</option><option value="6h">6 h</option><option value="12h">12 h</option><option value="24h" selected>24 h</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cIdfTrend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Riepilogo per durata</div>
+      <div id="idfTable" style="overflow-x:auto"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📐 Tempi di ritorno — Gumbel EV1 (analisi at-site)</div>
+      <div class="note">Distribuzione di Gumbel (valori estremi tipo I) stimata col metodo dei momenti sui massimi annui di ciascuna durata (solo durate con n≥20 anni). Quantili h(T) per i tempi di ritorno T. Punti osservati con plotting position di Weibull, T=(n+1)/rango. Stima at-site indipendente: i tempi di ritorno ufficiali SIR derivano invece da un'analisi regionale (studio Regione Toscana–UniFI 2014).</div>
+      <div id="rpTable" style="overflow-x:auto;margin:8px 0"></div>
+      <div class="ctrls"><label>Durata:</label>
+        <select id="gumWin" onchange="renderGumbelChart()">
+          <option value="15mn">15 min</option><option value="30mn">30 min</option><option value="1h">1 h</option><option value="3h">3 h</option><option value="6h">6 h</option><option value="12h">12 h</option><option value="24h" selected>24 h</option>
+        </select>
+      </div>
+      <div class="ch-wrap" style="height:300px"><canvas id="cIdfGumbel"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 LSPP — Linea Segnalatrice di Possibilità Pluviometrica</div>
+      <div class="note">Curve h(d,T) = a(T)·dⁿ ottenute per regressione log-log dei quantili di Gumbel sulle durate 1–24 h (a in mm·h⁻ⁿ, d in ore). I punti sono i massimi annui osservati (durate ≥1 h).</div>
+      <div id="lsppTable" style="overflow-x:auto;margin:8px 0"></div>
+      <div class="ch-wrap" style="height:320px"><canvas id="cIdfLspp"></canvas></div>
     </div>
   </div>
 
@@ -1557,6 +1606,158 @@ function renderTable() {
   document.getElementById('tblBody').innerHTML=h+'</tbody></table>';
 }
 
+// ── Piogge intense / IDF (massimi annui per durata) ──
+let estremiData = [];   // [{date, ora, win, mm, flag}]
+const IDF_WINS = ['5mn','10mn','15mn','20mn','30mn','1h','3h','6h','12h','24h'];
+function winMin(w){ const n=parseInt(w); return /mn/.test(w)? n : n*60; }
+function winHours(w){ return winMin(w)/60; }
+function winLabel(w){ const n=parseInt(w); return /mn/.test(w)? n+' min' : n+' h'; }
+
+async function loadEstremi(){
+  try{
+    const r = await fetch(ST.githubBase + 'MonteDiFo_estremi_1991-2025.csv');
+    if(!r.ok) return;
+    const txt = await r.text();
+    estremiData = [];
+    txt.split(/\r?\n/).slice(1).forEach(line=>{
+      const c = line.split(';'); if(c.length<4) return;
+      const mm = parseFloat((c[3]||'').replace(',','.'));
+      if(!c[0] || isNaN(mm)) return;
+      estremiData.push({date:c[0], ora:c[1]||'', win:c[2], mm, flag:c[4]||''});
+    });
+  }catch(e){}
+}
+
+function olsFitIdf(xs,ys){ const n=xs.length; if(n<2)return null;
+  const mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+  let num=0,den=0; for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)**2;}
+  if(!den)return null; const sl=num/den; return {slope:sl, intercept:my-sl*mx}; }
+
+function idfStats(){
+  const byWin={}; IDF_WINS.forEach(w=>byWin[w]={vals:[], max:{mm:-1,date:''}, n:0, mean:null});
+  estremiData.forEach(r=>{ const b=byWin[r.win]; if(!b) return;
+    b.vals.push({mm:r.mm,date:r.date}); if(r.mm>b.max.mm) b.max={mm:r.mm,date:r.date}; });
+  IDF_WINS.forEach(w=>{ const v=byWin[w].vals; byWin[w].n=v.length;
+    byWin[w].mean= v.length? v.reduce((a,b)=>a+b.mm,0)/v.length : null; });
+  return byWin;
+}
+
+function renderIdf(){
+  const note=document.getElementById('idfNote');
+  if(!estremiData.length){ if(note) note.textContent='Dati estremi non disponibili (MonteDiFo_estremi_1991-2025.csv).'; return; }
+  if(note) note.textContent='';
+  const en = window.LANG==='en';
+  const S = idfStats();
+  const winsD = IDF_WINS.filter(w=>S[w].n>0);
+  document.getElementById('idfRecords').innerHTML = ['24h','12h','6h','1h','30mn'].map(w=>{
+    const m=S[w].max; if(!m||m.mm<0) return '';
+    return `<div class="kpi"><div class="kpi-l">${winLabel(w)} ${en?'record':'record'}</div><div class="kpi-v">${f(m.mm,1)}</div><div class="kpi-s">mm · ${m.date}</div></div>`;
+  }).join('');
+  dc('cIdfDepth');
+  charts['cIdfDepth']=new Chart(document.getElementById('cIdfDepth'),{ type:'line',
+    data:{labels:winsD.map(winLabel), datasets:[
+      {label:en?'Record':'Massimo storico', data:winsD.map(w=>S[w].max.mm), borderColor:'#ff6b6b', backgroundColor:'rgba(255,107,107,.10)', borderWidth:2, tension:.3, pointRadius:3},
+      {label:en?'Mean annual max':'Media dei massimi annui', data:winsD.map(w=>+S[w].mean.toFixed(1)), borderColor:'#4fc3f7', backgroundColor:'rgba(79,195,247,.10)', borderWidth:2, borderDash:[5,4], tension:.3, pointRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{title:{display:true,text:'mm',color:'#7a94b8'},beginAtZero:true,grid:{color:'#1e3050'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#c9d6e8'}},tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${f(i.raw,1)} mm`}}}}});
+  dc('cIdfInt');
+  charts['cIdfInt']=new Chart(document.getElementById('cIdfInt'),{ type:'line',
+    data:{labels:winsD.map(winLabel), datasets:[{label:en?'Max intensity (mm/h)':'Intensità massima (mm/h)',
+      data:winsD.map(w=>+(S[w].max.mm/winHours(w)).toFixed(1)), borderColor:'#ffb347', backgroundColor:'rgba(255,179,71,.12)', borderWidth:2, tension:.3, pointRadius:3, fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{type:'logarithmic',title:{display:true,text:'mm/h',color:'#7a94b8'},grid:{color:'#1e3050'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#c9d6e8'}},tooltip:{callbacks:{label:i=>`${f(i.raw,1)} mm/h`}}}}});
+  renderIdfTrend();
+  let h=`<table class="dtbl"><thead><tr><th>${en?'Duration':'Durata'}</th><th>n</th><th>${en?'Record':'Massimo'} (mm)</th><th>${en?'Date':'Data'}</th><th>${en?'Mean ann.max':'Media max annui'} (mm)</th><th>${en?'Max int.':'Intensità max'} (mm/h)</th></tr></thead><tbody>`;
+  winsD.forEach(w=>{const x=S[w]; h+=`<tr><td>${winLabel(w)}</td><td>${x.n}</td><td style="color:#ff6b6b;font-weight:600">${f(x.max.mm,1)}</td><td>${x.max.date}</td><td>${f(x.mean,1)}</td><td>${f(x.max.mm/winHours(w),1)}</td></tr>`;});
+  document.getElementById('idfTable').innerHTML=h+'</tbody></table>';
+  renderReturnPeriods();
+  renderLSPP();
+}
+
+function renderIdfTrend(){
+  const sel=document.getElementById('idfTrendWin'); const w=sel?sel.value:'24h';
+  const en=window.LANG==='en';
+  const pts=estremiData.filter(r=>r.win===w).map(r=>({y:+r.date.slice(0,4), mm:r.mm})).sort((a,b)=>a.y-b.y);
+  dc('cIdfTrend'); if(!pts.length) return;
+  const xs=pts.map(p=>p.y), ys=pts.map(p=>p.mm), fit=olsFitIdf(xs,ys);
+  const ds=[{type:'bar', label:winLabel(w)+' (mm)', data:ys, backgroundColor:'#4fc3f7', borderRadius:3}];
+  if(fit){ ds.push({type:'line', label:en?'Trend':'Trend', data:xs.map(x=>+(fit.intercept+fit.slope*x).toFixed(1)), borderColor:'#ff6b6b', borderWidth:2, pointRadius:0, fill:false}); }
+  charts['cIdfTrend']=new Chart(document.getElementById('cIdfTrend'),{ data:{labels:xs, datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{title:{display:true,text:'mm',color:'#7a94b8'},beginAtZero:true,grid:{color:'#1e3050'}},x:{grid:{color:'#1e3050'}}},
+      plugins:{legend:{labels:{color:'#c9d6e8'}},
+        title:{display:!!fit, color:'#7a94b8', text: fit? (en?`Trend ${(fit.slope*10>=0?'+':'')}${(fit.slope*10).toFixed(1)} mm/decade`:`Trend ${(fit.slope*10>=0?'+':'')}${(fit.slope*10).toFixed(1)} mm/decennio`):''}}}});
+}
+
+// ── Tempi di ritorno (Gumbel EV1) + LSPP ──
+const RP_TS=[2,5,10,20,50,100,200];
+function gumYT(T){ return -Math.log(-Math.log(1-1/T)); }
+function gumbelFit(arr){ const n=arr.length; if(n<2)return null;
+  const mean=arr.reduce((a,b)=>a+b,0)/n;
+  const s=Math.sqrt(arr.reduce((a,b)=>a+(b-mean)*(b-mean),0)/(n-1));
+  const alpha=Math.sqrt(6)*s/Math.PI; return {u:mean-0.5772156649*alpha, alpha, n, mean, s}; }
+function gumQ(fit,T){ return fit.u+fit.alpha*gumYT(T); }
+function idfGumbelByWin(minN){ const o={};
+  IDF_WINS.forEach(w=>{ const v=estremiData.filter(r=>r.win===w).map(r=>r.mm);
+    if(v.length>=minN){ const fit=gumbelFit(v); if(fit) o[w]={fit,v}; } }); return o; }
+
+function renderReturnPeriods(){
+  const en=window.LANG==='en'; const G=idfGumbelByWin(20);
+  const wins=IDF_WINS.filter(w=>G[w]);
+  if(!wins.length){ return; }
+  let h=`<table class="dtbl"><thead><tr><th>${en?'Duration':'Durata'}</th><th>n</th>`+RP_TS.map(T=>`<th>T=${T}</th>`).join('')+`</tr></thead><tbody>`;
+  wins.forEach(w=>{ const fit=G[w].fit;
+    h+=`<tr><td>${winLabel(w)}</td><td>${fit.n}</td>`+RP_TS.map(T=>`<td>${f(gumQ(fit,T),1)}</td>`).join('')+`</tr>`; });
+  document.getElementById('rpTable').innerHTML=h+'</tbody></table>';
+  renderGumbelChart();
+}
+
+function renderGumbelChart(){
+  const en=window.LANG==='en'; const sel=document.getElementById('gumWin'); const w=sel?sel.value:'24h';
+  const vals=estremiData.filter(r=>r.win===w).map(r=>r.mm).sort((a,b)=>b-a);
+  dc('cIdfGumbel'); if(vals.length<5) return;
+  const n=vals.length, fit=gumbelFit(vals);
+  const emp=vals.map((v,i)=>({x:(n+1)/(i+1), y:v}));
+  const line=[1.05,1.25,1.5,2,3,5,10,20,30,50,100,200].map(T=>({x:T,y:+gumQ(fit,T).toFixed(1)}));
+  charts['cIdfGumbel']=new Chart(document.getElementById('cIdfGumbel'),{
+    data:{datasets:[
+      {type:'scatter', label:en?'Observed (Weibull)':'Osservati (Weibull)', data:emp, backgroundColor:'#4fc3f7', pointRadius:4},
+      {type:'line', label:'Gumbel EV1', data:line, borderColor:'#ff6b6b', borderWidth:2, pointRadius:0, fill:false}]},
+    options:{responsive:true,maintainAspectRatio:false,parsing:false,
+      scales:{x:{type:'logarithmic',title:{display:true,text:en?'Return period (years)':'Tempo di ritorno (anni)',color:'#7a94b8'},grid:{color:'#1e3050'},ticks:{color:'#7a94b8',callback:v=>([1,2,5,10,20,50,100,200].includes(v)?v:'')}},
+              y:{title:{display:true,text:'mm',color:'#7a94b8'},grid:{color:'#1e3050'},ticks:{color:'#7a94b8'}}},
+      plugins:{legend:{labels:{color:'#c9d6e8'}},title:{display:true,color:'#7a94b8',text:`${winLabel(w)} · u=${fit.u.toFixed(1)} α=${fit.alpha.toFixed(1)} · n=${n} anni`}}}});
+}
+
+function renderLSPP(){
+  const en=window.LANG==='en'; const G=idfGumbelByWin(20);
+  const lw=['1h','3h','6h','12h','24h'].filter(w=>G[w]);
+  if(lw.length<3) return;
+  const L={};
+  RP_TS.forEach(T=>{ const xs=lw.map(w=>Math.log(winHours(w))), ys=lw.map(w=>Math.log(gumQ(G[w].fit,T)));
+    const nn=xs.length, mx=xs.reduce((a,b)=>a+b,0)/nn, my=ys.reduce((a,b)=>a+b,0)/nn;
+    let sxy=0,sxx=0; for(let i=0;i<nn;i++){sxy+=(xs[i]-mx)*(ys[i]-my);sxx+=(xs[i]-mx)*(xs[i]-mx);}
+    const ne=sxy/sxx, lna=my-ne*mx; let sst=0,sse=0;
+    for(let i=0;i<nn;i++){const yh=lna+ne*xs[i]; sst+=(ys[i]-my)*(ys[i]-my); sse+=(ys[i]-yh)*(ys[i]-yh);}
+    L[T]={a:Math.exp(lna), n:ne, r2: sst? 1-sse/sst : 1}; });
+  let h=`<table class="dtbl"><thead><tr><th>T (${en?'years':'anni'})</th><th>a</th><th>n</th><th>R²</th><th>h(1h)</th><th>h(24h)</th></tr></thead><tbody>`;
+  RP_TS.forEach(T=>{const l=L[T]; h+=`<tr><td>${T}</td><td>${f(l.a,2)}</td><td>${f(l.n,3)}</td><td>${f(l.r2,3)}</td><td>${f(l.a,1)}</td><td>${f(l.a*Math.pow(24,l.n),1)}</td></tr>`;});
+  document.getElementById('lsppTable').innerHTML=h+'</tbody></table>';
+  const Tshow=[2,10,50,100,200].filter(T=>L[T]);
+  const dR=[]; for(let d=1; d<=24; d*=Math.pow(24,1/40)) dR.push(+d.toFixed(3)); dR.push(24);
+  const cols={2:'#4caf82',10:'#4fc3f7',50:'#ffb347',100:'#ff6b6b',200:'#b39ddb'};
+  const ds=Tshow.map(T=>({type:'line',label:`T=${T}`,data:dR.map(d=>({x:d,y:+(L[T].a*Math.pow(d,L[T].n)).toFixed(1)})),borderColor:cols[T]||'#888',borderWidth:2,pointRadius:0,fill:false}));
+  ds.push({type:'scatter',label:en?'Annual maxima':'Massimi annui',data:estremiData.filter(r=>winHours(r.win)>=1).map(r=>({x:winHours(r.win),y:r.mm})),backgroundColor:'rgba(150,170,200,.30)',pointRadius:2});
+  dc('cIdfLspp');
+  charts['cIdfLspp']=new Chart(document.getElementById('cIdfLspp'),{ data:{datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,parsing:false,
+      scales:{x:{type:'logarithmic',title:{display:true,text:en?'Duration (h)':'Durata (h)',color:'#7a94b8'},grid:{color:'#1e3050'},min:0.9,max:30,ticks:{color:'#7a94b8',callback:v=>([1,2,3,6,12,24].includes(v)?v:'')}},
+              y:{type:'logarithmic',title:{display:true,text:'mm',color:'#7a94b8'},grid:{color:'#1e3050'},ticks:{color:'#7a94b8'}}},
+      plugins:{legend:{labels:{color:'#c9d6e8'}},title:{display:true,color:'#7a94b8',text:`h = a·d^n  (${lw.length} durate, Gumbel→regressione log-log)`}}}});
+}
+
 function renderAll() {
   buildPpYM();
   renderKPI();
@@ -1758,6 +1959,7 @@ async function init() {
     // 1. Carica CSV storici da GitHub (se esistono)
     msg.textContent='Carico CSV storici da GitHub…';
     await loadGithubFiles();
+    await loadEstremi();
 
     // 2. Carica dati live da Socrata (solo reti ARPA Lombardia con CORS)
     if (ST.live === false) {
@@ -1809,6 +2011,7 @@ document.querySelectorAll('.tab').forEach(t=>{
     if(t.dataset.p==='spi') setTimeout(renderSPITab, 60);
     if(t.dataset.p==='serie') setTimeout(renderSerie, 60);
     if(t.dataset.p==='confronto') setTimeout(renderConfronto, 60);
+    if(t.dataset.p==='idf') setTimeout(renderIdf, 60);
     setTimeout(postRenderI18n, 90);
   });
 });
