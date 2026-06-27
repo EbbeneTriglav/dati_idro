@@ -356,18 +356,41 @@ canvas.spark{height:36px;width:100%;}
   </div>
 
   <!-- HEATMAP -->
-  <div class="panel" id="p-heatmap">
-    <div class="card">
-      <div class="card-title">🟦 Heatmap precipitazione mensile (mm)</div>
-      <div class="ctrls">
-        <label>Scala mensile:</label>
-        <select id="hmScale"><option value="auto">Auto</option><option value="150">150mm</option><option value="250">250mm</option><option value="400">400mm</option></select>
-        <label>Valori:</label>
-        <select id="hmVals"><option value="1">Mostra</option><option value="0">Nascondi</option></select>
+<!-- HEATMAP -->
+<div class="panel" id="p-heatmap">
+  <div class="card">
+    <div class="card-title" id="hmTitle">🟦 Heatmap mensile — mm
+      <div class="btns">
+        <button class="btn btn-outline" style="font-size:11px" onclick="dlHeatmapData()">⬇ CSV</button>
       </div>
-      <div class="hm-wrap" id="hmContainer"></div>
     </div>
+    <p style="font-size:11.5px;color:var(--muted);margin:-4px 0 10px" id="hmNote">
+      💡 Il <b>pluviometro ARPA non cattura la neve</b>: in inverno la precipitazione misurata sottostima l'afflusso reale. Usa <b>"Pioggia + Neve (SWE)"</b> per l'apporto idrico totale stimato, oppure <b>"Solo neve"</b> per isolare la componente nivale. SWE da Hedstrom-Pomeroy 1998 (densità f(T)).
+    </p>
+    <div class="ctrls">
+      <label>Componente:</label>
+      <select id="hmComponent" onchange="renderHeatmap()">
+        <option value="rain" selected>Solo pioggia (pluviometro)</option>
+        <option value="snow">Solo neve (SWE stimato)</option>
+        <option value="both">Pioggia + Neve (totale)</option>
+      </select>
+      <label>Scala mensile:</label>
+      <select id="hmScale" onchange="renderHeatmap()">
+        <option value="auto" selected>Auto</option>
+        <option value="150">150mm</option>
+        <option value="250">250mm</option>
+        <option value="400">400mm</option>
+        <option value="600">600mm</option>
+      </select>
+      <label>Valori:</label>
+      <select id="hmVals" onchange="renderHeatmap()">
+        <option value="1" selected>Mostra</option>
+        <option value="0">Nascondi</option>
+      </select>
+    </div>
+    <div class="hm-wrap" id="hmContainer"></div>
   </div>
+</div>
 
   <!-- MENSILE -->
   <div class="panel" id="p-mensile">
@@ -816,6 +839,136 @@ let ppYM      = {};   // year → [12 monthly mm]  (filtrati)
 let badYears  = new Set();
 let liveMin   = null, liveMax = null;
 const charts  = {};
+// ════════════════════════════════════════════════════════════
+// 🌐 AGGIORNAMENTO AUTOMATICO ARPA LOMBARDIA (Socrata 647i-nhxk)
+// Staz. 835 Valdisotto Oga - PP=8010 · T=8008 · HS=8009
+// ════════════════════════════════════════════════════════════
+const ARPA_SENSORS = {
+  PP: { id: 8010, label: 'Precipitazione', unit: 'mm' },
+  T:  { id: 8008, label: 'Temperatura',    unit: '°C' },
+  HS: { id: 8009, label: 'Neve al suolo',  unit: 'cm' }
+};
+const ARPA_LOOKBACK_DAYS = 10;
+const ARPA_REFRESH_MIN   = 30;
+const ARPA_ROW_LIMIT     = 50000;
+
+function ymdLocal(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'),
+        g=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${g}`;
+}
+
+async function fetchSocrataSensor(sensorId, sinceISO){
+  const where = `idsensore=${sensorId} AND data>='${sinceISO}' AND stato='VA'`;
+  const url = `${SOCRATA}?$where=${encodeURIComponent(where)}` +
+              `&$select=data,valore&$order=data&$limit=${ARPA_ROW_LIMIT}`;
+  const r = await fetch(url, { cache: 'no-store' });
+  if(!r.ok) throw new Error(`HTTP ${r.status} sensore ${sensorId}`);
+  return await r.json();
+}
+
+function aggregateDaily(rows, kind){
+  const buckets = {};
+  for(const row of rows){
+    const v = parseFloat(row.valore);
+    if(!isFinite(v) || v <= -999) continue;
+    const d = new Date(row.data);
+    const key = ymdLocal(d);
+    (buckets[key] = buckets[key] || []).push(v);
+  }
+  const out = {};
+  for(const [day, arr] of Object.entries(buckets)){
+    if(kind === 'PP'){
+      const valid = arr.filter(v => v >= 0 && v < 50);
+      if(valid.length < 6) continue;
+      out[day] = Math.round(valid.reduce((s,v)=>s+v,0)*10)/10;
+    } else if(kind === 'T'){
+      const vals = arr.filter(v => v > -40 && v < 50);
+      if(vals.length < 6) continue;
+      const tMin  = Math.min(...vals);
+      const tMax  = Math.max(...vals);
+      const tMean = vals.reduce((s,v)=>s+v,0)/vals.length;
+      out[day] = [
+        Math.round(tMin*10)/10,
+        Math.round(tMean*10)/10,
+        Math.round(tMax*10)/10
+      ];
+    } else if(kind === 'HS'){
+      const vals = arr.filter(v => v >= 0 && v < 600).sort((a,b)=>a-b);
+      if(vals.length < 6) continue;
+      out[day] = Math.round(vals[Math.floor(vals.length/2)]*10)/10;
+    }
+  }
+  return out;
+}
+
+function mergeLive(daily, kind){
+  let added = 0, minD = null, maxD = null;
+  for(const [day, val] of Object.entries(daily)){
+    if(kind === 'PP')  ppByDate[day] = val;
+    if(kind === 'T')   tmpByDate[day] = { tMin:val[0], tMean:val[1], tMax:val[2] };
+    if(kind === 'HS'){ snowByDate[day] = val; invalidateSWECache(); }
+    added++;
+    if(!minD || day < minD) minD = day;
+    if(!maxD || day > maxD) maxD = day;
+  }
+  if(minD){
+    liveMin = (!liveMin || minD < liveMin) ? minD : liveMin;
+    liveMax = (!liveMax || maxD > liveMax) ? maxD : liveMax;
+  }
+  return added;
+}
+
+function setApiStatus(state, msg){
+  const dot = document.getElementById('dotApi');
+  const lbl = document.getElementById('lblApi');
+  if(!dot || !lbl) return;
+  dot.classList.remove('ok','warn');
+  if(state === 'ok')   dot.classList.add('ok');
+  if(state === 'warn') dot.classList.add('warn');
+  lbl.textContent = msg;
+}
+
+async function refreshFromArpa(){
+  try{
+    setApiStatus('warn','aggiornamento…');
+    const since = new Date(Date.now() - ARPA_LOOKBACK_DAYS*86400e3);
+    const sinceISO = since.toISOString().slice(0,19);
+    const [ppRows, tRows, hsRows] = await Promise.all([
+      fetchSocrataSensor(ARPA_SENSORS.PP.id, sinceISO),
+      fetchSocrataSensor(ARPA_SENSORS.T.id,  sinceISO),
+      fetchSocrataSensor(ARPA_SENSORS.HS.id, sinceISO)
+    ]);
+    const nPP = mergeLive(aggregateDaily(ppRows,'PP'),'PP');
+    const nT  = mergeLive(aggregateDaily(tRows ,'T' ),'T' );
+    const nHS = mergeLive(aggregateDaily(hsRows,'HS'),'HS');
+
+    if(typeof rebuildMonthly === 'function') rebuildMonthly();
+    if(typeof renderAll      === 'function') renderAll();
+    if(typeof updateKPIs     === 'function') updateKPIs();
+
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    setApiStatus('ok', `OK ${hh}:${mm} · PP ${nPP}g · T ${nT}g · HS ${nHS}g`);
+  } catch(e){
+    console.error('[ARPA]', e);
+    setApiStatus('warn', `errore: ${e.message}`);
+  }
+}
+
+function startArpaAutoRefresh(){
+  refreshFromArpa();
+  setInterval(refreshFromArpa, ARPA_REFRESH_MIN*60*1000);
+}
+
+window.addEventListener('load', () => {
+  setTimeout(startArpaAutoRefresh, 1500);
+});
+
+// Cache SWE mensile (invalidata quando arrivano dati ARPA su HS)
+let _sweYM = null;
+function invalidateSWECache(){ _sweYM = null; }
 
 // ════════════════════════════════════════════
 // SERIE EMBEDDED — ARPA Lombardia, staz. 835 Valdisotto Oga S. Colombano (Valtellina)
@@ -1369,26 +1522,162 @@ function mmColor(v,mx) {
 }
 
 function renderHeatmap() {
-  const scOpt=document.getElementById('hmScale').value;
-  const show=document.getElementById('hmVals').value==='1';
-  const years=Object.keys(ppYM).map(Number).sort();
-  if (!years.length) return;
+  function computeMonthlySWE(){
+  const swe = {};
+  const days = Object.keys(snowByDate).sort();
+  let prevHS = null;
+  for(const day of days){
+    const hs = snowByDate[day];
+    if(hs == null) continue;
+    const [yy, mm] = day.split('-').map(Number);
+    if(!swe[yy]) swe[yy] = Array(12).fill(0);
+    if(prevHS != null){
+      const dHS = hs - prevHS;
+      if(dHS > 0.5){
+        const t = tmpByDate[day];
+        let rho = 100;
+        if(t){
+          const tm = t.tMean;
+          if(tm <= -15)      rho = 70;
+          else if(tm <= -10) rho = 90;
+          else if(tm <= -5)  rho = 110;
+          else if(tm <= 0)   rho = 140;
+          else if(tm <= 2)   rho = 180;
+          else               rho = 220;
+        }
+        swe[yy][mm-1] += dHS * rho / 100;
+      }
+    }
+    prevHS = hs;
+  }
+  for(const y of Object.keys(swe))
+    swe[y] = swe[y].map(v => Math.round(v*10)/10);
+  return swe;
+}
 
-  // Scala colore mensile
-  let mx=scOpt==='auto'?0:Number(scOpt);
-  if (scOpt==='auto') years.forEach(y=>mx=Math.max(mx,...(ppYM[y]||[])));
+function getSWEMonthly(){
+  if(!_sweYM) _sweYM = computeMonthlySWE();
+  return _sweYM;
+}
 
-  // Totali annuali (escludi anno corrente per la scala colore dei totali)
-  const annuals=years.map(y=>(ppYM[y]||[]).reduce((a,b)=>a+b,0));
-  const annualsHist=annuals.filter((_,i)=>years[i]<CY);
-  const mxAnn=annualsHist.length?Math.max(...annualsHist):Math.max(...annuals);
-  const mnAnn=annualsHist.length?Math.min(...annualsHist.filter(v=>v>0)):0;
+function renderHeatmap(){
+  const cont = document.getElementById('hmContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
 
-  // Colore per totale annuale — scala separata rispetto ai mensili
-  const annColor=(v)=>{
-    if (!v) return 'var(--card2)';
-    const t=Math.max(0,Math.min(1,(v-mnAnn)/(mxAnn-mnAnn||1)));
-    return mmColor(t*mx,mx); // riusa scala ma su range annuale normalizzato
+  const mode    = document.getElementById('hmComponent')?.value || 'rain';
+  const scaleEl = document.getElementById('hmScale')?.value     || 'auto';
+  const showVal = document.getElementById('hmVals')?.value === '1';
+
+  const sweYM = getSWEMonthly();
+  const allYears = new Set([
+    ...Object.keys(ppYM || {}).map(Number),
+    ...Object.keys(sweYM).map(Number)
+  ]);
+  const years = [...allYears].filter(y => !badYears.has(y)).sort();
+
+  const data = {};
+  for(const y of years){
+    const rain = (ppYM && ppYM[y]) ? ppYM[y] : Array(12).fill(0);
+    const snow = sweYM[y]          ? sweYM[y] : Array(12).fill(0);
+    if(mode === 'rain')      data[y] = rain.slice();
+    else if(mode === 'snow') data[y] = snow.slice();
+    else                     data[y] = rain.map((r,i) => Math.round((r + snow[i])*10)/10);
+  }
+
+  let maxV = 0;
+  for(const y of years)
+    for(const v of data[y])
+      if(v > maxV) maxV = v;
+  const scale = scaleEl === 'auto' ? Math.max(50, Math.ceil(maxV/50)*50) : Number(scaleEl);
+
+  const palette = mode === 'snow'
+    ? ['#0d1929','#1a2d4a','#2a4a78','#3d6fa8','#5a96d4','#8bbff5','#c5e0f9']
+    : mode === 'rain'
+      ? ['#0d1929','#1a3a4a','#2a5d6a','#3d8a8a','#5ab2b0','#8bcfd1','#c5e9eb']
+      : ['#1a0d29','#3a1a4a','#5d2a6a','#8a3d8a','#b25ab0','#cf8bcf','#e9c5e9'];
+  function colorFor(v){
+    if(v <= 0) return '#0b1120';
+    const t = Math.min(1, v / scale);
+    const idx = Math.floor(t * (palette.length - 1));
+    return palette[idx];
+  }
+
+  const header = document.createElement('div');
+  header.className = 'hm-row';
+  header.appendChild(Object.assign(document.createElement('div'),
+    { className: 'hm-ylbl', textContent: '' }));
+  for(let m = 0; m < 12; m++){
+    const c = document.createElement('div');
+    c.className = 'hm-mlbl';
+    c.textContent = MONTHS[m];
+    header.appendChild(c);
+  }
+  header.appendChild(Object.assign(document.createElement('div'),
+    { className: 'hm-tot', textContent: 'Tot' }));
+  cont.appendChild(header);
+
+  for(const y of years.slice().reverse()){
+    const row = document.createElement('div');
+    row.className = 'hm-row';
+    const ylbl = document.createElement('div');
+    ylbl.className = 'hm-ylbl';
+    ylbl.textContent = y;
+    row.appendChild(ylbl);
+
+    let yearTot = 0;
+    for(let m = 0; m < 12; m++){
+      const v = data[y][m] || 0;
+      yearTot += v;
+      const cell = document.createElement('div');
+      cell.className = 'hm-cell';
+      cell.style.background = colorFor(v);
+      cell.title = `${MONTHS[m]} ${y}: ${v.toFixed(1)} mm`;
+      cell.textContent = showVal && v > 0 ? Math.round(v) : '';
+      row.appendChild(cell);
+    }
+    const tot = document.createElement('div');
+    tot.className = 'hm-totcell';
+    tot.style.background = colorFor(yearTot/12);
+    tot.textContent = Math.round(yearTot);
+    tot.title = `Totale ${y}: ${yearTot.toFixed(1)} mm`;
+    row.appendChild(tot);
+
+    cont.appendChild(row);
+  }
+
+  const title = document.getElementById('hmTitle');
+  if(title){
+    const labels = { rain:'Pioggia (pluviometro)',
+                     snow:'Neve (SWE stimato)',
+                     both:'Pioggia + Neve (totale apporto idrico)' };
+    if(title.firstChild) title.firstChild.textContent = `🟦 Heatmap mensile ${labels[mode]} — mm  `;
+  }
+}
+
+function dlHeatmapData(){
+  const mode = document.getElementById('hmComponent')?.value || 'rain';
+  const sweYM = getSWEMonthly();
+  const years = [...new Set([
+    ...Object.keys(ppYM || {}).map(Number),
+    ...Object.keys(sweYM).map(Number)
+  ])].filter(y => !badYears.has(y)).sort();
+
+  let csv = 'Anno,Gen,Feb,Mar,Apr,Mag,Giu,Lug,Ago,Set,Ott,Nov,Dic,Totale\n';
+  for(const y of years){
+    const rain = (ppYM && ppYM[y]) || Array(12).fill(0);
+    const snow = sweYM[y] || Array(12).fill(0);
+    const row = mode === 'rain' ? rain.slice()
+             : mode === 'snow' ? snow.slice()
+             : rain.map((r,i) => r + snow[i]);
+    const tot = row.reduce((s,v) => s+v, 0);
+    csv += y + ',' + row.map(v => v.toFixed(1)).join(',') + ',' + tot.toFixed(1) + '\n';
+  }
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `heatmap_${mode}_cepina.csv`;
+  a.click();
   };
 
   // Media annua storica (escludi anno corrente)
