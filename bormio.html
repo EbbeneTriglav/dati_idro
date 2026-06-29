@@ -679,6 +679,7 @@ let intByDate = {};   // 'YYYY-MM-DD' → mm/h
 let tmpByDate = {};   // 'YYYY-MM-DD' → {tMin,tMax,tMean}
 let ppYM      = {};   // year → [12 monthly mm]  (filtrati)
 let badYears  = new Set();
+let missingDaysByYear = {};
 let liveMin   = null, liveMax = null;
 const charts  = {};
 
@@ -895,27 +896,38 @@ function mergeData(parsed, srcTag) {
 // ════════════════════════════════════════════
 // FILTRA ANNI INVALIDI
 // ════════════════════════════════════════════
+function isLeap(y){ return (y%4===0 && (y%100!==0 || y%400===0)); }
+
 function buildPpYM() {
   const raw = {};
-  for (const [d,mm] of Object.entries(ppByDate)) {
+  const daysPresent = {};
+  const allYears = Object.keys(ppByDate).map(d=>Number(d.slice(0,4)));
+  for (const d of Object.keys(ppByDate)) {
     const [y,m]=d.split('-').map(Number);
     if (!raw[y]) raw[y]=new Array(12).fill(0);
-    raw[y][m-1]+=mm;
+    raw[y][m-1]+=ppByDate[d];
+    daysPresent[y]=(daysPresent[y]||0)+1;
   }
   badYears = new Set();
-  for (const [y, months] of Object.entries(raw)) {
-    const yr = Number(y);
+  missingDaysByYear = {};
+  const yMin = allYears.length ? Math.min(...allYears) : CY;
+  for (let yr = yMin; yr <= CY-1; yr++) {
     // Non escludere mai l'anno corrente o l'anno scorso (dati parziali sono normali)
     if (yr >= CY - 1) continue;
+    const months = raw[yr] || new Array(12).fill(0);
+    // Regola principale: >20 giorni mancanti nell'anno (anche se l'anno non ha NESSUN dato)
+    const expDays = isLeap(yr) ? 366 : 365;
+    const missing = expDays - (daysPresent[yr]||0);
+    if (missing > 20) { badYears.add(yr); missingDaysByYear[yr]=missing; continue; }
     const total = months.reduce((a,b)=>a+b,0);
-    if (total===0) { badYears.add(yr); continue; }
+    if (total===0) { badYears.add(yr); missingDaysByYear[yr]=missing; continue; }
     // Escludi se >=4 mesi a zero E non sono tutti nei mesi estivi (lug-ago-set)
     const nonSummerZeros = [0,1,2,3,4,9,10,11].filter(m=>months[m]===0).length;
-    if (nonSummerZeros>=4) { badYears.add(yr); continue; }
+    if (nonSummerZeros>=4) { badYears.add(yr); missingDaysByYear[yr]=missing; continue; }
     // 3+ mesi consecutivi a zero (escludi se sono solo estivi)
     let consec=0, maxConsec=0;
     for (const v of months) { if(v===0){consec++;maxConsec=Math.max(maxConsec,consec);}else consec=0; }
-    if (maxConsec>=4) { badYears.add(yr); }
+    if (maxConsec>=4) { badYears.add(yr); missingDaysByYear[yr]=missing; }
   }
   ppYM={};
   for (const [y,months] of Object.entries(raw)) {
@@ -967,10 +979,12 @@ function renderKPI() {
 
   // invalid years
   const wn = document.getElementById('warnYears');
+  const yrList = [...badYears].sort((a,b)=>a-b)
+    .map(y => missingDaysByYear[y] ? `${y} (${missingDaysByYear[y]}gg mancanti)` : `${y}`);
   if (badYears.size) {
-    wn.style.display=''; wn.textContent=`⚠ Anni esclusi (dati insufficienti): ${[...badYears].sort().join(', ')}`;
+    wn.style.display=''; wn.textContent=`⚠ Anni esclusi dalle statistiche (>20gg mancanti o dati insufficienti): ${yrList.join(', ')}`;
   } else wn.style.display='none';
-  document.getElementById('invalidNote').textContent = badYears.size ? `Esclusi: ${[...badYears].sort().join(', ')}` : '';
+  document.getElementById('invalidNote').textContent = badYears.size ? `Esclusi: ${yrList.join(', ')}` : '';
 }
 
 // ── Recenti 30gg precipitazione
