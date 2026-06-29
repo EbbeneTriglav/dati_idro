@@ -242,16 +242,58 @@
   {
    "id": "oga_scolombano",
    "nome": "Valdisotto Oga S.Colombano",
-   "lat": 46.464,
-   "lon": 10.342,
+   "lat": 46.45526,
+   "lon": 10.31399,
    "quota": 2300,
    "comune": "Valdisotto (SO)",
    "rete": "ARPA",
+   "colore": "#4fc3f7",
    "pagina": "cepina.html",
+   "sensori_arpa": {
+    "PP": 8010,
+    "T": 8008,
+    "HS": 8009
+   },
    "file_dati": [
     "Cepina_precip_1995-2026.csv",
     "Cepina_temp_1992-2026.csv",
     "Cepina_neve_1992-2026.csv"
+   ]
+  },
+  {
+   "id": "bormio",
+   "nome": "Bormio (v.Monte Braulio → eliporto)",
+   "lat": 46.4537,
+   "lon": 10.366,
+   "quota": 1172,
+   "comune": "Bormio (SO)",
+   "rete": "ARPA",
+   "colore": "#ef9a9a",
+   "pagina": "bormio.html",
+   "sensori_arpa": {
+    "PP": 19390,
+    "T": 19388
+   },
+   "file_dati": [
+    "Bormio_precip_1913-2026.csv",
+    "Bormio_temp_1988-2026.csv"
+   ]
+  },
+  {
+   "id": "montedifo",
+   "nome": "Monte di Fò – Barberino di Mugello",
+   "lat": 44.08,
+   "lon": 11.281,
+   "quota": 820,
+   "comune": "Barberino di Mugello (FI)",
+   "rete": "SIR Toscana",
+   "colore": "#26c6da",
+   "pagina": "montedifo.html",
+   "codice_sir": "TOS01000916",
+   "file_dati": [
+    "MonteDiFo_precip_1992-2026.csv",
+    "MonteDiFo_temp_1992-2026.csv",
+    "MonteDiFo_estremi_1991-2025.csv"
    ]
   }
  ]
