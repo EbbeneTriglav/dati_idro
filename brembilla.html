@@ -447,7 +447,7 @@ const ST_FALLBACK = {
   alt:        468,
   comune:     'Brembilla',
   githubBase: GITHUB_BASE,
-  csvFiles:   ['brembilla_storica.csv','brembilla_precip.csv','brembilla_temp.csv'],
+  csvFiles:   ['brembilla_storica.csv','brembilla_precip.csv','Brembilla Temp.xlsx'],
   forceExclude: [1982],  // anno non valido nella storica SIMN
   sensors:    {
     PP:  { id: 14499, label: 'Precipitazione', unit: 'mm', color: '#4fc3f7' },
@@ -603,7 +603,10 @@ function parseCSVText(text) {
   const hdr = lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
 
   const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
+  let iV = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','rain','prec']);
+  // Fix: file di sola temperatura (header ARPA "Valore Medio Giornaliero"): la colonna
+  // media NON deve essere interpretata come precipitazione (evita pioggia fantasma).
+  if (iV >= 0 && iV === findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media'])) iV = -1;
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
@@ -665,7 +668,10 @@ function parseXLSXBuffer(buf) {
   if (!rows.length) return {precip:{},intensity:{},temp:{}};
   const hdr = rows[0].map(h=>String(h||'').toLowerCase().trim());
   const iD  = findCol(hdr, ['localdatetime','data-ora','data','date','giorno','time']);
-  const iV  = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  let iV = findCol(hdr, ['datavalue','valore cumulato','cumulato','valore','value','mm','precipit','pioggia','prec']);
+  // Fix: file di sola temperatura (header ARPA "Valore Medio Giornaliero"): la colonna
+  // media NON deve essere interpretata come precipitazione (evita pioggia fantasma).
+  if (iV >= 0 && iV === findCol(hdr, ['medio','tmean','tmedia','t_mean','temp_med','media'])) iV = -1;
   const iIn = findCol(hdr, ['intensit','maxint','int_max','imax']);
   const iTn = findCol(hdr, ['tmin','t_min','temp_min','minimo','min']);
   const iTx = findCol(hdr, ['tmax','t_max','temp_max','massimo','max']);
