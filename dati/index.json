@@ -30,7 +30,8 @@
    },
    "file_dati": [
     "Cornalita_1950-2026.xlsx",
-    "Cornalita_intensita.xlsx"
+    "Cornalita_intensita.xlsx",
+    "Cornalita_temperature.xlsx"
    ]
   },
   {
@@ -50,7 +51,7 @@
    "file_dati": [
     "brembilla_storica.csv",
     "brembilla_precip.csv",
-    "brembilla_temp.csv"
+    "Brembilla Temp.xlsx"
    ]
   },
   {
@@ -110,7 +111,8 @@
    },
    "file_dati": [
     "taleggio_storica.xlsx",
-    "taleggio.csv"
+    "taleggio.csv",
+    "Taleggio_temp.csv"
    ],
    "note": "IdStazione ARPA: 1215 (2004-2012). Storico Vedeseta 1951-2005.",
    "dismessa": true,
