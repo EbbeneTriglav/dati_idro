@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="basemaps.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
 :root{--bg:#0b1120;--card:#151f30;--card2:#1a2840;--border:#1e3050;
@@ -150,9 +151,7 @@ const activeBacini = new Set(['brembo','brembilla','serina']);
 
 // ── Init mappa
 map = L.map('map').setView([45.85, 9.65], 11);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-  attribution:'© OpenStreetMap © CARTO', maxZoom:19
-}).addTo(map);
+addBasemaps(map);
 
 // Poligono area di interesse
 L.rectangle([[BBOX.latMin,BBOX.lonMin],[BBOX.latMax,BBOX.lonMax]],{
