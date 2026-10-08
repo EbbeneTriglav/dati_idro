@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 15
     env:
       SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+      # avvio manuale = ricontrolla anche i buchi vecchi (in automatico solo il lunedi')
+      ARPA_REFILL: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

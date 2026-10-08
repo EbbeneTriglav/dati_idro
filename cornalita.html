@@ -909,12 +909,17 @@ function mergeData(parsed, srcTag) {
 // ════════════════════════════════════════════
 // FILTRA ANNI INVALIDI
 // ════════════════════════════════════════════
+// Giorni con dato per anno/mese: un mese senza dati NON e' un mese a 0 mm.
+let ppDays = {};   // year → [12 conteggi giorni con dato]
 function buildPpYM() {
   const raw = {};
+  ppDays = {};
   for (const [d,mm] of Object.entries(ppByDate)) {
     const [y,m]=d.split('-').map(Number);
     if (!raw[y]) raw[y]=new Array(12).fill(0);
+    if (!ppDays[y]) ppDays[y]=new Array(12).fill(0);
     raw[y][m-1]+=mm;
+    if (mm!=null && !isNaN(mm)) ppDays[y][m-1]++;
   }
   badYears = new Set();
   for (const [y, months] of Object.entries(raw)) {
@@ -1265,8 +1270,19 @@ function renderHeatmap() {
     h+=`<div class="hm-row"><div class="hm-ylbl">${y}</div>`;
     for(let m=0;m<12;m++){
       const v=ppYM[y]?.[m]??0;
-      h+=`<div class="hm-cell" style="background:${mmColor(v,mx)}"
-        title="${y} ${MONTHS[m]}: ${f(v,1)} mm">${show?Math.round(v):''}</div>`;
+      // Copertura del mese (solo anni dall'archivio giornaliero: per i vecchi
+      // anni il conteggio puo' mancare e la cella resta come prima)
+      const nd=ppDays[y]?.[m]??null, dim=new Date(y,m+1,0).getDate();
+      const now=new Date(), future=(y>now.getFullYear())||(y===now.getFullYear()&&m>now.getMonth());
+      const curM=(y===now.getFullYear()&&m===now.getMonth());
+      if (future) { h+=`<div class="hm-cell" style="background:transparent" title="${y} ${MONTHS[m]}: mese futuro"></div>`; continue; }
+      if (y>=CY-1 && nd===0) {
+        h+=`<div class="hm-cell" style="background:transparent;border:1px dashed var(--border);color:var(--muted)"
+          title="${y} ${MONTHS[m]}: nessun dato disponibile (non 0 mm)">${show?'n.d.':''}</div>`; continue;
+      }
+      const part = y>=CY-1 && nd!=null && !curM && nd<dim;
+      h+=`<div class="hm-cell" style="background:${mmColor(v,mx)}${part?';outline:1px dashed #f6c90e;outline-offset:-2px':''}"
+        title="${y} ${MONTHS[m]}: ${f(v,1)} mm${part?` (dati su ${nd}/${dim} giorni: valore parziale)`:''}">${show?Math.round(v)+(part?'*':''):''}</div>`;
     }
     // Colonna totale annuale
     const pct=meanAnn>0?Math.round((tot-meanAnn)/meanAnn*100):0;

@@ -38,6 +38,14 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 SOCRATA = 'https://www.dati.lombardia.it/resource/647i-nhxk.json'
+# Il dataset "realtime" 647i-nhxk contiene solo gli ULTIMI ~7 MESI. I dati piu'
+# vecchi stanno nei dataset storici per grandezza (dal 2021), stesso schema
+# (idsensore, data, valore). Fonte degli id: pacchetto R ARPALData (CRAN).
+HISTORICAL = {
+    'PP': 'https://www.dati.lombardia.it/resource/pstb-pga6.json',   # Precipitazione dal 2021
+    'T':  'https://www.dati.lombardia.it/resource/w9wd-u6jh.json',   # Temperatura dal 2021
+}
+REALTIME_DAYS = 200      # sotto questa eta' basta il realtime (margine sui ~7 mesi)
 ROOT = Path(__file__).resolve().parents[1]
 DATI = ROOT / 'dati'
 
@@ -82,25 +90,45 @@ def get_json(url, tries=5):
     raise last
 
 
-def fetch(sensor, d0, d1):
+def _query(base, sensor, cur, nxt):
+    where = f"data >= '{cur.isoformat()}T00:00:00' AND data < '{nxt.isoformat()}T00:00:00'"
+    qs = urllib.parse.urlencode({'idsensore': sensor, '$where': where,
+                                 '$order': 'data', '$limit': 10000})
+    out = {}
+    for r in get_json(f'{base}?{qs}'):
+        ts = str(r.get('data') or '')[:19]
+        try:
+            v = float(r.get('valore'))
+        except (TypeError, ValueError):
+            continue
+        if len(ts) >= 13 and v > -900:              # -999 = dato mancante ARPA
+            out[ts] = v
+    return out
+
+
+def fetch(sensor, d0, d1, kind='PP', today=None):
     """Misure [(giorno 'YYYY-MM-DD', ora 'YYYY-MM-DDTHH', valore)] con d0 <= giorno < d1,
-    a blocchi mensili (limite righe Socrata)."""
+    a blocchi mensili (limite righe Socrata). Per i mesi piu' vecchi di REALTIME_DAYS
+    interroga anche il dataset storico (il realtime tiene solo ~7 mesi); a parita'
+    di istante vale il realtime."""
+    today = today or date.today()
     out, cur = [], d0
     while cur < d1:
         nxt = min(date(cur.year + (cur.month == 12), cur.month % 12 + 1, 1), d1)
-        where = f"data >= '{cur.isoformat()}T00:00:00' AND data < '{nxt.isoformat()}T00:00:00'"
-        qs = urllib.parse.urlencode({'idsensore': sensor, '$where': where,
-                                     '$order': 'data', '$limit': 10000})
-        rows = get_json(f'{SOCRATA}?{qs}')
-        for r in rows:
-            ts = str(r.get('data') or '')[:19]
+        merged = {}
+        n_hist = 0
+        if kind in HISTORICAL and (today - cur).days > REALTIME_DAYS - 31:
             try:
-                v = float(r.get('valore'))
-            except (TypeError, ValueError):
-                continue
-            if len(ts) >= 13 and v > -900:          # -999 = dato mancante ARPA
-                out.append((ts[:10], ts[:13], v))
-        log(f'    sensore {sensor} {cur}..{nxt}: {len(rows)} righe')
+                merged = _query(HISTORICAL[kind], sensor, cur, nxt)
+                n_hist = len(merged)
+            except Exception as e:                  # storico non essenziale
+                log(f'    storico {kind} non disponibile ({type(e).__name__})')
+            time.sleep(2)
+        rt = _query(SOCRATA, sensor, cur, nxt)
+        merged.update(rt)
+        for ts in sorted(merged):
+            out.append((ts[:10], ts[:13], merged[ts]))
+        log(f'    sensore {sensor} {cur}..{nxt}: realtime {len(rt)}, storico {n_hist}, totale {len(merged)}')
         cur = nxt
         time.sleep(2)
     return out
@@ -147,11 +175,18 @@ def main():
             with out.open(newline='', encoding='utf-8') as fh:
                 old = {r['data']: r for r in csv.DictReader(fh, delimiter=';')}
         d0 = START if not old else max(START, today - timedelta(days=REFRESH_DAYS))
+        # buchi nel file (es. mesi non ancora nel realtime al primo run): si riparte dal primo
+        first_gap = next((START + timedelta(days=i) for i in range((today - START).days)
+                          if (START + timedelta(days=i)).isoformat() not in old
+                          or not old[(START + timedelta(days=i)).isoformat()].get('precip_mm')), None)
+        refill = os.environ.get('ARPA_REFILL') == '1' or today.weekday() == 0   # buchi: 1 volta/settimana
+        if old and refill and first_gap and first_gap < d0:
+            d0 = date(first_gap.year, first_gap.month, 1)
         d1 = today + timedelta(days=1)
         log(f'{name}: {d0} -> {today}')
         try:
-            pp = fetch(sens['PP'], d0, d1)
-            tt = fetch(sens['T'], d0, d1) if sens.get('T') else []
+            pp = fetch(sens['PP'], d0, d1, 'PP', today)
+            tt = fetch(sens['T'], d0, d1, 'T', today) if sens.get('T') else []
         except Exception as e:
             n_err += 1
             log(f'  {name}: Socrata non risponde ({e}) - file invariato')
