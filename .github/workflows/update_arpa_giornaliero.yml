@@ -1,0 +1,45 @@
+name: Aggiorna stazioni ARPA (giornaliero)
+
+# Totali giornalieri delle stazioni ARPA Lombardia (oggi: Cornalita) salvati in
+# dati/<Nome>_arpa_giornaliero.csv. Da GitHub Actions Socrata risponde (con retry);
+# dal browser spesso no (HTTP 429), e la pagina restava senza l'anno in corso.
+# Secret opzionale SOCRATA_APP_TOKEN (token gratuito dati.lombardia.it): evita i 429.
+on:
+  schedule:
+    - cron: '17 5,17 * * *'    # due volte al giorno
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-arpa-giornaliero
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: Scarica e aggrega da ARPA Socrata
+        run: python scripts/update_arpa_giornaliero.py
+
+      - name: Commit se ci sono novità
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dati/*_arpa_giornaliero.csv 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "auto: stazioni ARPA giornaliero $(date -u +%F)"
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash && git push && break || sleep 5
+            done
+          else
+            echo "Nessuna modifica."
+          fi

@@ -628,7 +628,7 @@ const ST_FALLBACK = {
   alt:        622,
   comune:     'San Giovanni Bianco',
   githubBase: GITHUB_BASE,
-  csvFiles:   ['Cornalita_1950-2026.xlsx','Cornalita_intensita.xlsx','Cornalita_temperature.xlsx'],
+  csvFiles:   ['Cornalita_1950-2026.xlsx','Cornalita_intensita.xlsx','Cornalita_temperature.xlsx','Cornalita_arpa_giornaliero.csv'],
   sensors:    {
     PP:  { id: 2278,  label: 'Precipitazione', unit: 'mm',  color: '#4fc3f7' },
     T:   { id: 2270,  label: 'Temperatura',    unit: '°C',  color: '#ffb347' },
@@ -692,8 +692,13 @@ const daysAgo = n => { const d=new Date(); d.setDate(d.getDate()-n); return d.to
 // ════════════════════════════════════════════
 // SOCRATA API
 // ════════════════════════════════════════════
-async function socrataFetch(sensorId, limit=50000) {
-  const url = `${SOCRATA}?idsensore=${sensorId}&$limit=${limit}&$order=data+DESC`;
+// since = 'YYYY-MM-DD' (opzionale): solo i giorni da quella data. Il grosso
+// dell'anno arriva gia' dal file dati/Cornalita_arpa_giornaliero.csv (GitHub
+// Action): dal browser si chiedono solo gli ultimi giorni, query piccola e meno
+// esposta all'HTTP 429 di Socrata.
+async function socrataFetch(sensorId, limit=50000, since=null) {
+  const where = since ? `&$where=${encodeURIComponent(`data >= '${since}T00:00:00'`)}` : '';
+  const url = `${SOCRATA}?idsensore=${sensorId}&$limit=${limit}&$order=data+DESC${where}`;
   const r = await fetch(url);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
@@ -1760,7 +1765,11 @@ async function init() {
     // 2. Carica dati live da Socrata
     msg.textContent='Carico precipitazioni API live…';
     try {
-      const ppRows=await socrataFetch(ST.sensors.PP.id, 50000);
+      // Ultimo giorno gia' presente dai file (archivio giornaliero) - 3 giorni
+      const known=Object.keys(ppByDate).sort();
+      let since=null;
+      if (known.length) { const d=new Date(known[known.length-1]+'T00:00:00Z'); d.setUTCDate(d.getUTCDate()-3); since=d.toISOString().slice(0,10); }
+      const ppRows=await socrataFetch(ST.sensors.PP.id, 50000, since);
       const { daily: ppMap, intensity: intMap } = socrataAggregatePrecip(ppRows);
       const dates=Object.keys(ppMap).sort();
       if (dates.length) {
@@ -1773,7 +1782,10 @@ async function init() {
 
     msg.textContent='Carico temperatura API…';
     try {
-      const tRows=await socrataFetch(ST.sensors.T.id, 50000);
+      const tKnown=Object.keys(tmpByDate).sort();
+      let tSince=null;
+      if (tKnown.length) { const d=new Date(tKnown[tKnown.length-1]+'T00:00:00Z'); d.setUTCDate(d.getUTCDate()-3); tSince=d.toISOString().slice(0,10); }
+      const tRows=await socrataFetch(ST.sensors.T.id, 50000, tSince);
       const tMap=socrataAggregateTemp(tRows);
       mergeData({temp:tMap},'live');
     } catch(e) {}
